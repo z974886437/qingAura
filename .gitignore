@@ -1,11 +1,12 @@
-Binaries
-DerivedDataCache
-Intermediate
-Saved
-Build
+# Unreal Engine build folders
+Binaries/
+DerivedDataCache/
+Intermediate/
+Saved/
+Build/
 
-.vscode
-.vscode
+# IDE / editor files
+.vscode/
 *.VC.db
 *.opensdf
 *.opendb
@@ -14,3 +15,7 @@ Build
 *.suo
 *.xcodeproj
 *.xcworkspace
+
+# Ignore all .pch and .pdb files (通配符)
+*.pch
+*.pdb
