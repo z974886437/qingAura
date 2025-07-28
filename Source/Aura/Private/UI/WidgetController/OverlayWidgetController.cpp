@@ -40,12 +40,20 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		{
 			for (const FGameplayTag Tag : AssetTags)
 			{
-				//Broadcast the tag to the Widget Controller 将标签广播至小部件控制器
-				//将资产标签中的每个标签添加到屏幕上 添加调试消息
-				const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-				GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue,Msg);
-
-				FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable,Tag);
+				// For example, soy that Tag =  Message.HealthPotion 例如，大豆的标签（Tag）为“健康药水（HealthPotion）
+				//* "Message.HealthPotion".MatchesTag("Message") will return True, "Message".MatchesTag("Message.HealthPotion") will return False
+				//"Message.HealthPotion"。如果与标签"Message"匹配，将返回True；如果与标签"Message.HealthPotion"匹配，将返回False
+				FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
+				if (Tag.MatchesTag(MessageTag))
+				{
+					//Broadcast the tag to the Widget Controller 将标签广播至小部件控制器
+					//将资产标签中的每个标签添加到屏幕上 添加调试消息
+					// const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+					// GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue,Msg);
+					const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable,Tag);
+					MessageWidgetRowDelegate.Broadcast(*Row);//消息部件委托进行广播
+					
+				}
 			}
 		}
 	);

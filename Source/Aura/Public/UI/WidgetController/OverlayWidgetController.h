@@ -7,12 +7,6 @@
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
-class UAuraUserWidget;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangenSignature, float, NewHealth);//用于声明一个支持蓝图绑定的多播委托
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxHealthChangenSignature,float,NewMaxHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnManaChangenSignature,float,NewMana);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxManaChangenSignature,float,NewMaxMana);
-
 USTRUCT(BlueprintType)
 struct FUIWidgetRow : public  FTableRowBase
 {
@@ -25,11 +19,21 @@ struct FUIWidgetRow : public  FTableRowBase
 	FText Message = FText();//消息
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	TSubclassOf<UAuraUserWidget> MessageWidget;//消息小部件
+	TSubclassOf<class UAuraUserWidget> MessageWidget;//消息小部件
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
-	UTexture2D* Image;//图像
+	UTexture2D* Image = nullptr;//图像
 };
+class UAuraUserWidget;
+class UAbilityInfo;
+class UAuraAbilitySystemComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChangenSignature, float, NewHealth);//用于声明一个支持蓝图绑定的多播委托
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxHealthChangenSignature,float,NewMaxHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnManaChangenSignature,float,NewMana);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxManaChangenSignature,float,NewMaxMana);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature,FUIWidgetRow,Row);
 
 /**
  * 
@@ -53,6 +57,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable,Category = "GAS|Attributes")
 	FOnMaxManaChangenSignature OnMaxManaChanged;//最大法力值变化
+
+	UPROPERTY(BlueprintAssignable,Category = "GAS|Messages")
+	FMessageWidgetRowSignature MessageWidgetRowDelegate;//消息小部件 行 委托
 	
 
 protected:
