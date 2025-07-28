@@ -1,12 +1,13 @@
 # Unreal Engine build folders
-Binaries/
-DerivedDataCache/
-Intermediate/
-Saved/
-Build/
+Binaries
+DerivedDataCache
+Intermediate
+Saved
+Build
 
 # IDE / editor files
-.vscode/
+.vscode
+.vs
 *.VC.db
 *.opensdf
 *.opendb
