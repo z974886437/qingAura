@@ -36,7 +36,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 	//在注册一个对 Gameplay Tag 事件的监听函数（Lambda）
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
-		[](const FGameplayTagContainer& AssetTags)
+		[this](const FGameplayTagContainer& AssetTags)
 		{
 			for (const FGameplayTag Tag : AssetTags)
 			{
@@ -44,6 +44,8 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 				//将资产标签中的每个标签添加到屏幕上 添加调试消息
 				const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
 				GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue,Msg);
+
+				FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable,Tag);
 			}
 		}
 	);

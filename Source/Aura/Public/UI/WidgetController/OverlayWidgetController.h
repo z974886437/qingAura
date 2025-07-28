@@ -64,5 +64,13 @@ protected:
 	void MaxHealthChanged(const FOnAttributeChangeData& Data) const;//最大健康变化
 	void ManaChanged(const FOnAttributeChangeData& Data) const;//法力值变化
 	void MaxManaChanged(const FOnAttributeChangeData& Data) const;//最大法力值变化
-	
+
+	template<typename T>
+	T* GetDataTableRowByTag(UDataTable* DataTable,const FGameplayTag& Tag);//按标签的表格行 接受一个数据表和一个标签
 };
+
+template <typename T>
+T* UOverlayWidgetController::GetDataTableRowByTag(UDataTable* DataTable, const FGameplayTag& Tag)
+{
+	return DataTable->FindRow<T>(Tag.GetTagName(),TEXT(""));//从 UDataTable 查找数据
+}
