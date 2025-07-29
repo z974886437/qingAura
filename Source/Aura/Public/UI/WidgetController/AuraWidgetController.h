@@ -41,6 +41,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);//设置小部件控制器参数
+
+	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();//广播初始值
 	virtual void BindCallbacksToDependencies();//绑定回调到依赖项
 	
