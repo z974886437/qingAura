@@ -90,7 +90,14 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	FEffectProperties Props;
 	SetEffectProperties(Data,Props);
 
-	
+	if (Data.EvaluatedData.Attribute == GetHealthAttribute())//判断本次被执行的属性修改是否是“血量属性（Health）”
+	{
+		SetHealth(FMath::Clamp(GetHealth(),0.f,GetMaxHealth()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
+	}
+	if (Data.EvaluatedData.Attribute == GetManaAttribute())
+	{
+		SetMana(FMath::Clamp(GetMana(),0.f,GetMaxMana()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
+	}
 }
 
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const
