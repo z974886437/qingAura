@@ -88,6 +88,51 @@ public:
 	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Vigor,Category = "Primar Attributes")
 	FGameplayAttributeData	Vigor;//活力
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Vigor);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
+
+	/*
+	 * Secondary Attributes 次要属性
+	 */
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Armor,Category = "Secondary Attributes")
+	FGameplayAttributeData	Armor;//盔甲
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Armor);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_ArmorPenetration,Category = "Secondary Attributes")
+	FGameplayAttributeData	ArmorPenetration;//穿甲
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,ArmorPenetration);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_BlockChance,Category = "Secondary Attributes")
+	FGameplayAttributeData	BlockChance;//格挡概率
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,BlockChance);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_CriticalHitChance,Category = "Secondary Attributes")
+	FGameplayAttributeData	CriticalHitChance;//暴击概率
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,CriticalHitChance);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_CriticalHitDamage,Category = "Secondary Attributes")
+	FGameplayAttributeData	CriticalHitDamage;//暴击伤害
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,CriticalHitDamage);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_CriticalHitResistance,Category = "Secondary Attributes")
+	FGameplayAttributeData	CriticalHitResistance;//暴击抗性
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,CriticalHitResistance);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_HealthRegeneration,Category = "Secondary Attributes")
+	FGameplayAttributeData	HealthRegeneration;//生命恢复
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,HealthRegeneration);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_ManaRegeneration,Category = "Secondary Attributes")
+	FGameplayAttributeData	ManaRegeneration;//法力恢复
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,ManaRegeneration);
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_MaxHealth,Category = "Secondary Attributes")
+	FGameplayAttributeData MaxHealth;//最大健康
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxHealth);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Mana,Category = "Secondary Attributes")
+	FGameplayAttributeData MaxMana;//最大法力值
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxMana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+	
 	/*
 	 *  Vital Attributes 重要属性
 	 */
@@ -96,41 +141,60 @@ public:
 	FGameplayAttributeData Health;//健康
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Health);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_MaxHealth,Category = "Vital Attributes")
-	FGameplayAttributeData MaxHealth;//最大健康
-	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxHealth);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
-
 	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Mana,Category = "Vital Attributes")
 	FGameplayAttributeData Mana;//法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Mana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Mana,Category = "Vital Attributes")
-	FGameplayAttributeData MaxMana;//最大法力值
-	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxMana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;//用于实现 属性的网络同步 + 通知响应
 
 	UFUNCTION()
-	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const;//用于实现 属性的网络同步 + 通知响应
-
-	UFUNCTION()
 	void OnRep_Mana(const FGameplayAttributeData& OldMana) const;//用于实现 属性的网络同步 + 通知响应
 
 	UFUNCTION()
+	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;//用于实现力量 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const;//用于实现 智力属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Resilience(const FGameplayAttributeData& OldResilience) const;//用于实现 韧性属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Vigor(const FGameplayAttributeData& OldVigor) const;//用于实现 活力属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Armor(const FGameplayAttributeData& OldArmor) const;//用于实现 盔甲属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_ArmorPenetration(const FGameplayAttributeData& OldArmorPenetration) const;//用于实现 护甲穿透属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_BlockChance(const FGameplayAttributeData& OldBlockChance) const;//用于实现 格挡概率属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_CriticalHitChance(const FGameplayAttributeData& OldCriticalHitChance) const;//用于实现 暴击几率属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_CriticalHitDamage(const FGameplayAttributeData& OldCriticalHitDamage) const;//用于实现 暴击伤害属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_CriticalHitResistance(const FGameplayAttributeData& OldCriticalHitResistance) const;//用于实现 暴击抗性属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_HealthRegeneration(const FGameplayAttributeData& OldHealthRegeneration) const;//用于实现 生命恢复属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_ManaRegeneration(const FGameplayAttributeData& OldManaRegeneration) const;//用于实现 法力恢复属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const;//用于实现 属性的网络同步 + 通知响应
-
-	UFUNCTION()
-	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;//用于实现 属性的网络同步 + 通知响应
-
-	UFUNCTION()
-	void OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const;//用于实现 属性的网络同步 + 通知响应
-
-	UFUNCTION()
-	void OnRep_Resilience(const FGameplayAttributeData& OldResilience) const;//用于实现 属性的网络同步 + 通知响应
-
-	UFUNCTION()
-	void OnRep_Vigor(const FGameplayAttributeData& OldVigor) const;//用于实现 属性的网络同步 + 通知响应
+	
 
 protected:
 	void SetEffectProperties(const struct FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
