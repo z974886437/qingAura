@@ -25,7 +25,7 @@ public:
 
 protected:
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;//设置成U属性，获得一个指向属性集的指针
 
 	//GAS 框架中的基类，表示一组可以被能力（Ability）或效果（Effect）修改的属性，比如生命值、法力值、攻击力等。你通常会从它派生出自己的属性类。

@@ -18,33 +18,33 @@ struct FEffectProperties//效果属性
 {
 	GENERATED_BODY()
 
-	FEffectProperties(){}
+	FEffectProperties(){}//影响所有物
 
-	FGameplayEffectContextHandle EffectContextHandle;
-
-	UPROPERTY()
-	UAbilitySystemComponent* SourceASC = nullptr;
+	FGameplayEffectContextHandle EffectContextHandle;//影响上下文手柄
 
 	UPROPERTY()
-	AActor* SourceAvatarActor = nullptr;
+	UAbilitySystemComponent* SourceASC = nullptr;//源能力系统组件
 
 	UPROPERTY()
-	AController* SourceController = nullptr;
+	AActor* SourceAvatarActor = nullptr;//源AvatarActor
 
 	UPROPERTY()
-	ACharacter* SourceCharacter = nullptr;
+	AController* SourceController = nullptr;//源控制器
 
 	UPROPERTY()
-	UAbilitySystemComponent* TargetASC = nullptr;
+	ACharacter* SourceCharacter = nullptr;//源角色
 
 	UPROPERTY()
-	AActor* TargetAvatarActor = nullptr;
+	UAbilitySystemComponent* TargetASC = nullptr;//目标能力系统组件
 
 	UPROPERTY()
-	AController* TargetController = nullptr;
+	AActor* TargetAvatarActor = nullptr;//目标AvatarActor
 
 	UPROPERTY()
-	ACharacter* TargetCharacter = nullptr;
+	AController* TargetController = nullptr;//目标控制器
+
+	UPROPERTY()
+	ACharacter* TargetCharacter = nullptr;//目标角色
 
 	
 };
@@ -66,6 +66,32 @@ public:
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;//预属性更改
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;//游戏后效果执行
 
+	/*
+	 *  Primar Attributes 主要属性
+	 */
+	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Strength,Category = "Primar Attributes")
+	FGameplayAttributeData	Strength;//力量
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Strength);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Intelligence,Category = "Primar Attributes")
+	FGameplayAttributeData	Intelligence;//智力
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Intelligence);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Resilience,Category = "Primar Attributes")
+	FGameplayAttributeData	Resilience;//韧性
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Resilience);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
+
+	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
+	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Vigor,Category = "Primar Attributes")
+	FGameplayAttributeData	Vigor;//活力
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Vigor);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
+	/*
+	 *  Vital Attributes 重要属性
+	 */
+	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
 	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Health,Category = "Vital Attributes")
 	FGameplayAttributeData Health;//健康
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Health);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
@@ -93,6 +119,18 @@ public:
 
 	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Strength(const FGameplayAttributeData& OldStrength) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Intelligence(const FGameplayAttributeData& OldIntelligence) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Resilience(const FGameplayAttributeData& OldResilience) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_Vigor(const FGameplayAttributeData& OldVigor) const;//用于实现 属性的网络同步 + 通知响应
 
 protected:
 	void SetEffectProperties(const struct FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
