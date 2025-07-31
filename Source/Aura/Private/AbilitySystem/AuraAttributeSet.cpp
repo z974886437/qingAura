@@ -11,9 +11,9 @@
 UAuraAttributeSet::UAuraAttributeSet()
 {
 	InitHealth(10.f);//启动健康，初始化健康为100
-	InitMaxHealth(100.f);//初始化最大健康为100
 	InitMana(10.f);//初始化法力为50
-	InitMaxMana(50.f);//初始化最大法力为50
+	InitMaxHealth(100.f);//
+	InitMaxMana(50.f);//初始化最大健康为100
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -53,11 +53,11 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 
 	if (Attribute == GetHealthAttribute())
 	{
-		//NewValue = FMath::Clamp(NewValue,0.f,GetMaxHealth());//将 NewValue 限制在 0.f 和 GetMaxHealth() 之间，防止它超出这个范围
+		NewValue = FMath::Clamp(NewValue,0.f,GetMaxHealth());//将 NewValue 限制在 0.f 和 GetMaxHealth() 之间，防止它超出这个范围
 	}
 	if (Attribute == GetManaAttribute())
 	{
-		//NewValue = FMath::Clamp(NewValue,0.f,GetMaxMana());//将 NewValue 限制在 0.f 和 GetMaxMana() 之间，防止它超出这个范围
+		NewValue = FMath::Clamp(NewValue,0.f,GetMaxMana());//将 NewValue 限制在 0.f 和 GetMaxMana() 之间，防止它超出这个范围
 	}
 }
 
@@ -112,11 +112,11 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())//判断本次被执行的属性修改是否是“血量属性（Health）”
 	{
-		//SetHealth(FMath::Clamp(GetHealth(),0.f,GetMaxHealth()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
+		SetHealth(FMath::Clamp(GetHealth(),0.f,GetMaxHealth()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
 	}
 	if (Data.EvaluatedData.Attribute == GetManaAttribute())
 	{
-		//SetMana(FMath::Clamp(GetMana(),0.f,GetMaxMana()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
+		SetMana(FMath::Clamp(GetMana(),0.f,GetMaxMana()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
 	}
 }
 
