@@ -26,7 +26,7 @@ float UMMC_MaxHealth::CalculateBaseMagnitude_Implementation(const FGameplayEffec
 	EvaluationParameters.SourceTags = SourceTags;
 	EvaluationParameters.TargetTags = TargetTags;
 
-	//从你设置的 RelevantAttributesToCapture 中获取指定属性的值
+	//从你设置的 RelevantAttributesToCapture 中获取指定属性的值.
 	float Vigor = 0.f;
 	GetCapturedAttributeMagnitude(VigorDef,Spec,EvaluationParameters,Vigor);
 	Vigor = FMath::Max<float>(Vigor,0.f);//Vigor 最小值为0

@@ -20,6 +20,6 @@ public:
 
 private:
 
-	FGameplayEffectAttributeCaptureDefinition VigorDef;//活力定义	
+	FGameplayEffectAttributeCaptureDefinition VigorDef;//活力定义.	
 	
 };

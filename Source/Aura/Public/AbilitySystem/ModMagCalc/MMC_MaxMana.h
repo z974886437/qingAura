@@ -20,5 +20,6 @@ public:
 
 private:
 
-	FGameplayEffectAttributeCaptureDefinition IntDef;//智力定义	 
+	FGameplayEffectAttributeCaptureDefinition IntDef;//智力定义.
+	
 };
