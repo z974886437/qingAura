@@ -12,8 +12,8 @@ UAuraAttributeSet::UAuraAttributeSet()
 {
 	InitHealth(10.f);//启动健康，初始化健康为100
 	InitMana(10.f);//初始化法力为50
-	InitMaxHealth(100.f);//
-	InitMaxMana(50.f);//初始化最大健康为100
+	//InitMaxHealth(100.f);//
+	//InitMaxMana(50.f);//初始化最大健康为100
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
