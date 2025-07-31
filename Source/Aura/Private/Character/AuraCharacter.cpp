@@ -37,6 +37,14 @@ void AAuraCharacter::OnRep_PlayerState()
 	InitAbilityActorInfo();
 }
 
+int32 AAuraCharacter::GetPlayerLevel()
+{
+	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
+	const AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	check(AuraPlayerState);
+	return AuraPlayerState->GetPlayerLevel();
+}
+
 void AAuraCharacter::InitAbilityActorInfo() 
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）

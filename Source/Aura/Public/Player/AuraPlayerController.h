@@ -38,6 +38,6 @@ private:
 
 	void CursorTrace();//空光标轨迹
 
-	TObjectPtr<IEnemyInterface> LastActor;//最后Actor
-	TObjectPtr<IEnemyInterface> ThisActor;
+	IEnemyInterface* LastActor;//最后Actor
+	IEnemyInterface* ThisActor;
 };
