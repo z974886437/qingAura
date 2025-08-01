@@ -49,6 +49,7 @@ void AAuraCharacterBase::InitializeDefaultAttributes() const
 {
 	ApplyEffectToSelf(DefaultPrimaryAttributes,1.f);//将默认主要属性应用到自身
 	ApplyEffectToSelf(DefaultSecondaryAttributes,1.f);//将默认次要属性应用到自身
+	ApplyEffectToSelf(DefaultVitalAttributes,1.f);//将默认重要属性应用到自身
 }
 
 

@@ -48,7 +48,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attirbutes")
 	TSubclassOf<UGameplayEffect> DefaultSecondaryAttributes;//默认次要属性
 
-
+	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attirbutes")
+	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;//默认重要要属性
 
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass,float Level) const;//应用效果到自身
 	void InitializeDefaultAttributes() const;//初始化默认属性
