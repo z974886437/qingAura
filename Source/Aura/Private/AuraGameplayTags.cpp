@@ -11,5 +11,5 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	//初始化游戏标签
 
 	//向 GameplayTagsManager 注册一个原生（Native）Gameplay Tag
-	UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attribute.Secondary.Armor"),FString("Reduce damage taken, improves Block Chance"));
+	GameplayTags.Attributes_Secondary_Armor = UGameplayTagsManager::Get().AddNativeGameplayTag(FName("Attribute.Secondary.Armor"),FString("Reduce damage taken, improves Block Chance"));
 }

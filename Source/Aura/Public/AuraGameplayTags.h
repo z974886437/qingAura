@@ -18,6 +18,7 @@ public:
 	static const FAuraGameplayTags& Get() {return GameplayTags;}
 	static void InitializeNativeGameplayTags();//初始化本机游戏标签
 
+	FGameplayTag Attributes_Secondary_Armor;//盔甲
 protected:
 	
 private:
