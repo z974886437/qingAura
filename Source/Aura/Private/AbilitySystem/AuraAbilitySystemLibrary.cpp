@@ -26,3 +26,23 @@ UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(
 	}
 	return nullptr;// 如果以上任何一步失败，返回空指针
 }
+
+UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidgetController(
+	const UObject* WorldContextObject)
+{
+	// 尝试从世界上下文对象获取索引为 0 的玩家控制器（一般是本地玩家）
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject,0))
+	{
+		// 将 HUD 强转为自定义的 AAuraHUD，确保我们有能力访问 Aura 专属的 UI 系统
+		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
+		{
+			AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>();// 获取玩家状态（PlayerState），通常保存属性和能力组件
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();// 从 PlayerState 获取 GAS 的核心组件 AbilitySystemComponent
+			UAttributeSet* AS = PS->GetAttributeSet();// 获取属性集 AttributeSet，包含血量、法力等自定义属性
+			const FWidgetControllerParams WidgetControllerParams(PC,PS,ASC,AS);// 构造控件控制器所需的参数结构体（封装了 UI 所需要的数据来源）
+			return AuraHUD->GetAttributeMenuWidgetController(WidgetControllerParams);// 返回属性菜单小部件控制器
+		}
+	}
+	return nullptr;// 如果以上任何一步失败，返回空指针
+	
+}
