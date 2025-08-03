@@ -5,6 +5,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Aura.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Aura.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/AuraAbilitySystemComponent.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/AuraAbilitySystemLibrary.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/AuraAttributeSet.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/Data/AttributeInfo.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/ModMagCalc/MMC_MaxHealth.cpp" charset="UTF-8" />
@@ -26,6 +27,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/WidgetController/AuraWidgetController.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/WidgetController/OverlayWidgetController.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/AuraAbilitySystemComponent.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/AuraAbilitySystemLibrary.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/AuraAttributeSet.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/Data/AttributeInfo.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/ModMagCalc/MMC_MaxHealth.h" charset="UTF-8" />
