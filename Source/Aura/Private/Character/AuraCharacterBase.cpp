@@ -39,10 +39,12 @@ void AAuraCharacterBase::ApplyEffectToSelf(TSubclassOf<UGameplayEffect> Gameplay
 	//初始化主属性
 	check(IsValid(GetAbilitySystemComponent()));
 	check(GameplayEffectClass);
-	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();//创建效果上线问并返回其句柄的函数
-	ContextHandle.AddSourceObject(this);//调用添加源对象
-	const FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass,Level,ContextHandle);//制作传出规格,构建一个效果应用对象
-	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(),GetAbilitySystemComponent());//游戏效果规范应用与目标
+	FGameplayEffectContextHandle ContextHandle = GetAbilitySystemComponent()->MakeEffectContext();// 创建 GameplayEffect 的上下文（Context），它包含来源、命中位置、投射物等信息
+	ContextHandle.AddSourceObject(this);// 将当前对象（通常是一个 Ability 或 Actor）作为效果的“源对象”加入 Context
+	//创建一个“效果规格”句柄（规格说明了要应用哪个效果、应用等级、上下文等）
+	const FGameplayEffectSpecHandle SpecHandle = GetAbilitySystemComponent()->MakeOutgoingSpec(GameplayEffectClass,Level,ContextHandle);
+	// 将这个效果规范（Spec）应用到目标上，通常目标就是自己（如果目标是敌人，也可以传入别的 ASC）
+	GetAbilitySystemComponent()->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(),GetAbilitySystemComponent());
 }
 
 void AAuraCharacterBase::InitializeDefaultAttributes() const
