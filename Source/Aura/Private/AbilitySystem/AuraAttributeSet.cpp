@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
+#include "AuraGameplayTags.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -14,6 +15,20 @@ UAuraAttributeSet::UAuraAttributeSet()
 	//InitMana(10.f);//初始化法力为50
 	//InitMaxHealth(100.f);//
 	//InitMaxMana(50.f);//初始化最大健康为100
+
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取 Aura 项目中定义的所有 GameplayTag 单例引用（用于查找标签）
+
+	//FAttributeSignature StrengthDelegate;// 创建一个用于获取“力量”属性的委托
+	//StrengthDelegate.BindStatic(GetStrengthAttribute);// 将静态函数 GetStrengthAttribute 绑定到委托上
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Strength,GetStrengthAttribute);// 将“力量”标签与该委托添加到 TagsToAttributes 映射中
+
+	//FAttributeSignature IntelligenceDelegate;// 创建一个用于获取“力量”属性的委托
+	//IntelligenceDelegate.BindStatic(GetIntelligenceAttribute);// 将静态函数 GetStrengthAttribute 绑定到委托上
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Intelligence,GetIntelligenceAttribute);// 将“力量”标签与该委托添加到 TagsToAttributes 映射中
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Resilience,GetResilienceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Primary_Vigor,GetVigorAttribute);
+	
+	
 }
 
 void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

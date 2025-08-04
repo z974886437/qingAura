@@ -13,6 +13,9 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+//声明一个返回值为 FGameplayAttribute 的无参委托类型（Delegate）
+//DECLARE_DELEGATE_RetVal(FGameplayAttribute,FAttributeSignature);
+
 USTRUCT()
 struct FEffectProperties//效果属性
 {
@@ -49,6 +52,14 @@ struct FEffectProperties//效果属性
 	
 };
 
+// 定义一个类型别名 FAttributeFuncPtr，代表一个函数指针类型：
+// 这个函数指针指向的是一个“无参数，返回 FGameplayAttribute 的静态函数”
+//typedef is specific to the FGameplayAttribute() signature,but TStaticFunPtr is generic to any signature signature choser
+// typedef 特定于游戏属性签名，但静态函数指针对于任何选择的签名都是通用的
+//typedef TBaseStaticDelegateInstance<FGameplayAttribute(),FDefaultDelegateUserPolicy>::FFuncPtr FAttributeFuncPtr;
+template<class T>
+using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T,FDefaultDelegateUserPolicy>::FFuncPtr;
+
 /**
  * 
  */
@@ -65,6 +76,19 @@ public:
 	
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;//预属性更改
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;//游戏后效果执行
+
+	// 创建一个映射表 TagsToAttributes：
+	// 键（Key）：FGameplayTag，代表一个属性标签（如 Attributes.Primary.Strength）
+	// 值（Value）：函数指针（FFuncPtr），指向一个返回 FGameplayAttribute、无参数的静态函数
+	//
+	// 这个结构是为了手动实现类似委托的功能 —— 通过标签映射到静态属性函数（如 GetStrengthAttribute）
+	// 与使用 FAttributeSignature 类似，但这是更底层的做法
+	//1.TMap<FGameplayTag,TBaseStaticDelegateInstance<FGameplayAttribute(),FDefaultDelegateUserPolicy>::FFuncPtr> TagsToAttributes;
+	//2. TMap<FGameplayTag,FGameplayAttribute(*)()> TagsToAttributes;
+	TMap<FGameplayTag,TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
+
+	//TStaticFuncPtr<float(int32,float,int32)> RandomFunctionPointer;//随机功能指针
+	//static float RandomFunction(int32 I,float F,int32 I2) {return 0.f;} //随机函数
 
 	/*
 	 *  Primar Attributes 主要属性
