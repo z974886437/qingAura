@@ -9,6 +9,7 @@
 #include "AuraCharacterBase.generated.h"
 
 
+class UGameplayAbility;
 class UAbilitySystemComponent;
 class UAttributeSet;
 class UGameplayEffect;
@@ -53,6 +54,10 @@ protected:
 
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass,float Level) const;//应用效果到自身
 	void InitializeDefaultAttributes() const;//初始化默认属性
-	
 
+	void AddCharacterAbilities();//添加角色能力
+private:
+
+	UPROPERTY(EditAnywhere,Category = "Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;//启动能力
 };
