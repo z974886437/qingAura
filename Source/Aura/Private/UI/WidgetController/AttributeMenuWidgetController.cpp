@@ -9,8 +9,35 @@
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
+	// 将基类 AttributeSet 强制转换为你自定义的 AuraAttributeSet，方便访问你自定义的 TagsToAttributes 等内容
+	// CastChecked 如果转换失败，会在开发环境中触发断言，便于调试
+	UAuraAttributeSet* AS = CastChecked<UAuraAttributeSet>(AttributeSet);
 
+	check(AttributeInfo);// 检查 AttributeInfo 是否有效，防止后续空指针崩溃
+	
+	// 遍历你在 AttributeSet 中维护的 标签 → 属性 映射表（TagsToAttributes）
+	// 例如：FGameplayTag("Attributes.Health") → FGameplayAttribute(Health)
+	for (auto& Pair : AS->TagsToAttributes)
+	{
+		// 对每一个属性（比如 Health、Mana）注册一个值变化的回调函数（Delegate）
+		// 当这个属性数值发生变化时，会自动触发这个 lambda 回调
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Pair.Value()).AddLambda(
+			// 这是回调函数，当属性值变化时会触发此函数
+			// 捕获 this 是为了访问当前类的成员（比如 AttributeInfoDelegate）
+			[this,Pair](const FOnAttributeChangeData& Data)
+			{
+				BroadcastAttributeInfo(Pair.Key,Pair.Value());
+				// FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(Pair.Key);// 根据标签查找 UI 所需的属性信息（比如图标、描述等）
+				// // 获取当前属性的最新数值，并设置到 Info 结构中
+				// // GetNumericValue 需要传入 AttributeSet 实例，它会返回 float 类型的值
+				// Info.AttributeValue = Pair.Value().GetNumericValue(AS);
+				// AttributeInfoDelegate.Broadcast(Info);// 广播属性信息，让 UI 更新对应的属性显示
+			}
+		);
+	}
 }
+
+
 
 void UAttributeMenuWidgetController::BroadcastInitialValues()
 {
@@ -27,10 +54,16 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 
 	for (auto& Pair : AS->TagsToAttributes)// 遍历 AttributeSet 中的标签 → 属性映射表（TagsToAttributes）
 	{
-		FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(Pair.Key);// 根据标签查找 UI 所需的属性信息（比如图标、描述等）
-		// 调用静态函数指针，得到对应的 FGameplayAttribute
-		// 然后通过 GetNumericValue(AS) 从 AttributeSet 中获取当前属性的数值
-		Info.AttributeValue = Pair.Value().GetNumericValue(AS);
-		AttributeInfoDelegate.Broadcast(Info);// 广播属性信息，让 UI 更新对应的属性显示
+		BroadcastAttributeInfo(Pair.Key,Pair.Value());
 	}
 }
+
+void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag,const FGameplayAttribute& Attribute) const
+{
+	FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(AttributeTag);// 根据标签查找 UI 所需的属性信息（比如图标、描述等）
+	// 获取当前属性的最新数值，并设置到 Info 结构中
+	// GetNumericValue 需要传入 AttributeSet 实例，它会返回 float 类型的值
+	Info.AttributeValue = Attribute.GetNumericValue(AttributeSet);
+	AttributeInfoDelegate.Broadcast(Info);// 广播属性信息，让 UI 更新对应的属性显示
+}
+
