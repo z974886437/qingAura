@@ -35,7 +35,12 @@ public:
 	FGameplayTag Attributes_Secondary_MaxMana;//最大法力值
 
 	
-protected:
+	FGameplayTag InputTag_LMB;//鼠标左键
+	FGameplayTag InputTag_RMB;//鼠标右键
+	FGameplayTag InputTag_1;
+	FGameplayTag InputTag_2;
+	FGameplayTag InputTag_3;
+	FGameplayTag InputTag_4;
 	
 private:
 	static FAuraGameplayTags GameplayTags;//游戏标签
