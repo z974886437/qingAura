@@ -22,6 +22,10 @@ public:
 	FEffectAssetTags EffectAssetTags;//效果资产标签
 
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力
+
+	void AbilityInputTagHeld(const FGameplayTag& InputTag);//持续能力输入标签
+	void AbilityInputTagReleased(const FGameplayTag& InputTag);//释放能力输入标签
+
 protected:
 
 	void EffectApplied(UAbilitySystemComponent* AbilitySystemComponent,const FGameplayEffectSpec& EffectSpec,FActiveGameplayEffectHandle ActiveEffectHandle);//应用效果
