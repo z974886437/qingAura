@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/PlayerController.h"
 #include "AuraPlayerController.generated.h"
 
@@ -11,6 +12,7 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 class IEnemyInterface;
+class UAuraInputConfig;
 
 /**
  * 
@@ -40,4 +42,11 @@ private:
 
 	IEnemyInterface* LastActor;//最后Actor
 	IEnemyInterface* ThisActor;
+
+	void AbilityInputTagPressed(FGameplayTag InputTag);//能力输入标签按下
+	void AbilityInputTagReleased(FGameplayTag InputTag);//能力输入标签释放
+	void AbilityInputTagHeld(FGameplayTag InputTag);//能力输入标签持续按住
+
+	UPROPERTY(EditDefaultsOnly,CateGory = "Input")
+	TObjectPtr<UAuraInputConfig> InputConfig;//输入配置
 };
