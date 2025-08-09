@@ -4,15 +4,19 @@
 #include "Player/AuraPlayerController.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AuraGameplayTags.h"
 #include "EnhancedInputSubsystems.h"//增强输入子系统
 #include "EnhancedInputComponent.h"//增强输入组件
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"//交互/敌人接口
 
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;//启用网络复制功能:让这个 Actor 能够在服务端创建，并自动同步到客户端
+
+	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime)
@@ -82,6 +86,12 @@ void AAuraPlayerController::CursorTrace()
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	//GEngine->AddOnScreenDebugMessage(1,3.f,FColor::Red,*InputTag.ToString());
+	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))//检查当前输入是否是鼠标左键（LMB），只精确匹配，不会匹配父级 Tag。
+	{
+		bTargeting = ThisActor  ? true : false;// 如果鼠标下有目标 Actor，就进入锁定目标模式；否则关闭锁定
+		bAutoRunning = false; bAutoRunning = false;
+	}
+	
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
@@ -92,8 +102,39 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
-	if (GetASC() == nullptr) return;
-	GetASC()->AbilityInputTagHeld(InputTag);
+	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))// 如果当前输入标签不是 "鼠标左键"（InputTag_LMB）
+	{
+		if (GetASC()) // 如果有能力系统组件，就转发这个输入（表示按住这个标签对应的技能）
+		{
+			GetASC()->AbilityInputTagHeld(InputTag);
+		}
+		return;// 不是左键输入，直接返回，不再处理后面的移动逻辑
+	}
+
+	if (bTargeting)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
+	{
+		if (GetASC())
+		{
+			GetASC()->AbilityInputTagHeld(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
+		}
+	}
+	else// 没有锁定目标
+	{
+		FollowTime += GetWorld()->GetDeltaSeconds(); // 记录鼠标按住左键的时间（可用来判断点击 vs 长按）
+
+		FHitResult Hit;// 鼠标位置的射线检测（Visibility 通道），获取地面或物体的点击位置
+		if (GetHitResultUnderCursor(ECC_Visibility,false,Hit))
+		{
+			CachedDestination = Hit.ImpactPoint;// 缓存目的地，用于移动
+		}
+
+		if (APawn* ControlledPawn = GetPawn())// 获取当前控制的 Pawn（玩家角色）
+		{
+			// 计算从角色位置到点击位置的方向向量（并单位化）
+			const FVector WorldDirection = (CachedDestination - ControlledPawn->GetActorLocation()).GetSafeNormal();
+			ControlledPawn->AddMovementInput(WorldDirection); // 添加移动输入，让角色向点击位置走
+		}
+	}
 }
 
 UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
