@@ -7,6 +7,8 @@
 #include "AuraGameplayTags.h"
 #include "EnhancedInputSubsystems.h"//增强输入子系统
 #include "EnhancedInputComponent.h"//增强输入组件
+#include "NavigationPath.h"
+#include "NavigationSystem.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
@@ -96,10 +98,50 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	if (GetASC() == nullptr) return;
-	GetASC()->AbilityInputTagReleased(InputTag);
-}
+	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))// 如果当前输入标签不是 "鼠标左键"（InputTag_LMB）
+	{
+		if (GetASC()) // 如果有能力系统组件，就转发这个输入（表示按住这个标签对应的技能）
+		{
+			GetASC()->AbilityInputTagReleased(InputTag);
+		}
+		return;// 不是左键输入，直接返回，不再处理后面的移动逻辑
+	}
+	if (bTargeting)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
+	{
+		if (GetASC())
+		{
+			GetASC()->AbilityInputTagReleased(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
+		}
+	}
+	else
+	{
+		APawn* ControlledPawn = GetPawn();
 
+		// 1. 判断是否是短按（FollowTime <= ShortPressThreshold）
+		//    并且角色存在
+		if (FollowTime <= ShortPressThreshold && ControlledPawn)
+		{
+			//这是 导航系统（Navigation System） 的一个静态方法。它会立即（同步）计算出一条从起点到终点的路径（UNavigationPath 对象）
+			// 2. 调用导航系统计算路径（同步方式）
+			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this,
+				ControlledPawn->GetActorLocation(),// 起点：角色位置
+				CachedDestination)) // 终点：鼠标点击位置
+			{
+				Spline->ClearSplinePoints();  // 3. 清空之前的样条曲线点
+				for (const FVector& PointLoc : NavPath->PathPoints)// 4. 把路径点逐个加入到样条曲线上
+				{
+					Spline->AddSplinePoint(PointLoc,ESplineCoordinateSpace::World);
+					DrawDebugSphere(GetWorld(),PointLoc,8.f,8,FColor::Green,false,5.f); // 5. 用绿色小球在场景中画出路径点，方便调试
+				}
+				bAutoRunning = true; // 6. 设置自动寻路标志位
+			}
+		}
+		// 7. 重置跟随时间，关闭锁定目标模式
+		FollowTime = 0.f;
+		bTargeting = false;
+	}
+}
+  
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
 	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))// 如果当前输入标签不是 "鼠标左键"（InputTag_LMB）
