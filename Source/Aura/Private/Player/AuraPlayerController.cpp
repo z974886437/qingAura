@@ -24,8 +24,27 @@ AAuraPlayerController::AAuraPlayerController()
 void AAuraPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
-
 	CursorTrace();
+	AutoRun();
+}
+
+void AAuraPlayerController::AutoRun()
+{
+	if (!bAutoRunning) return;
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		//功能：找到离 Pawn 最近的样条曲线（Spline）上的点。ControlledPawn->GetActorLocation()获取 Pawn 当前世界坐标。ESplineCoordinateSpace::World让返回值也使用世界坐标系。
+		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControlledPawn->GetActorLocation(),ESplineCoordinateSpace::World);
+		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline,ESplineCoordinateSpace::World);
+		ControlledPawn->AddMovementInput(Direction);
+
+		//到目的地的巨离
+		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
+		if (DistanceToDestination <= AutoRunAcceptanceRadius)
+		{
+			bAutoRunning = false;
+		}
+	}
 }
 
 void AAuraPlayerController::CursorTrace()
@@ -91,9 +110,8 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))//检查当前输入是否是鼠标左键（LMB），只精确匹配，不会匹配父级 Tag。
 	{
 		bTargeting = ThisActor  ? true : false;// 如果鼠标下有目标 Actor，就进入锁定目标模式；否则关闭锁定
-		bAutoRunning = false; bAutoRunning = false;
+		bAutoRunning = false;
 	}
-	
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
@@ -133,6 +151,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					Spline->AddSplinePoint(PointLoc,ESplineCoordinateSpace::World);
 					DrawDebugSphere(GetWorld(),PointLoc,8.f,8,FColor::Green,false,5.f); // 5. 用绿色小球在场景中画出路径点，方便调试
 				}
+				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];// 获取导航路径中的最后一个点，也就是路径的终点位置，
 				bAutoRunning = true; // 6. 设置自动寻路标志位
 			}
 		}
@@ -188,6 +207,7 @@ UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
 	}
 	return AuraAbilitySystemComponent;
 }
+
 
 void AAuraPlayerController::BeginPlay()
 {

@@ -69,4 +69,6 @@ private:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USplineComponent> Spline;//样条线
+
+	void AutoRun();//自动奔跑
 };
