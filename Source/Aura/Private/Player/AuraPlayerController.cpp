@@ -49,12 +49,18 @@ void AAuraPlayerController::AutoRun()
 
 void AAuraPlayerController::CursorTrace()
 {
-	FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
+	//FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
 	GetHitResultUnderCursor(ECC_Visibility,false,CursorHit);//用于进行鼠标位置下的光线检测
 	if (!CursorHit.bBlockingHit) return;//没有命中任何阻挡物体，那么就直接退出当前函数
 
 	LastActor = ThisActor;
 	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+
+	if (LastActor != ThisActor)
+	{
+		if (LastActor) LastActor->UnHighlightActor();
+		if (ThisActor) ThisActor->HighlightActor();
+	}
 	/*
 	*Line trace from cursor. There are several scenarios: (光标的线条轨迹。有几种情况)
 	* A.LastActor is null && ThisActor is null (LastActor为空 与 ThisActor为空)
@@ -68,40 +74,39 @@ void AAuraPlayerController::CursorTrace()
 	* E.Both actors are volid,and are the same actor (如果两个演员都有效并且是同一个演员)
 	*   -Do nothing(不执行任何操作)
 	*/
-
-	if (LastActor == nullptr)
-	{
-		if (ThisActor != nullptr)
-		{
-			//Case B(LastActor为空 与 ThisActor为有效)
-			ThisActor->HighlightActor();
-		}
-		else
-		{
-			// Case A - both are null,do nothing(不执行任何操作)
-		}
-	}
-	else // LastActor is volid
-	{
-		if (ThisActor == nullptr)
-		{
-			// Case C(LastActor有效 与 ThisActor为空)
-			LastActor->UnHighlightActor();
-		}
-		else // both actor are volid 
-		{
-			if(LastActor != ThisActor)
-			{
-				//Case D(如果两个演员都有效，但是最后一个演员不等于这个演员)
-				LastActor->UnHighlightActor();
-				ThisActor->HighlightActor();
-			}
-			else
-			{
-				// Case E - do nothing(不执行任何操作)
-			}
-		}
-	}
+	// if (LastActor == nullptr)
+	// {
+	// 	if (ThisActor != nullptr)
+	// 	{
+	// 		//Case B(LastActor为空 与 ThisActor为有效)
+	// 		ThisActor->HighlightActor();
+	// 	}
+	// 	else
+	// 	{
+	// 		// Case A - both are null,do nothing(不执行任何操作)
+	// 	}
+	// }
+	// else // LastActor is volid
+	// {
+	// 	if (ThisActor == nullptr)
+	// 	{
+	// 		// Case C(LastActor有效 与 ThisActor为空)
+	// 		LastActor->UnHighlightActor();
+	// 	}
+	// 	else // both actor are volid 
+	// 	{
+	// 		if(LastActor != ThisActor)
+	// 		{
+	// 			//Case D(如果两个演员都有效，但是最后一个演员不等于这个演员)
+	// 			LastActor->UnHighlightActor();
+	// 			ThisActor->HighlightActor();
+	// 		}
+	// 		else
+	// 		{
+	// 			// Case E - do nothing(不执行任何操作)
+	// 		}
+	// 	}
+	// }
 }
 
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
@@ -133,7 +138,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 	}
 	else
 	{
-		APawn* ControlledPawn = GetPawn();
+		const APawn* ControlledPawn = GetPawn();
 
 		// 1. 判断是否是短按（FollowTime <= ShortPressThreshold）
 		//    并且角色存在
@@ -149,7 +154,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 				for (const FVector& PointLoc : NavPath->PathPoints)// 4. 把路径点逐个加入到样条曲线上
 				{
 					Spline->AddSplinePoint(PointLoc,ESplineCoordinateSpace::World);
-					DrawDebugSphere(GetWorld(),PointLoc,8.f,8,FColor::Green,false,5.f); // 5. 用绿色小球在场景中画出路径点，方便调试
+					//DrawDebugSphere(GetWorld(),PointLoc,8.f,8,FColor::Green,false,5.f); // 5. 用绿色小球在场景中画出路径点，方便调试
 				}
 				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];// 获取导航路径中的最后一个点，也就是路径的终点位置，
 				bAutoRunning = true; // 6. 设置自动寻路标志位
@@ -182,11 +187,10 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 	else// 没有锁定目标
 	{
 		FollowTime += GetWorld()->GetDeltaSeconds(); // 记录鼠标按住左键的时间（可用来判断点击 vs 长按）
-
-		FHitResult Hit;// 鼠标位置的射线检测（Visibility 通道），获取地面或物体的点击位置
-		if (GetHitResultUnderCursor(ECC_Visibility,false,Hit))
+		
+		if (CursorHit.bBlockingHit)
 		{
-			CachedDestination = Hit.ImpactPoint;// 缓存目的地，用于移动
+			CachedDestination = CursorHit.ImpactPoint;// 缓存目的地，用于移动
 		}
 
 		if (APawn* ControlledPawn = GetPawn())// 获取当前控制的 Pawn（玩家角色）

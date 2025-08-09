@@ -41,9 +41,9 @@ private:
 	void Move(const struct FInputActionValue& InputActionValue);//定义F输入动作值
 
 	void CursorTrace();//空光标轨迹
-
 	IEnemyInterface* LastActor;//最后Actor
 	IEnemyInterface* ThisActor;
+	FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);//能力输入标签按下
 	void AbilityInputTagReleased(FGameplayTag InputTag);//能力输入标签释放
