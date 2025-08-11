@@ -8,7 +8,8 @@
 
 AAuraProjectile::AAuraProjectile()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;// 禁用该 Actor 的 Tick 函数调用。
+	bReplicates = true;//如果为 true，则此 actor 将复制到远程计算机
 
 	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
 	SetRootComponent(Sphere);
