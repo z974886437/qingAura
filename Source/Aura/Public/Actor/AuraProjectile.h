@@ -8,6 +8,7 @@
 
 class USphereComponent;
 class UProjectileMovementComponent;
+class UNiagaraSystem;
 
 
 UCLASS()
@@ -23,10 +24,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	//球体覆盖
-
+	virtual void Destroyed() override;//摧毁
+	
 	UFUNCTION()
-	void OnSphereOverlap(
+	void OnSphereOverlap(//球体覆盖
 		UPrimitiveComponent* OverlappedComponent,// [参数1] 当前触发重叠事件的组件（比如这个球体碰撞组件本身）
 		AActor* OtherActor,// [参数2] 进入碰撞区域的另一个 Actor（例如玩家角色、NPC、物品等）
 		UPrimitiveComponent* OtherComp,// [参数3] 对方 Actor 上参与碰撞的具体组件（例如对方的 CapsuleComponent）
@@ -37,7 +38,23 @@ protected:
 
 private:
 
+	UPROPERTY(EditDefaultsOnly)
+	float LifeSpan = 15.f;//寿命
+
+	bool bHit = false;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;//球体
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UNiagaraSystem> ImpactEffect;//冲击效果
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> ImpactSound;//冲击声音
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> LoopingSound;//循环声音
+
+	UPROPERTY()
+	TObjectPtr<UAudioComponent> LoopingSoundComponent;//循环声音组件
 };

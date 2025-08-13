@@ -3,8 +3,11 @@
 
 #include "Actor/AuraProjectile.h"
 
+#include "NiagaraFunctionLibrary.h"
+#include "Components/AudioComponent.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AAuraProjectile::AAuraProjectile()
 {
@@ -28,14 +31,48 @@ AAuraProjectile::AAuraProjectile()
 void AAuraProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	SetLifeSpan(LifeSpan);// 设置Actor的寿命，单位是秒，到时间后Actor会自动调用 Destroy()
 	Sphere->OnComponentBeginOverlap.AddDynamic(this,&AAuraProjectile::OnSphereOverlap);//球体碰撞组件（Sphere）的 重叠开始事件 绑定到 AAuraProjectile::OnSphereOverlap 函数
-	
+
+	LoopingSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopingSound,GetRootComponent());// 播放一个持续循环的声音，并将其绑定到当前Actor的根组件上
+}
+
+void AAuraProjectile::Destroyed()
+{
+	// 如果没有命中任何目标 且 当前不是服务器（说明是客户端自己看到的销毁）
+	// 这样做是为了客户端本地立即播放击中特效，减少网络延迟带来的体验落差
+	if (!bHit && !HasAuthority())
+	{
+		// 在当前Actor位置播放音效（比如子弹击中声音）
+		// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
+		UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
+		// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
+		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
+		LoopingSoundComponent->Stop();
+	}
+	Super::Destroyed();// 调用父类的 Destroyed()，确保父类的销毁逻辑被执行（比如清理引用、释放资源等）
 }
 
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+                                      UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// 在当前Actor位置播放音效（比如子弹击中声音）
+	// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
+	UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
+	// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
+	// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
+	LoopingSoundComponent->Stop();
 	
+	if (HasAuthority())	// 仅在服务器端执行销毁（避免客户端直接删除导致状态不同步）
+	{
+		Destroy();// 销毁当前Actor（投射物）
+	}
+	else
+	{
+		bHit = true;
+	}
 }
 
 
