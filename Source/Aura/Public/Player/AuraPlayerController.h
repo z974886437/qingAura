@@ -38,6 +38,13 @@ private:
 	UPROPERTY(EditAnywhere,Category = "Input")
 	TObjectPtr<UInputAction> MoveAction;//移动动作
 
+	UPROPERTY(EditAnywhere,Category = "Input")
+	TObjectPtr<UInputAction> ShiftAction;//轮班操作
+
+	void ShiftPressed() { bShiftKeyDown = true; };//Shift按下
+	void ShiftReleased() { bShiftKeyDown = false; };//shift释放
+	bool bShiftKeyDown = false;//shift键按下
+
 	void Move(const struct FInputActionValue& InputActionValue);//定义F输入动作值
 
 	void CursorTrace();//空光标轨迹

@@ -18,20 +18,27 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	//UKismetSystemLibrary::PrintString(this,FString("ActivateAbility (C++)"),true,true,FLinearColor::Yellow,3);//界面显示C++调试
 }
 
-void UAuraProjectileSpell::SpawnProjectile()
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation)
 {
 	
 	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();//判断当前逻辑是否在服务器端执行
-	if (!bIsServer) return;
+	if (!bIsServer) return;// 客户端直接返回，不生成投射物
 
+	// 尝试将技能的执行者转换为战斗接口（ICombatInterface）
+	// 这样可以从接口获取武器插槽位置等信息，解耦角色实现
 	ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetAvatarActorFromActorInfo());
 	if (CombatInterface)
 	{
-		const FVector SocketLocation = CombatInterface->GetCombatSocketLocation();
+		const FVector SocketLocation = CombatInterface->GetCombatSocketLocation();// 获取战斗插槽（比如武器枪口、法杖末端）的世界位置
+		// 计算从发射点指向目标点的旋转角度（让投射物面向目标方向）
+		// (目标位置 - 发射位置) 得到方向向量，再用 Rotation() 转成 FRotator
+		FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
+		Rotation.Pitch = 0.f;// 将俯仰角（Pitch）置为 0，确保投射物水平发射，不抬头或低头
 		
-		FTransform SpawnTransform;//生成变化
-		SpawnTransform.SetLocation(SocketLocation);
-		//Set the Projectile Rotation 设置弹丸旋转
+		FTransform SpawnTransform;// 用于描述生成位置、旋转、缩放的变换数据
+		SpawnTransform.SetLocation(SocketLocation);// 设置生成位置（旋转稍后可设置）
+		//ToDo:Set the Projectile Rotation 设置弹丸旋转
+		SpawnTransform.SetRotation(Rotation.Quaternion());// 将计算好的朝向角（FRotator）转成四元数，设置到生成变换中
 		
 		AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(// 延迟生成一个 AAuraProjectile 类型的 Actor
 			ProjectileClass,// 要生成的类（这里是你的投射物类，比如火球）
@@ -41,9 +48,9 @@ void UAuraProjectileSpell::SpawnProjectile()
 			ESpawnActorCollisionHandlingMethod::AlwaysSpawn// 冲突处理方式：总是生成，即使和其他物体重叠
 			);
 
-		// Give the Projectile a Gameplay Effect Spec for causing Damage 为射弹提供造成伤害的游戏效果规格
+		// TODO:Give the Projectile a Gameplay Effect Spec for causing Damage 为射弹提供造成伤害的游戏效果规格
 		
 		
-		Projectile->FinishSpawning(SpawnTransform);
+		Projectile->FinishSpawning(SpawnTransform);// 完成生成，开始在世界中生效
 	}
 }

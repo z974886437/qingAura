@@ -129,23 +129,15 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 		return;// 不是左键输入，直接返回，不再处理后面的移动逻辑
 	}
-	if (bTargeting)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
-	{
-		if (GetASC())
-		{
-			GetASC()->AbilityInputTagReleased(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
-		}
-	}
-	else
-	{
-		const APawn* ControlledPawn = GetPawn();
 
-		// 1. 判断是否是短按（FollowTime <= ShortPressThreshold）
-		//    并且角色存在
-		if (FollowTime <= ShortPressThreshold && ControlledPawn)
+	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
+	
+	if (!bTargeting && !bShiftKeyDown)// 如果当前没有锁定目标（bTargeting=false）并且 Shift 键没有按下
+	{
+		const APawn* ControlledPawn = GetPawn();// 获取当前被控制的 Pawn（角色）
+		if (FollowTime <= ShortPressThreshold && ControlledPawn)// 1. 判断是否是短按（FollowTime <= ShortPressThreshold）并且角色存在
 		{
-			//这是 导航系统（Navigation System） 的一个静态方法。它会立即（同步）计算出一条从起点到终点的路径（UNavigationPath 对象）
-			// 2. 调用导航系统计算路径（同步方式）
+			// 2. 调用导航系统同步计算从角色当前位置到目标位置的路径（UNavigationPath 对象）	
 			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this,
 				ControlledPawn->GetActorLocation(),// 起点：角色位置
 				CachedDestination)) // 终点：鼠标点击位置
@@ -156,8 +148,8 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					Spline->AddSplinePoint(PointLoc,ESplineCoordinateSpace::World);
 					//DrawDebugSphere(GetWorld(),PointLoc,8.f,8,FColor::Green,false,5.f); // 5. 用绿色小球在场景中画出路径点，方便调试
 				}
-				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];// 获取导航路径中的最后一个点，也就是路径的终点位置，
-				bAutoRunning = true; // 6. 设置自动寻路标志位
+				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];// 6. 缓存导航路径终点（最后一个点）为目标位置
+				bAutoRunning = true; // 7. 开启自动寻路标志位，让角色开始沿路径移动
 			}
 		}
 		// 7. 重置跟随时间，关闭锁定目标模式
@@ -177,7 +169,7 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 		return;// 不是左键输入，直接返回，不再处理后面的移动逻辑
 	}
 
-	if (bTargeting)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
+	if (bTargeting || bShiftKeyDown)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
 	{
 		if (GetASC())
 		{
@@ -242,9 +234,20 @@ void AAuraPlayerController::SetupInputComponent()
 	//它的作用是将 InputComponent 转换为 UEnhancedInputComponent 类型，CastChecked 是一种类型转换方法，它会在转换失败时触发断言，通常用于确保转换成功。
 	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
 
-	//用于将一个输入动作与特定的函数绑定，在玩家触发该输入时执行相应的函数
+	// 绑定移动输入：当 MoveAction 被触发（Triggered）时调用 Move()
+	// Triggered 表示输入值发生变化（如按下或摇杆移动时）
 	AuraInputComponent->BindAction(MoveAction,ETriggerEvent::Triggered,this,&AAuraPlayerController::Move);
-	AuraInputComponent->BindAbilityActions(InputConfig,this,&ThisClass::AbilityInputTagPressed,&ThisClass::AbilityInputTagReleased,&ThisClass::AbilityInputTagHeld);
+	// 绑定 Shift 键按下事件：Started 表示刚按下时触发
+	AuraInputComponent->BindAction(ShiftAction,ETriggerEvent::Started,this,&AAuraPlayerController::ShiftPressed);
+	// 绑定 Shift 键松开事件：Completed 表示按键释放时触发
+	AuraInputComponent->BindAction(ShiftAction,ETriggerEvent::Completed,this,&AAuraPlayerController::ShiftReleased);
+	// 绑定技能输入：从 InputConfig 中批量绑定技能标签 → 对应按下、释放、长按事件的处理函数
+	AuraInputComponent->BindAbilityActions(InputConfig, // 输入配置（技能标签与按键映射表）
+		this, // 拥有者（PlayerController）
+		&ThisClass::AbilityInputTagPressed, // 技能按下回调
+		&ThisClass::AbilityInputTagReleased,// 技能释放回调
+		&ThisClass::AbilityInputTagHeld // 技能长按回调
+		);
 }
 
 void AAuraPlayerController::Move(const struct FInputActionValue& InputActionValue)
