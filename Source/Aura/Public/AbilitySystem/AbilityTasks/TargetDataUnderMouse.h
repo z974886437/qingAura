@@ -26,4 +26,6 @@ public:
 private:
 	virtual void Activate() override;//激活
 	void SendMouseCursorData();//发送鼠标光标数据
+
+	void OnTargetDataReplicatedCallback(const FGameplayAbilityTargetDataHandle& DataHandle,FGameplayTag ActivationTag);//目标数据复制回调
 };
