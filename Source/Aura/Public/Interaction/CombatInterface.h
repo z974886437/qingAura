@@ -7,7 +7,7 @@
 #include "CombatInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI,BlueprintType)
 class UCombatInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -24,4 +24,7 @@ class AURA_API ICombatInterface
 public:
 	virtual int32 GetPlayerLevel();
 	virtual FVector GetCombatSocketLocation();//获取战斗插槽位置
+
+	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
+	void UpdataFacingTarget(const FVector& Target);//更新面向目标
 };
