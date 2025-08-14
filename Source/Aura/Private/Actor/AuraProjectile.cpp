@@ -3,6 +3,8 @@
 
 #include "Actor/AuraProjectile.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Aura/Aura.h"
 #include "Components/AudioComponent.h"
@@ -69,6 +71,12 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	
 	if (HasAuthority())	// 仅在服务器端执行销毁（避免客户端直接删除导致状态不同步）
 	{
+		// 如果目标 Actor 有 AbilitySystemComponent
+		if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
+		{
+			TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get()); // 把准备好的效果规格(比如伤害/治疗)应用到这个目标自己身上
+		}
+		
 		Destroy();// 销毁当前Actor（投射物）
 	}
 	else

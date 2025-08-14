@@ -53,6 +53,7 @@ void AAuraEnemy::InitAbilityActorInfo()
 	//初始化 AbilitySystemComponent，让它知道谁是“实际拥有者”和“执行者”
 	AbilitySystemComponent->InitAbilityActorInfo(this,this);
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
-	
+
+	InitializeDefaultAttributes();
 }
 

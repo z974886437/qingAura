@@ -16,6 +16,7 @@ AAuraCharacterBase::AAuraCharacterBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);//让胶囊体碰撞体对相机通道忽略碰撞（防止相机被角色身体挡住）
+	GetCapsuleComponent()->SetGenerateOverlapEvents(false);//关闭角色胶囊碰撞体的重叠事件
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);// 让角色网格体（骨骼模型）对相机通道忽略碰撞（避免近距离相机穿模或挡视线）
 	GetMesh()->SetCollisionResponseToChannel(ECC_Projectile,ECR_Overlap);// 设置 Mesh 对自定义投射物通道（ECC_Projectile）的碰撞响应为 Overlap（重叠）
 	GetMesh()->SetGenerateOverlapEvents(true);// 开启网格生成重叠事件

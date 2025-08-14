@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/AuraProjectileSpell.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
+#include "AbilitySystemComponent.h"
 #include "Actor/AuraProjectile.h"
 #include "Interaction/CombatInterface.h"
 
@@ -48,7 +50,13 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 			ESpawnActorCollisionHandlingMethod::AlwaysSpawn// 冲突处理方式：总是生成，即使和其他物体重叠
 			);
 
-		// TODO:Give the Projectile a Gameplay Effect Spec for causing Damage 为射弹提供造成伤害的游戏效果规格
+		//  Give the Projectile a Gameplay Effect Spec for causing Damage 为射弹提供造成伤害的游戏效果规格
+		// 从当前技能 ActorInfo 中获取 Avatar（通常是角色 Pawn/Character），再取得它的 ASC
+		const UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetAvatarActorFromActorInfo());
+
+		// 创建一个指定类型的 GameplayEffectSpec，用于之后应用到目标
+		const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass,GetAbilityLevel(),SourceASC->MakeEffectContext());
+		Projectile->DamageEffectSpecHandle = SpecHandle;
 		
 		
 		Projectile->FinishSpawning(SpawnTransform);// 完成生成，开始在世界中生效
