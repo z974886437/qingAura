@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "Character/AuraCharacterBase.h"
 #include "Interaction/EnemyInterface.h"//用于访问你项目中定义的 接口类 UEnemyInterface，一般用于角色之间的交互，比如玩家攻击敌人、敌人响应伤害等
+#include "UI/WidgetController/OverlayWidgetController.h"
 #include "AuraEnemy.generated.h"
 
+class UWidgetComponent;
 /**
  * 
  */
@@ -26,6 +28,11 @@ public:
 	virtual int32 GetPlayerLevel() override;
 	
 	/* end Combat Interface (结束战斗界面)*/
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChangedSignature OnHealthChanged;//生命变化
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAttributeChangedSignature OnMaxHealthChanged;//最大生命变化
 	
 protected:
 	virtual void BeginPlay() override;
@@ -33,4 +40,7 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Character Class Defaults")
 	int32 Level = 1;
+
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	TObjectPtr<UWidgetComponent> HealthBar;//生命条
 };

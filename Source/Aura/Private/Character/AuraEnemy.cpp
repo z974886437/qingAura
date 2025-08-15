@@ -6,6 +6,8 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "Aura/Aura.h"
+#include "Components/WidgetComponent.h"
+#include "UI/Widget/AuraUserWidget.h"
 
 AAuraEnemy::AAuraEnemy()
 {
@@ -18,7 +20,10 @@ AAuraEnemy::AAuraEnemy()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);//设置 AbilitySystemComponent 的效果同步模式
 
-	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");
+	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");// 创建默认的属性集子对象（管理血量、蓝量、攻击力等 GAS 属性）
+
+	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");// 创建默认的 Widget 组件（用来显示血条 UI）
+	HealthBar->SetupAttachment(GetRootComponent());// 将血条 UI 挂到角色的根组件上（跟着角色移动）
 }
 
 void AAuraEnemy::HighlightActor()
@@ -45,7 +50,33 @@ int32 AAuraEnemy::GetPlayerLevel()
 void AAuraEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	InitAbilityActorInfo();
+	InitAbilityActorInfo();//初始化能力Actor信息
+
+	if (UAuraUserWidget* AuraUserWidget = Cast<UAuraUserWidget>(HealthBar->GetUserWidgetObject()))// 如果血条组件里装的是真正的 Aura UI Widget，就给它设置控制器
+	{
+		AuraUserWidget->SetWidgetController(this);// 让 Widget 能访问这个控制器，方便绑定数据
+	}
+	
+	if (const UAuraAttributeSet* AuraAS = Cast<UAuraAttributeSet>(AttributeSet))// 把通用 AttributeSet 转成我们自定义的 Aura 属性集
+	{
+		// 监听 Health 属性变化
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAS->GetHealthAttribute()).AddLambda(
+			[this] (const FOnAttributeChangeData& Data)
+			{
+				OnHealthChanged.Broadcast(Data.NewValue); // 当血量变化时，广播新的血量值
+			}
+		);
+		// 监听 MaxHealth 属性变化
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAS->GetMaxHealthAttribute()).AddLambda(
+			[this] (const FOnAttributeChangeData& Data)
+			{
+				OnMaxHealthChanged.Broadcast(Data.NewValue);  // 当最大血量变化时，广播新的最大血量值
+			}
+		);
+		// 初始化 UI 显示（避免进场 UI 没数据）
+		OnHealthChanged.Broadcast(AuraAS->GetHealth());
+		OnMaxHealthChanged.Broadcast(AuraAS->GetMaxHealth());
+	}
 }
 
 void AAuraEnemy::InitAbilityActorInfo()
@@ -54,6 +85,6 @@ void AAuraEnemy::InitAbilityActorInfo()
 	AbilitySystemComponent->InitAbilityActorInfo(this,this);
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
 
-	InitializeDefaultAttributes();
+	InitializeDefaultAttributes();//初始化默认属性
 }
 
