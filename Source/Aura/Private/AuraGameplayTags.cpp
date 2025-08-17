@@ -15,10 +15,15 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	/*
 	 * Primary Attributes 主要属性
 	 */
-	
+
+	// 使用 GameplayTagsManager 注册一个新的原生标签（Native GameplayTag）
+	// 第一个参数 FName 是标签名字（必须唯一），一般用层级结构（这里是 Attribute.Primary.Strength）
+	// 第二个参数是描述字符串，主要用来说明这个标签的用途（在编辑器里可见）
+	//
+	// 最终会得到一个 FGameplayTag，保存在 GameplayTags.Attributes_Primary_Strength 里，供项目全局使用
 	GameplayTags.Attributes_Primary_Strength = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Attribute.Primary.Strength"),
-	FString("Increases physical damage")
+		FName("Attribute.Primary.Strength"),// 标签路径，层级结构清晰：属性 → 主属性 → 力量
+	FString("Increases physical damage")// 标签说明：增加物理伤害
 		);
 
 	GameplayTags.Attributes_Primary_Intelligence = UGameplayTagsManager::Get().AddNativeGameplayTag(
@@ -122,5 +127,10 @@ void FAuraGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.InputTag_4 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("InputTag.4"),
 		FString("Input Tag for 4 key")
+			);
+
+	GameplayTags.Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Damage"),
+		FString("Damage")
 			);
 }
