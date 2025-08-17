@@ -9,6 +9,8 @@
 #include "Aura/Aura.h"
 #include "Components/WidgetComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
+#include "AuraGameplayTags.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 AAuraEnemy::AAuraEnemy()
 {
@@ -51,8 +53,10 @@ int32 AAuraEnemy::GetPlayerLevel()
 void AAuraEnemy::BeginPlay()
 {
 	Super::BeginPlay();
+	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	InitAbilityActorInfo();//初始化能力Actor信息
 
+	
 	if (UAuraUserWidget* AuraUserWidget = Cast<UAuraUserWidget>(HealthBar->GetUserWidgetObject()))// 如果血条组件里装的是真正的 Aura UI Widget，就给它设置控制器
 	{
 		AuraUserWidget->SetWidgetController(this);// 让 Widget 能访问这个控制器，方便绑定数据
@@ -74,10 +78,27 @@ void AAuraEnemy::BeginPlay()
 				OnMaxHealthChanged.Broadcast(Data.NewValue);  // 当最大血量变化时，广播新的最大血量值
 			}
 		);
+
+		// 给 AbilitySystemComponent 注册一个 GameplayTag 事件监听器
+		// 这里监听的标签是 Effects_HitReact，当该标签被添加或移除时会触发回调
+		AbilitySystemComponent->RegisterGameplayTagEvent(
+			FAuraGameplayTags::Get().Effects_HitReact,// 要监听的 Tag（这里是 Aura 项目里自定义的 HitReact）
+			EGameplayTagEventType::NewOrRemoved// 事件类型：当 Tag 被添加或移除时触发
+			).AddUObject(
+			this, // 绑定到当前对象（AAuraEnemy 实例）
+			&AAuraEnemy::HitReactTagChanged// 绑定的回调函数，当事件触发时会执行
+		);
+		
 		// 初始化 UI 显示（避免进场 UI 没数据）
 		OnHealthChanged.Broadcast(AuraAS->GetHealth());
 		OnMaxHealthChanged.Broadcast(AuraAS->GetMaxHealth());
 	}
+}
+
+void AAuraEnemy::HitReactTagChanged(const FGameplayTag Callback, int32 NewCount)
+{
+	bHitReacting = NewCount > 0;
+	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;
 }
 
 void AAuraEnemy::InitAbilityActorInfo()

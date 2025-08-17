@@ -43,7 +43,8 @@ public:
 	FGameplayTag InputTag_4;
 
 	FGameplayTag Damage;//伤害
-	
+
+	FGameplayTag Effects_HitReact;//击中反应
 private:
 	static FAuraGameplayTags GameplayTags;//游戏标签
 

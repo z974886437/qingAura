@@ -13,6 +13,7 @@ class UGameplayAbility;
 class UAbilitySystemComponent;
 class UAttributeSet;
 class UGameplayEffect;
+class UAnimMontage;
 
 UCLASS(Abstract)
 class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInterface,public ICombatInterface
@@ -25,7 +26,7 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;//接口函数的重写声明，用于告诉 GAS 如何获取角色或 Actor 上的 AbilitySystemComponent
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
 
-
+	virtual UAnimMontage* GetHitReactMontage_Implementation() override;//Get Hit React 蒙太奇实现
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -65,4 +66,7 @@ private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;//启动能力
+
+	UPROPERTY(EditAnywhere,Category = "Combat")
+	TObjectPtr<UAnimMontage> HitReactMontage;//命中反应montage
 };
