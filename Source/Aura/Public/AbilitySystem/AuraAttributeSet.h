@@ -169,7 +169,13 @@ public:
 	FGameplayAttributeData Mana;//法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Mana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
+	/*
+	 *  Meta Attribute 元属性
+	 */
 
+	UPROPERTY(BlueprintReadOnly,category = "Meta Attributes")
+	FGameplayAttributeData IncomingDamage;//传入伤害
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,IncomingDamage);
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;//用于实现 属性的网络同步 + 通知响应

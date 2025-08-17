@@ -143,6 +143,18 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	{
 		SetMana(FMath::Clamp(GetMana(),0.f,GetMaxMana()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
 	}
+	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())// 判断当前变化的属性是不是 IncomingDamage（即角色受到的伤害数值）
+	{
+		const float LocalIncomingDamage = GetIncomingDamage();// 取出当前累计的伤害值（之前可能被多次叠加）
+		SetIncomingDamage(0.f);  // 把 IncomingDamage 重置为 0（避免重复结算）
+		if (LocalIncomingDamage > 0.f)// 如果本次伤害值大于 0，才处理
+		{
+			const float NewHealth = GetHealth() - LocalIncomingDamage;// 计算新的生命值 = 旧生命值 - 伤害
+			SetHealth(FMath::Clamp(NewHealth,0.f,GetMaxHealth()));// 用 Clamp 限制血量范围 [0, MaxHealth]，防止出现负数或超过最大值
+
+			const bool bFatal = NewHealth <= 0.f;// 判断角色是否死亡（血量小于等于 0）
+		}
+	}
 }
 
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const
