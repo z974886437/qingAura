@@ -55,6 +55,7 @@ void AAuraEnemy::BeginPlay()
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	InitAbilityActorInfo();//初始化能力Actor信息
+	UAuraAbilitySystemLibrary::GiveStartupAbilities(this,AbilitySystemComponent);
 
 	
 	if (UAuraUserWidget* AuraUserWidget = Cast<UAuraUserWidget>(HealthBar->GetUserWidgetObject()))// 如果血条组件里装的是真正的 Aura UI Widget，就给它设置控制器

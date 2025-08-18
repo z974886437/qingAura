@@ -34,7 +34,7 @@ UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
 
 UAnimMontage* AAuraCharacterBase::GetHitReactMontage_Implementation()
 {
-	return HitReactMontage;
+	return HitReactMontage;//命中反应montage
 }
 
 // Called when the game starts or when spawned

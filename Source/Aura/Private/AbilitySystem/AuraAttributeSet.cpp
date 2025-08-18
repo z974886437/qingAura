@@ -131,8 +131,8 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 {
 	Super::PostGameplayEffectExecute(Data);
 
-	FEffectProperties Props;
-	SetEffectProperties(Data,Props);
+	FEffectProperties Props;//效果属性
+	SetEffectProperties(Data,Props);//设置效果属性
 
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())//判断本次被执行的属性修改是否是“血量属性（Health）”
 	{
@@ -153,6 +153,12 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 			SetHealth(FMath::Clamp(NewHealth,0.f,GetMaxHealth()));// 用 Clamp 限制血量范围 [0, MaxHealth]，防止出现负数或超过最大值
 
 			const bool bFatal = NewHealth <= 0.f;// 判断角色是否死亡（血量小于等于 0）
+			if (!bFatal)// 如果伤害不是致命的（bFatal = false）
+			{
+				FGameplayTagContainer TagContainer;// 定义一个 GameplayTag 容器，用来装要触发的技能标签
+				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）
+				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);// 让目标的 AbilitySystemComponent（ASC）尝试根据这个标签激活对应的技能
+			}
 		}
 	}
 }
