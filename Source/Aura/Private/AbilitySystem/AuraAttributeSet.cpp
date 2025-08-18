@@ -8,6 +8,7 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 #include "AuraGameplayTags.h"
+#include "Interaction/CombatInterface.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -153,7 +154,15 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 			SetHealth(FMath::Clamp(NewHealth,0.f,GetMaxHealth()));// 用 Clamp 限制血量范围 [0, MaxHealth]，防止出现负数或超过最大值
 
 			const bool bFatal = NewHealth <= 0.f;// 判断角色是否死亡（血量小于等于 0）
-			if (!bFatal)// 如果伤害不是致命的（bFatal = false）
+			if (bFatal)// 如果伤害是致命的（比如血量 <= 0）
+			{
+				ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor); // 尝试把目标角色转换成实现了 ICombatInterface 的对象
+				if (CombatInterface)// 如果转换成功（目标确实实现了战斗接口）
+				{
+					CombatInterface->Die();// 调用接口里的 Die() 函数 → 触发目标的死亡逻辑
+				}
+			}
+			else
 			{
 				FGameplayTagContainer TagContainer;// 定义一个 GameplayTag 容器，用来装要触发的技能标签
 				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）

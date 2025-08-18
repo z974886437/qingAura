@@ -27,6 +27,10 @@ public:
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
 
 	virtual UAnimMontage* GetHitReactMontage_Implementation() override;//Get Hit React 蒙太奇实现
+	virtual void Die() override;//死
+
+	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
+	virtual void MulticastHandleDeath();//多播句柄死亡
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
