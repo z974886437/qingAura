@@ -57,6 +57,7 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block);// 设置和“世界静态物体”（地面、墙壁）碰撞响应为 Block → 避免 ragdoll 穿透地面
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);// 禁用角色的胶囊体碰撞 → 避免和 ragdoll 骨骼产生双重碰撞
+	Dissolve();//溶解
 }
 
 // Called when the game starts or when spawned
@@ -102,6 +103,24 @@ void AAuraCharacterBase::AddCharacterAbilities()
 	if (!HasAuthority()) return;//如果当前对象不是服务端（Authority），就直接返回，不执行后续逻辑。
 
 	AuraASC->AddCharacterAbilities(StartupAbilities);
+}
+
+void AAuraCharacterBase::Dissolve()
+{
+	if (IsValid(DissolveMaterialInstance))// 如果 DissolveMaterialInstance 有效（非空且未被销毁）
+	{
+		// 创建一个动态材质实例（Dynamic Material Instance）,参数1：源材质（DissolveMaterialInstance）,参数2：Outer，绑定到当前对象生命周期
+		UMaterialInstanceDynamic* DynamicMatInst = UMaterialInstanceDynamic::Create(DissolveMaterialInstance,this);
+		GetMesh()->SetMaterial(0,DynamicMatInst);// 将角色网格（SkeletalMesh）第0号材质槽替换为动态材质实例,这样就可以在运行时修改 DynamicMatInst 的参数
+		StartDissolveTimeline(DynamicMatInst);//启动溶解时间轴
+	}
+	if (IsValid(WeaponDissolveMaterialInstance))
+	{
+		// 创建一个动态材质实例（Dynamic Material Instance）,参数1：源材质（WeaponDissolveMaterialInstance）,参数2：Outer，绑定到当前对象生命周期
+		UMaterialInstanceDynamic* DynamicMatInst = UMaterialInstanceDynamic::Create(WeaponDissolveMaterialInstance,this);
+		Weapon->SetMaterial(0,DynamicMatInst);// 将角色网格（SkeletalMesh）第0号材质槽替换为动态材质实例,这样就可以在运行时修改 DynamicMatInst 的参数
+		StartWeaponDissolveTimeline(DynamicMatInst);//启动武器溶解时间轴
+	}
 }
 
 

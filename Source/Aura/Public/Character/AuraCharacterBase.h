@@ -66,6 +66,22 @@ protected:
 	virtual void InitializeDefaultAttributes() const;//初始化默认属性
 
 	void AddCharacterAbilities();//添加角色能力
+
+	/* Dissolve Effects 溶解效果*/
+
+	void Dissolve();//溶解
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartDissolveTimeline(UMaterialInstanceDynamic* DynamicMaterialInstance);//启动溶解时间轴
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartWeaponDissolveTimeline(UMaterialInstanceDynamic* DynamicMaterialInstance);//启动武器溶解时间轴
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	TObjectPtr<UMaterialInstance> DissolveMaterialInstance;//溶解材质实例
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	TObjectPtr<UMaterialInstance> WeaponDissolveMaterialInstance;//武器溶解材质实例
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")
