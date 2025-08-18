@@ -9,6 +9,8 @@
 #include "Net/UnrealNetwork.h"
 #include "AuraGameplayTags.h"
 #include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/AuraPlayerController.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -168,6 +170,21 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）
 				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);// 让目标的 AbilitySystemComponent（ASC）尝试根据这个标签激活对应的技能
 			}
+
+			ShowFloatingText(Props,LocalIncomingDamage);//显示浮动文本
+		}
+	}
+}
+
+void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float Damage) const
+{
+	if (Props.SourceCharacter != Props.TargetCharacter)// 确认攻击者不是自己（避免自己打自己还飘伤害数字）
+	{
+		// 从攻击者角色(Props.SourceCharacter)获取控制它的 PlayerController，并强制转成我们自定义的 AuraPlayerController
+		if (AAuraPlayerController* PC = Cast<AAuraPlayerController>( UGameplayStatics::GetPlayerController(Props.SourceCharacter,0)))
+		{
+			PC->ShowDamageNumber(Damage,Props.TargetCharacter);// 调用自定义函数，在目标角色头顶显示伤害数值（LocalIncomingDamage）
+			
 		}
 	}
 }

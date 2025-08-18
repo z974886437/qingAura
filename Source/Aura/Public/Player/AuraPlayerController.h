@@ -8,6 +8,7 @@
 #include "AuraPlayerController.generated.h"
 
 
+class UDamageTextComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
@@ -26,6 +27,9 @@ class AURA_API AAuraPlayerController : public APlayerController
 public:
 	AAuraPlayerController();
 	virtual void PlayerTick(float DeltaTime) override;//玩家点击
+
+	UFUNCTION(Client,Reliable)
+	void ShowDamageNumber(float DamageAmount,ACharacter* TargetCharacter);//显示伤害数字
 	
 protected:
 	virtual void BeginPlay() override;
@@ -78,4 +82,7 @@ private:
 	TObjectPtr<USplineComponent> Spline;//样条线
 
 	void AutoRun();//自动奔跑
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UDamageTextComponent> DamageTextComponentClass;//伤害文本组件类
 };

@@ -13,6 +13,8 @@
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"//交互/敌人接口
+#include "GameFramework/Character.h"
+#include "UI/Widget/DamageTextComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -26,6 +28,20 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	Super::PlayerTick(DeltaTime);
 	CursorTrace();
 	AutoRun();
+}
+
+void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount,ACharacter* TargetCharacter)
+{
+	if (IsValid(TargetCharacter) && DamageTextComponentClass)
+	{
+		// 创建一个新的 UDamageTextComponent 实例，属于当前对象（this），类来自 DamageTextComponentClass
+		UDamageTextComponent* DamageText = NewObject<UDamageTextComponent>(TargetCharacter,DamageTextComponentClass);
+		DamageText->RegisterComponent();// 注册组件到引擎，使其能够被渲染和更新
+		// 把这个伤害文本组件挂到目标角色的根组件上（相对位置不变）
+		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
+		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);// 再立刻从角色身上解绑（但不会销毁），让它独立存在（常用于飘字UI）
+		DamageText->SetDamageText(DamageAmount);  // 设置伤害数值（比如 "99999"）传给组件内部去显示
+	}
 }
 
 void AAuraPlayerController::AutoRun()
