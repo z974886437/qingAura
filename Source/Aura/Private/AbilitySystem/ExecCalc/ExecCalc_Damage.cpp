@@ -12,8 +12,9 @@ struct AuraDamageStatics
 {
 	// 声明一个属性捕获定义，用来描述我们要捕获的属性（这里是 Armor）
 	// DECLARE_ATTRIBUTE_CAPTUREDEF 会生成一个 FGameplayEffectAttributeCaptureDefinition 成员变量
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Armor);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(BlockChance);
+	DECLARE_ATTRIBUTE_CAPTUREDEF(Armor);//护甲
+	DECLARE_ATTRIBUTE_CAPTUREDEF(ArmorPenetration);//护甲穿透
+	DECLARE_ATTRIBUTE_CAPTUREDEF(BlockChance);//格挡几率
 	
 	AuraDamageStatics()// 构造函数：在这里初始化捕获逻辑
 	{
@@ -22,6 +23,7 @@ struct AuraDamageStatics
 		// Target 表示从“目标角色”身上捕获
 		// false 表示不做快照，每次都会动态获取最新值
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,Armor,Target,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,ArmorPenetration,Source,false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,BlockChance,Target,false);
 	}
 };
@@ -41,6 +43,7 @@ UExecCalc_Damage::UExecCalc_Damage()// 构造函数：当 GEC（执行计算类�
 	// DamageStatics().ArmorDef 就是我们在 AuraDamageStatics 里定义的 Armor 捕获定义
 	// 这样 UE 才知道在执行计算时，要从 Target 上抓取 Armor 值
 	RelevantAttributesToCapture.Add(DamageStatics().ArmorDef);
+	RelevantAttributesToCapture.Add(DamageStatics().ArmorPenetrationDef);
 	RelevantAttributesToCapture.Add(DamageStatics().BlockChanceDef);
 }
 
@@ -83,16 +86,30 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	//const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(),EGameplayModOp::Additive,Damage);
 
 	//capture BlockChance on Target,and Determine if there was a successful Block 捕获目标上的 BlockChance，并确定是否有成功的 Block
-	//If Block,halve the damage. 如果格挡，则将伤害减半。
 	float TargetBlockChance = 0.f;
 	// 尝试从目标的属性集中抓取 BlockChance（格挡几率），结果放到 TargetBlockChance 中
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef,EvaluationParameters,TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(TargetBlockChance,0.f);// 防止格挡率为负数，最小限制为 0
-
 	const bool bBlocked = FMath::RandRange(1,100) < TargetBlockChance;// 随机生成 1~100 的整数，判断是否小于格挡几率（TargetBlockChance），如果是则触发格挡
+	//If Block,halve the damage. 如果格挡，则将伤害减半。
 	Damage = bBlocked ? Damage / 2.f : Damage;// 如果触发格挡，就把伤害减半，否则伤害保持不变
 
+	//ArmorPenetration ignores a percentage of the Target's Armor 护甲穿透会忽略目标一定比例的护甲
+	float TargetArmor = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorDef,EvaluationParameters,TargetArmor);
+	TargetArmor = FMath::Max<float>(TargetArmor,0.f);
+
+	float SourceArmorPenetration = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorPenetrationDef,EvaluationParameters,SourceArmorPenetration);
+	SourceArmorPenetration = FMath::Max<float>(SourceArmorPenetration,0.f);
+
+	// 先计算“有效护甲”- TargetArmor = 目标的护甲- SourceArmorPenetration = 攻击方的护甲穿透百分比 - 乘以 0.25f 表示：穿透只发挥 25% 的效率（相当于削弱护甲，而不是完全无效化）- (100 - X) / 100.f 把百分比转成倍率
+	const float EffectiveArmor = TargetArmor *= ( 100 - SourceArmorPenetration * 0.25f ) / 100.f;
+	// 计算最终伤害缩放 - 有效护甲每 1 点 ≈ 0.333% 的减伤（这里用 *0.333f 来近似） - (100 - 减伤%) / 100.f 得到最终伤害倍率
+	Damage *= ( 100 - EffectiveArmor * 0.333f ) / 100.f;
+	
 	// 创建修正数据对象：表示要对目标的 IncomingDamage 属性做“加法修正”，加的值是最终伤害
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
 	OutExecutionOutput.AddOutputModifier(EvaluatedData);// 把修正结果写入输出，Execution 完成后会应用到目标属性
+	
 }
