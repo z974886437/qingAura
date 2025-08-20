@@ -51,13 +51,13 @@ UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidge
 
 void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* WorldContextObject,ECharacterClass CharacterClass, float Level,UAbilitySystemComponent* ASC)
 {
-	// 从当前世界上下文获取 GameMode，并强转成我们自定义的 AAuraGameModeBase
-	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (AuraGameMode == nullptr) return;// 如果没拿到，直接返回，避免崩溃
+	// // 从当前世界上下文获取 GameMode，并强转成我们自定义的 AAuraGameModeBase
+	// AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	// if (AuraGameMode == nullptr) return;// 如果没拿到，直接返回，避免崩溃
 
 	AActor* AvatarActor = ASC->GetAvatarActor();// 获取当前 ASC（AbilitySystemComponent）的 AvatarActor（也就是角色本体）
 	
-	UCharacterClassInfo* CharacterClassInfo = AuraGameMode->CharacterClassInfo;// 从 GameMode 中拿到角色职业信息（CharacterClassInfo 数据表/配置类）
+	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);// 从 GameMode 中拿到角色职业信息（CharacterClassInfo 数据表/配置类）
 	FCharacterClassDefaultInfo ClassDefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);// 根据传入的职业枚举，获取该职业的默认属性配置（ClassDefaultInfo）
 
 	// --- 应用 PrimaryAttributes（主要属性，例如 力量、智力、敏捷）
@@ -82,15 +82,23 @@ void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* World
 
 void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContextObject, UAbilitySystemComponent* ASC)
 {
-	// 从当前世界上下文获取 GameMode，并强转成我们自定义的 AAuraGameModeBase
-	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
-	if (AuraGameMode == nullptr) return;// 如果没拿到，直接返回，避免崩溃
+	// // 从当前世界上下文获取 GameMode，并强转成我们自定义的 AAuraGameModeBase
+	// AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	// if (AuraGameMode == nullptr) return;// 如果没拿到，直接返回，避免崩溃
 
-	UCharacterClassInfo* CharacterClassInfo = AuraGameMode->CharacterClassInfo;// 从 GameMode 中拿到角色职业信息（CharacterClassInfo 数据表/配置类）
+	UCharacterClassInfo* CharacterClassInfo = GetCharacterClassInfo(WorldContextObject);// 从 GameMode 中拿到角色职业信息（CharacterClassInfo 数据表/配置类）
 	for (TSubclassOf<UGameplayAbility> AbilityClass : CharacterClassInfo->CommonAbilities)// 遍历角色职业配置里存放的“通用技能”数组（这些技能适用于所有该类角色）
 	{
 		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);// 创建一个技能规格(FGameplayAbilitySpec)，这里指定技能类和技能等级（固定为1级）
 		ASC->GiveAbility(AbilitySpec);// 把技能规格交给 AbilitySystemComponent（ASC），让角色真正拥有这个技能
 	}
 		
+}
+
+UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)
+{
+	// 从世界上下文对象获取当前游戏模式，并尝试转换成我们自定义的 AAuraGameModeBase
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AuraGameMode == nullptr) return nullptr;// 如果转换失败（非我们自定义 GameMode），直接返回 nullptr
+	return AuraGameMode->CharacterClassInfo;// 返回自定义 GameMode 中存储的 CharacterClassInfo（角色职业信息类）
 }

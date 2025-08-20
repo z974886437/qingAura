@@ -5,7 +5,10 @@
 
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/CharacterClassInfo.h"
+#include "Interaction/CombatInterface.h"
 
 // 定义一个结构体，用来集中管理“伤害计算”过程中需要捕获的属性
 struct AuraDamageStatics
@@ -53,8 +56,10 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const UAbilitySystemComponent* SourceASC = ExecutionParams.GetSourceAbilitySystemComponent();// 从 ExecutionParams 获取技能的来源（施法者）的 AbilitySystemComponent
 	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();// 从 ExecutionParams 获取技能的目标（被击中者）的 AbilitySystemComponent
 
-	const AActor* SourceAvatar = SourceASC ? SourceASC->GetAvatarActor() : nullptr;// 从来源 ASC 拿到施法者的 AvatarActor（通常是角色 Pawn/Character）
-	const AActor* TargetAvatar = TargetASC ? TargetASC->GetAvatarActor() : nullptr;// 从目标 ASC 拿到目标的 AvatarActor
+	AActor* SourceAvatar = SourceASC ? SourceASC->GetAvatarActor() : nullptr;// 从来源 ASC 拿到施法者的 AvatarActor（通常是角色 Pawn/Character）
+	AActor* TargetAvatar = TargetASC ? TargetASC->GetAvatarActor() : nullptr;// 从目标 ASC 拿到目标的 AvatarActor
+	ICombatInterface* SourceCombatInterface = Cast<ICombatInterface>(SourceAvatar);// 尝试将施法者的 Avatar 转成战斗接口类型
+	ICombatInterface* TargetCombatInterface = Cast<ICombatInterface>(TargetAvatar);// 尝试将目标的 Avatar 转成战斗接口类型
 
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();// 获取当前正在执行的 GameplayEffectSpec（包含技能等级、标签、SetByCaller 参数等）
 
@@ -103,10 +108,21 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().ArmorPenetrationDef,EvaluationParameters,SourceArmorPenetration);
 	SourceArmorPenetration = FMath::Max<float>(SourceArmorPenetration,0.f);
 
+	// 从施法者 Avatar 获取角色职业信息类（CharacterClassInfo）这里封装了角色的基础属性、成长曲线、技能系数等
+	const UCharacterClassInfo* CharacterClassInfo = UAuraAbilitySystemLibrary::GetCharacterClassInfo(SourceAvatar);
+	// 从角色信息里的 DamageCalculationCoefficients（伤害计算系数数据）里找到名为 "ArmorPenetration" 的曲线
+	// FindCurve 参数：FName("ArmorPenetration") = 曲线名，FString() = 子曲线名（可选，留空则找主曲线）
+	const FRealCurve* ArmorPenetrationCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("ArmorPenetration"),FString());
+	// 根据施法者等级（从 CombatInterface 获取）在曲线上评估对应的护甲穿透系数
+	const float ArmorPenetrationCoefficient = ArmorPenetrationCurve->Eval(SourceCombatInterface->GetPlayerLevel());
+
 	// 先计算“有效护甲”- TargetArmor = 目标的护甲- SourceArmorPenetration = 攻击方的护甲穿透百分比 - 乘以 0.25f 表示：穿透只发挥 25% 的效率（相当于削弱护甲，而不是完全无效化）- (100 - X) / 100.f 把百分比转成倍率
-	const float EffectiveArmor = TargetArmor *= ( 100 - SourceArmorPenetration * 0.25f ) / 100.f;
+	const float EffectiveArmor = TargetArmor * ( 100 - SourceArmorPenetration * ArmorPenetrationCoefficient ) / 100.f;
+
+	const FRealCurve* EffectiveArmorCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("EffectiveArmor"),FString());
+	const float EffectiveArmorCoefficient = EffectiveArmorCurve->Eval(TargetCombatInterface->GetPlayerLevel());
 	// 计算最终伤害缩放 - 有效护甲每 1 点 ≈ 0.333% 的减伤（这里用 *0.333f 来近似） - (100 - 减伤%) / 100.f 得到最终伤害倍率
-	Damage *= ( 100 - EffectiveArmor * 0.333f ) / 100.f;
+	Damage *= ( 100 - EffectiveArmor * EffectiveArmorCoefficient ) / 100.f;
 	
 	// 创建修正数据对象：表示要对目标的 IncomingDamage 属性做“加法修正”，加的值是最终伤害
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
