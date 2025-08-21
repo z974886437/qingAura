@@ -54,7 +54,7 @@ void UAuraAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet,Intelligence,COND_None,REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet,Resilience,COND_None,REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet,Vigor,COND_None,REPNOTIFY_Always);
-
+	
 	//Secondary Attributes 次要属性
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet,Armor,COND_None,REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UAuraAttributeSet,ArmorPenetration,COND_None,REPNOTIFY_Always);
@@ -101,6 +101,7 @@ void UAuraAttributeSet::SetEffectProperties(const struct FGameplayEffectModCallb
 	Props.EffectContextHandle = Data.EffectSpec.GetContext();
 	//获取这次 GameplayEffect 的原始施法者（Instigator）所拥有的 ASC
 	Props.SourceASC= Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();//源能力系统组件
+	
 	//ASC 为空或已被销毁 && GAS 未初始化完 Actor Info && Avatar 可能已被销毁或未设置
 	if (IsValid(Props.SourceASC) && Props.SourceASC->AbilityActorInfo.IsValid() && Props.SourceASC->AbilityActorInfo->AvatarActor.IsValid())
 	{
