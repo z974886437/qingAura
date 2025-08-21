@@ -94,22 +94,22 @@ public:
 	 *  Primar Attributes 主要属性
 	 */
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Strength,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Strength,Category = "Primar Attributes")
 	FGameplayAttributeData	Strength;//力量
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Strength);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Intelligence,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Intelligence,Category = "Primar Attributes")
 	FGameplayAttributeData	Intelligence;//智力
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Intelligence);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Resilience,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Resilience,Category = "Primar Attributes")
 	FGameplayAttributeData	Resilience;//韧性
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Resilience);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
 
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Vigor,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Vigor,Category = "Primar Attributes")
 	FGameplayAttributeData	Vigor;//活力
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Vigor);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
 
@@ -117,43 +117,43 @@ public:
 	 * Secondary Attributes 次要属性
 	 */
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Armor,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Armor,Category = "Secondary Attributes")
 	FGameplayAttributeData	Armor;//盔甲
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Armor);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_ArmorPenetration,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_ArmorPenetration,Category = "Secondary Attributes")
 	FGameplayAttributeData	ArmorPenetration;//穿甲
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,ArmorPenetration);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_BlockChance,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_BlockChance,Category = "Secondary Attributes")
 	FGameplayAttributeData	BlockChance;//格挡概率
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,BlockChance);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_CriticalHitChance,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_CriticalHitChance,Category = "Secondary Attributes")
 	FGameplayAttributeData	CriticalHitChance;//暴击概率
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,CriticalHitChance);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_CriticalHitDamage,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_CriticalHitDamage,Category = "Secondary Attributes")
 	FGameplayAttributeData	CriticalHitDamage;//暴击伤害
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,CriticalHitDamage);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_CriticalHitResistance,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_CriticalHitResistance,Category = "Secondary Attributes")
 	FGameplayAttributeData	CriticalHitResistance;//暴击抗性
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,CriticalHitResistance);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_HealthRegeneration,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_HealthRegeneration,Category = "Secondary Attributes")
 	FGameplayAttributeData	HealthRegeneration;//生命恢复
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,HealthRegeneration);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_ManaRegeneration,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_ManaRegeneration,Category = "Secondary Attributes")
 	FGameplayAttributeData	ManaRegeneration;//法力恢复
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,ManaRegeneration);
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_MaxHealth,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxHealth,Category = "Secondary Attributes")
 	FGameplayAttributeData MaxHealth;//最大健康
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxHealth);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Mana,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Mana,Category = "Secondary Attributes")
 	FGameplayAttributeData MaxMana;//最大法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxMana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 	
@@ -161,11 +161,11 @@ public:
 	 *  Vital Attributes 重要属性
 	 */
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Health,Category = "Vital Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Health,Category = "Vital Attributes")
 	FGameplayAttributeData Health;//健康
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Health);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
-	UPROPERTY(BlueprintReadOnly,Replicated = OnRep_Mana,Category = "Vital Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Mana,Category = "Vital Attributes")
 	FGameplayAttributeData Mana;//法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Mana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 

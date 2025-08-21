@@ -18,6 +18,9 @@ struct AuraDamageStatics
 	DECLARE_ATTRIBUTE_CAPTUREDEF(Armor);//护甲
 	DECLARE_ATTRIBUTE_CAPTUREDEF(ArmorPenetration);//护甲穿透
 	DECLARE_ATTRIBUTE_CAPTUREDEF(BlockChance);//格挡几率
+	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitChance);//暴击几率
+	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitResistance);//暴击抗性
+	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitDamage);//暴击伤害
 	
 	AuraDamageStatics()// 构造函数：在这里初始化捕获逻辑
 	{
@@ -28,6 +31,9 @@ struct AuraDamageStatics
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,Armor,Target,false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,ArmorPenetration,Source,false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,BlockChance,Target,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,CriticalHitChance,Source,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,CriticalHitResistance,Target,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,CriticalHitDamage,Source,false);
 	}
 };
 
@@ -46,8 +52,11 @@ UExecCalc_Damage::UExecCalc_Damage()// 构造函数：当 GEC（执行计算类�
 	// DamageStatics().ArmorDef 就是我们在 AuraDamageStatics 里定义的 Armor 捕获定义
 	// 这样 UE 才知道在执行计算时，要从 Target 上抓取 Armor 值
 	RelevantAttributesToCapture.Add(DamageStatics().ArmorDef);
-	RelevantAttributesToCapture.Add(DamageStatics().ArmorPenetrationDef);
 	RelevantAttributesToCapture.Add(DamageStatics().BlockChanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().ArmorPenetrationDef);
+	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitChanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitDamageDef);
 }
 
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -123,6 +132,39 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const float EffectiveArmorCoefficient = EffectiveArmorCurve->Eval(TargetCombatInterface->GetPlayerLevel());
 	// 计算最终伤害缩放 - 有效护甲每 1 点 ≈ 0.333% 的减伤（这里用 *0.333f 来近似） - (100 - 减伤%) / 100.f 得到最终伤害倍率
 	Damage *= ( 100 - EffectiveArmor * EffectiveArmorCoefficient ) / 100.f;
+
+	float SourceCriticalHitChance = 0.f;// 从来源 ASC 抓取暴击率（CriticalHitChance），初始设为 0
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(
+		DamageStatics().CriticalHitChanceDef,// 要抓取的属性定义
+		EvaluationParameters,// 计算参数（包含 Source/Target ASC）
+		SourceCriticalHitChance   // 输出参数
+		);
+	SourceCriticalHitChance = FMath::Max<float>(SourceCriticalHitChance,0.f);// 防止出现负数，保证暴击率最小为 0
+
+	// 从目标 ASC 抓取暴击抗性（CriticalHitResistance）
+	float TargetCriticalHitResistance = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitResistanceDef,EvaluationParameters,TargetCriticalHitResistance);
+	TargetCriticalHitResistance = FMath::Max<float>(TargetCriticalHitResistance,0.f);
+
+	// 从来源 ASC 抓取暴击伤害加成（CriticalHitDamage）
+	float SourceCriticalHitDamage = 0.f;
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().CriticalHitDamageDef,EvaluationParameters,SourceCriticalHitDamage);
+	SourceCriticalHitDamage = FMath::Max<float>(SourceCriticalHitDamage,0.f);
+
+	// 从角色职业信息中获取伤害计算相关系数表里的 "CriticalHitResistance" 曲线
+	const FRealCurve* CriticalHitResistanceCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("CriticalHitResistance"),FString());
+	// 根据目标玩家等级，从曲线上评估对应的暴击抗性系数
+	const float CriticalHitResistanceCoefficient = CriticalHitResistanceCurve->Eval(TargetCombatInterface->GetPlayerLevel());
+	
+	// Critical Hit Resistance reduces Critical Hit Chance by a certain percentage暴击抗性使暴击率降低一定百分比
+	// 计算有效暴击率：来源暴击率 - (目标暴击抗性 * 系数) 系数 0.15f 表示：每点抗性降低 0.15% 的暴击几率
+	const float EffectiveCriticalHitChance = SourceCriticalHitChance - TargetCriticalHitResistance * CriticalHitResistanceCoefficient;
+	const bool bCriticalHit = FMath::RandRange(1,100) < EffectiveCriticalHitChance;// 用随机数判定是否暴击，范围 1~100
+
+	//Double damage plus a bonus if critical hit双倍伤害加上暴击时加成
+	// 6. 如果暴击，造成2倍伤害 + 暴击伤害加成
+	//    例如：基础伤害100，暴击伤害加成为20，则暴击伤害 = 100*2 + 20 = 220
+	Damage = bCriticalHit ? 2.f * Damage + SourceCriticalHitDamage : Damage;// 计算最终伤害：如果暴击 = 原伤害 × 2 + 暴击加成，否则 = 原伤害
 	
 	// 创建修正数据对象：表示要对目标的 IncomingDamage 属性做“加法修正”，加的值是最终伤害
 	const FGameplayModifierEvaluatedData EvaluatedData(UAuraAttributeSet::GetIncomingDamageAttribute(), EGameplayModOp::Additive, Damage);
