@@ -20,7 +20,20 @@ public:
 	/* returns the actual struct used for serialization, subclasses must override this! 返回用于序列化的实际结构体，子类必须覆盖它！*/
 	virtual UScriptStruct* GetScriptStruct() const
 	{
-		return FGameplayEffectContext::StaticStruct();
+		return StaticStruct();
+	}
+
+	/** 创建此上下文的副本，用于复制以供以后修改 */
+	virtual FAuraGameplayEffectContext* Duplicate() const
+	{
+		FAuraGameplayEffectContext* NewContext = new FAuraGameplayEffectContext();
+		*NewContext = *this;
+		if (GetHitResult())
+		{
+			// 对命中结果进行深层复制
+			NewContext->AddHitResult(*GetHitResult(), true);
+		}
+		return NewContext;
 	}
 
 	/* Custom serialization, subclasses must override this 自定义序列化，子类必须覆盖此*/
@@ -33,6 +46,15 @@ protected:
 	
 	UPROPERTY()
 	bool bIsCriticalHit = false;
-
 	
+};
+
+template<>
+struct TStructOpsTypeTraits<FAuraGameplayEffectContext> : public TStructOpsTypeTraitsBase2<FAuraGameplayEffectContext>
+{
+	enum
+	{
+		WithNetSerializer = true,// 告诉引擎：这个结构体自己实现了 NetSerialize
+		WithCopy = true// 告诉引擎：这个结构体支持复制（可拷贝）
+	};
 };
