@@ -22,3 +22,5 @@ void UAuraAssetManager::StartInitialLoading()
 	//This is required to use target Data!这是使用目标数据所必需的！
 	UAbilitySystemGlobals::Get().InitGlobalData();// 初始化 Gameplay Ability System 的全局数据（只需调用一次，全局生效）
 }
+
+
