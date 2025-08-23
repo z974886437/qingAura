@@ -80,9 +80,9 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	EvaluationParameters.TargetTags = Targetags; // 目标的标签（可能影响属性，比如 Debuff）
 	
 	float Damage = 0.f;// 初始化总伤害为 0
-	for (FGameplayTag DamageTypeTag : FAuraGameplayTags::Get().DamageTypes)// 遍历所有在标签容器（GameplayTags）里定义的伤害类型，例如火焰、冰霜、雷电等
+	for (const TTuple<FGameplayTag, FGameplayTag>& Pair : FAuraGameplayTags::Get().DamageTypesToResistance)// 遍历所有在标签容器（GameplayTags）里定义的伤害类型，例如火焰、冰霜、雷电等
 	{
-		const float DamageTypeValue = Spec.GetSetByCallerMagnitude(DamageTypeTag); // 从 Spec（技能效果规格）中读取该伤害类型的实际数值
+		const float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key); // 从 Spec（技能效果规格）中读取该伤害类型的实际数值
 		Damage += DamageTypeValue; // 把该类型的伤害值累加到总伤害中
 	}
 	

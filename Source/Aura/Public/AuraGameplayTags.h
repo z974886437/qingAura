@@ -34,6 +34,11 @@ public:
 	FGameplayTag Attributes_Secondary_MaxHealth;//最大生命值
 	FGameplayTag Attributes_Secondary_MaxMana;//最大法力值
 
+	FGameplayTag Attributes_Resistance_Fire;//抗性_火
+	FGameplayTag Attributes_Resistance_Lightning;//抗性_闪电
+	FGameplayTag Attributes_Resistance_Arcane;//抗性_奥术
+	FGameplayTag Attributes_Resistance_Physical;//抗性_物理
+
 	
 	FGameplayTag InputTag_LMB;//鼠标左键
 	FGameplayTag InputTag_RMB;//鼠标右键
@@ -44,8 +49,11 @@ public:
 
 	FGameplayTag Damage;//伤害
 	FGameplayTag Damage_Fire;//伤害_火
+	FGameplayTag Damage_Lightning;//伤害_闪电
+	FGameplayTag Damage_Arcane;//伤害_奥术
+	FGameplayTag Damage_Physical;//物理伤害
 
-	TArray<FGameplayTag> DamageTypes;//伤害类型
+	TMap<FGameplayTag,FGameplayTag> DamageTypesToResistance;//抵抗伤害类型
 
 	FGameplayTag Effects_HitReact;//击中反应
 private:
