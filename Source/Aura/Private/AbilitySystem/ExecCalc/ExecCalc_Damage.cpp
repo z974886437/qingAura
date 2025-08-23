@@ -4,6 +4,7 @@
 #include "AbilitySystem/ExecCalc/ExecCalc_Damage.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraAbilityTypes.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
@@ -105,6 +106,12 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef,EvaluationParameters,TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(TargetBlockChance,0.f);// 防止格挡率为负数，最小限制为 0
 	const bool bBlocked = FMath::RandRange(1,100) < TargetBlockChance;// 随机生成 1~100 的整数，判断是否小于格挡几率（TargetBlockChance），如果是则触发格挡
+
+	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();// 从 GameplayEffectSpec 中获取 GameplayEffectContext 的句柄
+	
+	// 3. 设置格挡状态到上下文如果 bBlocked = true，就在 Context 里写入“格挡命中”标记 后续任何地方都能通过 EffectContextHandle 查询这次攻击是否格挡
+	UAuraAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle,bBlocked);
+	
 	//If Block,halve the damage. 如果格挡，则将伤害减半。
 	Damage = bBlocked ? Damage / 2.f : Damage;// 如果触发格挡，就把伤害减半，否则伤害保持不变
 
@@ -160,6 +167,9 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	// 计算有效暴击率：来源暴击率 - (目标暴击抗性 * 系数) 系数 0.15f 表示：每点抗性降低 0.15% 的暴击几率
 	const float EffectiveCriticalHitChance = SourceCriticalHitChance - TargetCriticalHitResistance * CriticalHitResistanceCoefficient;
 	const bool bCriticalHit = FMath::RandRange(1,100) < EffectiveCriticalHitChance;// 用随机数判定是否暴击，范围 1~100
+
+	// 3. 把暴击结果写进 EffectContext 和格挡一样，把“是否暴击”记到上下文 方便后续伤害结算和 UI 查询
+	UAuraAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle,bCriticalHit);
 
 	//Double damage plus a bonus if critical hit双倍伤害加上暴击时加成
 	// 6. 如果暴击，造成2倍伤害 + 暴击伤害加成
