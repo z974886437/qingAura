@@ -68,11 +68,15 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 		const FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffectClass,GetAbilityLevel(),EffectContextHandle);
 
 		const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 先获取全局的 GameplayTags（项目里定义的单例，存放所有标签）
-		const float ScaledDamage = Damage.GetValueAtLevel(10);// 根据技能等级，从 Damage（曲线或数值表）中获取对应的伤害数值
+
+		for (auto& Pair : DamageTypes)
+		{
+			const float ScaledDamage = Pair.Value.GetValueAtLevel(GetAbilityLevel());// 根据技能等级，从 Damage（曲线或数值表）中获取对应的伤害数值
+			// 给即将应用的 GameplayEffectSpec（SpecHandle）添加一个 “SetByCaller” 类型的数值
+			// 参数含义： SpecHandle → 目标 GameplayEffectSpec  Pair.Key   → 当前伤害类型对应的 GameplayTag（如 Damage.Fire / Damage.Ice） ScaledDamage → 本次实际计算出来的伤害值
+			UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,Pair.Key,ScaledDamage);// 2. 把伤害值写进 GameplayEffectSpec 的 SetByCaller
+		}
 		
-		// 给即将应用的 GameplayEffectSpec（SpecHandle）添加一个 “SetByCaller” 类型的数值
-		// 参数含义：SpecHandle = 要修改的效果规格 GameplayTags.Damage = 标签
-		UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,GameplayTags.Damage,ScaledDamage);
 		Projectile->DamageEffectSpecHandle = SpecHandle;// 把带有伤害数值的 SpecHandle 交给 Projectile（投射物），
 		
 		Projectile->FinishSpawning(SpawnTransform);// 完成生成，开始在世界中生效

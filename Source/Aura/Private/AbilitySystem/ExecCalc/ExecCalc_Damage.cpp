@@ -78,11 +78,13 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	FAggregatorEvaluateParameters EvaluationParameters;// 定义一个参数结构，传给 AttemptCalculateCapturedAttributeMagnitude，用来影响属性计算
 	EvaluationParameters.SourceTags = SoureTags;// 来源的标签（可能影响属性，比如 Buff）
 	EvaluationParameters.TargetTags = Targetags; // 目标的标签（可能影响属性，比如 Debuff）
-
-	// Get Damage Set by Caller Magnitude
-	// 从 Spec 中获取 SetByCaller 的伤害值
-	// 在技能释放时我们会用 AssignTagSetByCallerMagnitude 来动态指定这个值
-	float Damage = Spec.GetSetByCallerMagnitude(FAuraGameplayTags::Get().Damage);
+	
+	float Damage = 0.f;// 初始化总伤害为 0
+	for (FGameplayTag DamageTypeTag : FAuraGameplayTags::Get().DamageTypes)// 遍历所有在标签容器（GameplayTags）里定义的伤害类型，例如火焰、冰霜、雷电等
+	{
+		const float DamageTypeValue = Spec.GetSetByCallerMagnitude(DamageTypeTag); // 从 Spec（技能效果规格）中读取该伤害类型的实际数值
+		Damage += DamageTypeValue; // 把该类型的伤害值累加到总伤害中
+	}
 	
 	// float Armor = 0.f;// 定义一个变量存储捕获到的 Armor 值
 	// // 从 ExecutionParams 中尝试计算出目标的 Armor 属性数值
@@ -168,7 +170,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	const float EffectiveCriticalHitChance = SourceCriticalHitChance - TargetCriticalHitResistance * CriticalHitResistanceCoefficient;
 	const bool bCriticalHit = FMath::RandRange(1,100) < EffectiveCriticalHitChance;// 用随机数判定是否暴击，范围 1~100
 
-	// 3. 把暴击结果写进 EffectContext 和格挡一样，把“是否暴击”记到上下文 方便后续伤害结算和 UI 查询
+	// 3. 把暴击结果写进 EffectContext 和格挡一样，把“是否暴击”记到上下文 方便后续伤害结算和 UI 查询 
 	UAuraAbilitySystemLibrary::SetIsCriticalHit(EffectContextHandle,bCriticalHit);
 
 	//Double damage plus a bonus if critical hit双倍伤害加上暴击时加成
