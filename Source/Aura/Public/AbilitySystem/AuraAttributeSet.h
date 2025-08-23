@@ -156,6 +156,28 @@ public:
 	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Mana,Category = "Secondary Attributes")
 	FGameplayAttributeData MaxMana;//最大法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxMana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	/*
+	 *  Resistance Attributes
+	 */
+
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_FireResistance,Category = "Resistance Attributes")
+	FGameplayAttributeData FireResistance;//火抗性
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,FireResistance);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_LightningResistance,Category = "Resistance Attributes")
+	FGameplayAttributeData LightningResistance;//闪电抗性
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,LightningResistance);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_ArcaneResistance,Category = "Resistance Attributes")
+	FGameplayAttributeData ArcaneResistance;//奥术抗性
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,ArcaneResistance);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_PhysicalResistance,Category = "Resistance Attributes")
+	FGameplayAttributeData PhysicalResistance;//物理抗性
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,PhysicalResistance);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
+
+
 	
 	/*
 	 *  Vital Attributes 重要属性
@@ -224,6 +246,18 @@ public:
 
 	UFUNCTION()
 	void OnRep_MaxMana(const FGameplayAttributeData& OldMaxMana) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_FireResistance(const FGameplayAttributeData& OldFireResistance) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_LightningResistance(const FGameplayAttributeData& OldLightningResistance) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_ArcaneResistance(const FGameplayAttributeData& OldArcaneResistance) const;//用于实现 属性的网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldPhysicalResistance) const;//用于实现 属性的网络同步 + 通知响应
 	
 
 protected:
