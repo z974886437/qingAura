@@ -30,7 +30,7 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	AutoRun();
 }
 
-void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount,ACharacter* TargetCharacter)
+void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount,ACharacter* TargetCharacter,bool bBlockedHit,bool bCriticalHit)
 {
 	if (IsValid(TargetCharacter) && DamageTextComponentClass)
 	{
@@ -40,7 +40,7 @@ void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount,A
 		// 把这个伤害文本组件挂到目标角色的根组件上（相对位置不变）
 		DamageText->AttachToComponent(TargetCharacter->GetRootComponent(),FAttachmentTransformRules::KeepRelativeTransform);
 		DamageText->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);// 再立刻从角色身上解绑（但不会销毁），让它独立存在（常用于飘字UI）
-		DamageText->SetDamageText(DamageAmount);  // 设置伤害数值（比如 "99999"）传给组件内部去显示
+		DamageText->SetDamageText(DamageAmount,bBlockedHit,bCriticalHit);  // 设置伤害数值（比如 "99999"）传给组件内部去显示
 	}
 }
 

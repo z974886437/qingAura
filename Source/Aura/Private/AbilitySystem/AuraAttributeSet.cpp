@@ -187,7 +187,7 @@ void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 		// 从攻击者角色(Props.SourceCharacter)获取控制它的 PlayerController，并强制转成我们自定义的 AuraPlayerController
 		if (AAuraPlayerController* PC = Cast<AAuraPlayerController>( UGameplayStatics::GetPlayerController(Props.SourceCharacter,0)))
 		{
-			PC->ShowDamageNumber(Damage,Props.TargetCharacter);// 调用自定义函数，在目标角色头顶显示伤害数值（LocalIncomingDamage）
+			PC->ShowDamageNumber(Damage,Props.TargetCharacter,bBlockedHit,bCriticalHit);// 调用自定义函数，在目标角色头顶显示伤害数值（LocalIncomingDamage）
 			
 		}
 	}
