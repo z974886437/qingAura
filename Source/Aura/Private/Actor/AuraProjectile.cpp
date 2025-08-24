@@ -53,7 +53,7 @@ void AAuraProjectile::Destroyed()
 		// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
 		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
-		LoopingSoundComponent->Stop();
+		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
 	}
 	Super::Destroyed();// 调用父类的 Destroyed()，确保父类的销毁逻辑被执行（比如清理引用、释放资源等）
 }
@@ -61,13 +61,20 @@ void AAuraProjectile::Destroyed()
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// 在当前Actor位置播放音效（比如子弹击中声音）
-	// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
-	UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
-	// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
-	// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
-	LoopingSoundComponent->Stop();
+	if (DamageEffectSpecHandle.Data.IsValid() && DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser() == OtherActor)
+	{
+		return;
+	}
+	if (!bHit)
+	{
+		// 在当前Actor位置播放音效（比如子弹击中声音）
+		// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
+		UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
+		// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
+		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
+		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
+	}
 	
 	if (HasAuthority())	// 仅在服务器端执行销毁（避免客户端直接删除导致状态不同步）
 	{

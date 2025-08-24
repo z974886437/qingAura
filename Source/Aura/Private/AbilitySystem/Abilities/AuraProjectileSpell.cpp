@@ -36,7 +36,6 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 		// 计算从发射点指向目标点的旋转角度（让投射物面向目标方向）
 		// (目标位置 - 发射位置) 得到方向向量，再用 Rotation() 转成 FRotator
 		FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
-		Rotation.Pitch = 0.f;// 将俯仰角（Pitch）置为 0，确保投射物水平发射，不抬头或低头
 		
 		FTransform SpawnTransform;// 用于描述生成位置、旋转、缩放的变换数据
 		SpawnTransform.SetLocation(SocketLocation);// 设置生成位置（旋转稍后可设置）
