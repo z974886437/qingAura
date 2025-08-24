@@ -10,6 +10,9 @@
 #include "Components/WidgetComponent.h"
 #include "UI/Widget/AuraUserWidget.h"
 #include "AuraGameplayTags.h"
+#include "AI/AuraAIController.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AAuraEnemy::AAuraEnemy()
@@ -27,6 +30,18 @@ AAuraEnemy::AAuraEnemy()
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");// 创建默认的 Widget 组件（用来显示血条 UI）
 	HealthBar->SetupAttachment(GetRootComponent());// 将血条 UI 挂到角色的根组件上（跟着角色移动）
+}
+
+void AAuraEnemy::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	if (!HasAuthority()) return;
+	AuraAIController = Cast<AAuraAIController>(NewController);// 把 NewController 转换成 AAuraAIController 类型，并赋值给 AuraAIController
+
+	// 使用 AI 控制器的 BlackboardComponent 初始化黑板数据，传入 BehaviorTree 的 BlackboardAsset
+	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
+	AuraAIController->RunBehaviorTree(BehaviorTree);// 让 AI 控制器运行指定的行为树（BehaviorTree），开始驱动 AI 行为逻辑
 }
 
 void AAuraEnemy::HighlightActor()
