@@ -23,6 +23,13 @@ struct AuraDamageStatics
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitResistance);//暴击抗性
 	DECLARE_ATTRIBUTE_CAPTUREDEF(CriticalHitDamage);//暴击伤害
 	
+	DECLARE_ATTRIBUTE_CAPTUREDEF(FireResistance);//火焰抗性
+	DECLARE_ATTRIBUTE_CAPTUREDEF(LightningResistance);//闪电抗性
+	DECLARE_ATTRIBUTE_CAPTUREDEF(ArcaneResistance);//奥术抗性
+	DECLARE_ATTRIBUTE_CAPTUREDEF(PhysicalResistance);//物理抗性
+
+	TMap<FGameplayTag,FGameplayEffectAttributeCaptureDefinition> TagsToCaptureDefs;//用于捕获 DEF 的标签
+	
 	AuraDamageStatics()// 构造函数：在这里初始化捕获逻辑
 	{
 		// DEFINE_ATTRIBUTE_CAPTUREDEF(属性集类, 属性名, 来源/目标, 是否快照)
@@ -35,6 +42,25 @@ struct AuraDamageStatics
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,CriticalHitChance,Source,false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,CriticalHitResistance,Target,false);
 		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,CriticalHitDamage,Source,false);
+		
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,FireResistance,Target,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,LightningResistance,Target,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,ArcaneResistance,Target,false);
+		DEFINE_ATTRIBUTE_CAPTUREDEF(UAuraAttributeSet,PhysicalResistance,Target,false);
+
+		const FAuraGameplayTags& Tags = FAuraGameplayTags::Get();
+
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_Armor,ArmorDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_ArmorPenetration,ArmorPenetrationDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_BlockChance,BlockChanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitChance,CriticalHitChanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitResistance,CriticalHitResistanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Secondary_CriticalHitDamage,CriticalHitDamageDef);
+		
+		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Fire,FireResistanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Lightning,LightningResistanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Arcane,ArcaneResistanceDef);
+		TagsToCaptureDefs.Add(Tags.Attributes_Resistance_Physical,PhysicalResistanceDef);
 	}
 };
 
@@ -58,6 +84,11 @@ UExecCalc_Damage::UExecCalc_Damage()// 构造函数：当 GEC（执行计算类�
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitChanceDef);
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitResistanceDef);
 	RelevantAttributesToCapture.Add(DamageStatics().CriticalHitDamageDef);
+
+	RelevantAttributesToCapture.Add(DamageStatics().FireResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().LightningResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().ArcaneResistanceDef);
+	RelevantAttributesToCapture.Add(DamageStatics().PhysicalResistanceDef);
 }
 
 void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
@@ -82,7 +113,20 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	float Damage = 0.f;// 初始化总伤害为 0
 	for (const TTuple<FGameplayTag, FGameplayTag>& Pair : FAuraGameplayTags::Get().DamageTypesToResistance)// 遍历所有在标签容器（GameplayTags）里定义的伤害类型，例如火焰、冰霜、雷电等
 	{
-		const float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key); // 从 Spec（技能效果规格）中读取该伤害类型的实际数值
+		const FGameplayTag DamageTypeTag = Pair.Key;// 从 Pair 中获取伤害类型的标签
+		const FGameplayTag ResistanceTag = Pair.Value;// 从 Pair 中获取伤害类型对应的抗性标签
+		
+		checkf(AuraDamageStatics().TagsToCaptureDefs.Contains(ResistanceTag),TEXT("TagsToCaptureDefs does't contain Tag: [%s] in ExecCalc_Damage"),*ResistanceTag.ToString());
+		const FGameplayEffectAttributeCaptureDefinition CaptureDef = AuraDamageStatics().TagsToCaptureDefs[ResistanceTag]; // 根据抗性标签找到对应的捕获定义（告诉引擎抓取谁的什么属性）
+
+		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key); // 从 Spec（技能效果规格）中读取该伤害类型的实际数值
+
+		float Resistance = 0.f;
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDef,EvaluationParameters,Resistance);
+		Resistance = FMath::Clamp(Resistance,0.f,100.f);
+
+		DamageTypeValue *= (100.f - Resistance ) / 100.f;
+		
 		Damage += DamageTypeValue; // 把该类型的伤害值累加到总伤害中
 	}
 	
