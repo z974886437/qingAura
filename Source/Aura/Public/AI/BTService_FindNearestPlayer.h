@@ -23,3 +23,4 @@ protected:
 	UPROPERTY(BlueprintReadOnly,EditAnywhere)
 	FBlackboardKeySelector DistanceToTargetSelector;//到目标选择器的距离 
 };
+
