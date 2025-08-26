@@ -26,6 +26,11 @@ AAuraEnemy::AAuraEnemy()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);//设置 AbilitySystemComponent 的效果同步模式
 
+	bUseControllerRotationPitch = false;// 不随控制器的俯仰旋转（上下看）旋转角色
+	bUseControllerRotationYaw = false;// 不随控制器的偏航旋转（左右转）旋转角色
+	bUseControllerRotationRoll = false;// 不随控制器的横滚旋转（侧翻）旋转角色
+	GetCharacterMovement()->bUseControllerDesiredRotation = true;// 允许 CharacterMovementComponent 根据控制器期望方向旋转角色（自动旋转向移动方向）
+
 	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");// 创建默认的属性集子对象（管理血量、蓝量、攻击力等 GAS 属性）
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");// 创建默认的 Widget 组件（用来显示血条 UI）

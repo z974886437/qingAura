@@ -60,6 +60,8 @@ void AAuraEffectActor::BeginPlay()
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
 {
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;// 如果目标 Actor 有 "Enemy" 标签 并且 设置了“不对敌人应用效果” → 就直接返回，不继续执行
+	
 	//UAbilitySystemBlueprintLibrary 提供的一个静态函数，用于在 蓝图或 C++ 中 从任意 Actor 获取其 UAbilitySystemComponent
 	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);//获取能力系统组件
 	if (TargetASC == nullptr) return;
@@ -77,10 +79,20 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 	{
 		ActiveEffectHandles.Add(ActiveEffectHandle,TargetASC);//那就记录下它的 Handle 和目标 ASC。
 	}
+
+	// 如果设置了在效果应用后销毁 Actor，并且该效果是瞬时效果（Instant）
+	// bDestroyOnEffectApplication: 控制是否应用效果后销毁 Actor
+	// EffectSpecHandle.Data.Get()->Def.Get()->DurationPolicy: 获取 GameplayEffect 的持续时间类型
+	if (!bIsInfinite)
+	{
+		Destroy();
+	}
 }
 
 void AAuraEffectActor::OnOverlap(AActor* TargetActor)
 {
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;// 如果目标 Actor 有 "Enemy" 标签 并且 设置了“不对敌人应用效果” → 就直接返回，不继续执行
+	
 	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnOverlap)//即时效果应用策略 == 重叠
 	{
 		ApplyEffectToTarget(TargetActor,InstantGameplayEffectClass);//可以使用即时游戏效果类
@@ -97,6 +109,8 @@ void AAuraEffectActor::OnOverlap(AActor* TargetActor)
 
 void AAuraEffectActor::OnEndOverlap(AActor* TargetActor)
 {
+	if (TargetActor->ActorHasTag(FName("Enemy")) && !bApplyEffectsToEnemies) return;// 如果目标 Actor 有 "Enemy" 标签 并且 设置了“不对敌人应用效果” → 就直接返回，不继续执行
+	
 	if (InstantEffectApplicationPolicy == EEffectApplicationPolicy::ApplyOnEndOverlap)//即时效果应用策略 == 末端重叠重叠
 	{
 		ApplyEffectToTarget(TargetActor,InstantGameplayEffectClass);//可以使用即时游戏效果类

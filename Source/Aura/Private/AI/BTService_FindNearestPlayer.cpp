@@ -21,21 +21,22 @@ void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	UGameplayStatics::GetAllActorsWithTag(OwningPawn,TargetTag,ActorsWithTag);
 
 	float ClosestDistance = TNumericLimits<float>::Max();//先把 ClosestDistance 初始化为 float 类型能表示的最大值（大约 3.402823e+38）
-	AActor* ClosestActor = nullptr;
-	for (AActor* Actor : ActorsWithTag)
+	AActor* ClosestActor = nullptr;// 初始化最近的 Actor 为 nullptr
+	for (AActor* Actor : ActorsWithTag)// 遍历所有找到的 Actor
 	{
 		GEngine->AddOnScreenDebugMessage(-1,0.5f,FColor::Orange,*Actor->GetName());
 
 		if (IsValid(Actor) && IsValid(OwningPawn))
 		{
-			const float Distance = OwningPawn->GetDistanceTo(Actor);
-			if (Distance < ClosestDistance)
+			const float Distance = OwningPawn->GetDistanceTo(Actor);// 计算 OwningPawn 到当前 Actor 的距离
+			if (Distance < ClosestDistance) // 如果距离小于当前最小距离，则更新
 			{
-				ClosestDistance = Distance;
-				ClosestActor = Actor;
+				ClosestDistance = Distance;// 更新最近距离
+				ClosestActor = Actor;// 更新最近的 Actor
 			}
 		}
 	}
+	// 将最近的 Actor 和距离写入黑板，用于行为树控制 AI
 	UBTFunctionLibrary::SetBlackboardValueAsObject(this,TargetToFollowSelector,ClosestActor);
 	UBTFunctionLibrary::SetBlackboardValueAsFloat(this,DistanceToTargetSelector,ClosestDistance);
 	

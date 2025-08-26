@@ -68,7 +68,10 @@ protected:
 	void OnEndOverlap(AActor* TargetActor);//末端重叠
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Applied Effects")
-	bool bDestroyOnEffectRemoval = false;//删除效果 = 关闭
+	bool bDestroyOnEffectApplication = false;//删除效果 = 关闭
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Applied Effects")
+	bool bApplyEffectsToEnemies = false;//应用效果到敌人 = 关闭
 	
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Applied Effects")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;//即时游戏效果类
