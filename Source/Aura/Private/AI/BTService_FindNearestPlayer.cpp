@@ -24,8 +24,6 @@ void UBTService_FindNearestPlayer::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	AActor* ClosestActor = nullptr;// 初始化最近的 Actor 为 nullptr
 	for (AActor* Actor : ActorsWithTag)// 遍历所有找到的 Actor
 	{
-		GEngine->AddOnScreenDebugMessage(-1,0.5f,FColor::Orange,*Actor->GetName());
-
 		if (IsValid(Actor) && IsValid(OwningPawn))
 		{
 			const float Distance = OwningPawn->GetDistanceTo(Actor);// 计算 OwningPawn 到当前 Actor 的距离

@@ -47,6 +47,8 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
 	AuraAIController->RunBehaviorTree(BehaviorTree);// 让 AI 控制器运行指定的行为树（BehaviorTree），开始驱动 AI 行为逻辑
 	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"),false);// 把黑板里的 "HitReacting" 变量设为 false → 通知 AI：当前角色已不再处于受击状态
+	// 设置黑板中名为 "RangedAttacker" 的布尔值
+	// 如果角色职业不是 Warrior，就设为 true（表示远程攻击者）；如果是 Warrior，就设为 false（近战）
 	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("RangedAttacker"),CharacterClass != ECharacterClass::Warrior);
 	
 }
