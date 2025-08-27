@@ -31,6 +31,8 @@ public:
 	/* Combat Interface (战斗界面)*/
 	virtual int32 GetPlayerLevel() override;
 	virtual void Die() override;
+	virtual void SetCombatTarget_Implementation(AActor* InCombatTarget) override;
+	virtual AActor* GetCombatTarget_Implementation() const override;
 	
 	/* end Combat Interface (结束战斗界面)*/
 	UPROPERTY(BlueprintAssignable)
@@ -49,7 +51,9 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
 	float LifeSpan = 5.f;//寿命
-	
+
+	UPROPERTY(BlueprintReadWrite,Category = "Combat")
+	TObjectPtr<AActor> CombatTarget;//战斗标签
 protected:
 	virtual void BeginPlay() override;
 	virtual void InitAbilityActorInfo() override;//初始化能力Actor信息
