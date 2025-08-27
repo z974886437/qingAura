@@ -31,10 +31,10 @@ public:
 	static void InitializeDefaultAttributes(const UObject* WorldContextObject,ECharacterClass CharacterClass,float Level,UAbilitySystemComponent* ASC);//初始化默认属性
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibary|CharacterClassDefaults")
-	static void GiveStartupAbilities(const UObject* WorldContextObject,UAbilitySystemComponent* ASC);
+	static void GiveStartupAbilities(const UObject* WorldContextObject,UAbilitySystemComponent* ASC,ECharacterClass CharacterClass);//赋予启动能力
 
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibary|CharacterClassDefaults")
-	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);
+	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);//获取角色类信息
 
 	UFUNCTION(BlueprintPure,Category = "AuraAbilitySystemLibary|GameplayEffects")
 	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);//判断是否是一次格挡命中

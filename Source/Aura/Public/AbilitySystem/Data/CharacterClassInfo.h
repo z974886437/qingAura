@@ -27,6 +27,9 @@ struct FCharacterClassDefaultInfo
 	// 用来存储一个 GameplayEffect 类（Blueprint 或 C++ 类），用来设置角色的初始主要属性
 	UPROPERTY(EditDefaultsOnly,Category = "Class Defaults")
 	TSubclassOf<UGameplayEffect> PrimaryAttributes;//主要属性
+
+	UPROPERTY(EditDefaultsOnly,Category = "Class Defaults")
+	TArray<TSubclassOf<UGameplayAbility>> StartupAbilities;//启动能力
 };
 
 /**
