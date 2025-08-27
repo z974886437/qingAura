@@ -164,8 +164,11 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					Spline->AddSplinePoint(PointLoc,ESplineCoordinateSpace::World);
 					//DrawDebugSphere(GetWorld(),PointLoc,8.f,8,FColor::Green,false,5.f); // 5. 用绿色小球在场景中画出路径点，方便调试
 				}
-				CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];// 6. 缓存导航路径终点（最后一个点）为目标位置
-				bAutoRunning = true; // 7. 开启自动寻路标志位，让角色开始沿路径移动
+				if (NavPath->PathPoints.Num() > 0)
+				{
+					CachedDestination = NavPath->PathPoints[NavPath->PathPoints.Num() - 1];// 6. 缓存导航路径终点（最后一个点）为目标位置
+					bAutoRunning = true; // 7. 开启自动寻路标志位，让角色开始沿路径移动
+				}
 			}
 		}
 		// 7. 重置跟随时间，关闭锁定目标模式
