@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	FName WeaponTipSocketName;//武器尖端插座名称
 
-	virtual FVector GetCombatSocketLocation() override;
+	virtual FVector GetCombatSocketLocation_Implementation() override;//获取战斗插槽位置
 
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。
 	UPROPERTY()
