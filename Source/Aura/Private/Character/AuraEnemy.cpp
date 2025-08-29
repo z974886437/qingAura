@@ -144,7 +144,10 @@ void AAuraEnemy::HitReactTagChanged(const FGameplayTag Callback, int32 NewCount)
 {
 	bHitReacting = NewCount > 0;// 当 NewCount > 0 时，说明角色正在受击 → bHitReacting = true，否则 = false
 	GetCharacterMovement()->MaxWalkSpeed = bHitReacting ? 0.f : BaseWalkSpeed;// 如果正在受击 → 移动速度设为 0，禁止走动；否则恢复到基础移动速度
-	AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"),bHitReacting);// 把黑板里的 "HitReacting" 变量设为 false → 通知 AI：当前角色已不再处于受击状态
+	if (AuraAIController && AuraAIController->GetBlackboardComponent())
+	{
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("HitReacting"),bHitReacting);// 把黑板里的 "HitReacting" 变量设为 false → 通知 AI：当前角色已不再处于受击状态
+	}
 
 }
 
