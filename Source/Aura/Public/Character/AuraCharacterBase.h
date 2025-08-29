@@ -32,10 +32,15 @@ public:
     virtual FVector GetCombatSocketLocation_Implementation() override;//获取战斗插槽位置
     virtual bool IsDead_Implementation() const override;//死亡
     virtual AActor* GetAvatar_Implementation()  override;//获取Avatar
+	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() override;//获取攻击蒙太奇
     /* end Combat Interface*/
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
 	virtual void MulticastHandleDeath();//多播句柄死亡
+
+	UPROPERTY(EditAnywhere,Category = "Combat")
+	TArray<FTaggedMontage> AttackMontages;//攻击蒙太奇
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

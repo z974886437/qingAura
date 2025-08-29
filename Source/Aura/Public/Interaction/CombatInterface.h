@@ -3,10 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "UObject/Interface.h"
 #include "CombatInterface.generated.h"
 
-// This class does not need to be modified.
+USTRUCT(BlueprintType)
+struct FTaggedMontage
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	class UAnimMontage* Montage = nullptr;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	FGameplayTag MontageTage;
+};
+
+// This class does not need to be modified.该类无需修改
 UINTERFACE(MinimalAPI,BlueprintType)
 class UCombatInterface : public UInterface
 {
@@ -21,7 +34,7 @@ class AURA_API ICombatInterface
 {
 	GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.向此类添加接口函数。这是将继承的类，以实现此接口。
 public:
 	virtual int32 GetPlayerLevel();
 
@@ -41,4 +54,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	AActor* GetAvatar() ;//获取 Avatar
+
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
+	TArray<FTaggedMontage> GetAttackMontages();//获取攻击蒙太奇
 };
