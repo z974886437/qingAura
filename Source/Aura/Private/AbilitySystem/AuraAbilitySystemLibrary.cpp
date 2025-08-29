@@ -152,3 +152,40 @@ void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& E
 		AuraEffectContext->SetIsCriticalHit(bInIsCriticalHit); // 设置暴击状态
 	}
 }
+
+//在半径内获取现场玩家
+void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContextObject,// 世界上下文，一般用来获取 UWorld
+	TArray<AActor*>& OutOverlappingActors, // 输出参数：存放范围内的玩家
+	const TArray<AActor*>& ActorsToIgnore, // 输入参数：忽略的 Actor，比如自己
+	float Radius, // 搜索半径
+	const FVector& SphereOrigin// 搜索的球体中心点
+	)
+{
+	FCollisionQueryParams SphereParams;// 创建球体查询参数对象
+	SphereParams.AddIgnoredActors(ActorsToIgnore);// 忽略指定的 Actor，避免检测到自己或无关对象
+
+	TArray<FOverlapResult> Overlaps;// 用于存储球体检测结果（可能重叠的对象）
+	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))// 获取当前世界对象，保证查询在正确的世界中执行
+	{
+		// 在 SphereOrigin 位置做一个半径为 Radius 的球体检测
+		// 查询所有动态物体（角色、敌人、NPC等），结果存到 Overlaps
+		World->OverlapMultiByObjectType(Overlaps,// 输出：重叠结果数组
+			SphereOrigin, // 球心位置
+			FQuat::Identity,// 没有旋转，单位四元数
+			// 设置查询参数为“所有动态对象”，包含 Pawn、动态物体、物理体、载具、可破坏物体等，不会检测静态地形
+			FCollisionObjectQueryParams(FCollisionObjectQueryParams::InitType::AllDynamicObjects),
+			FCollisionShape::MakeSphere(Radius), // 生成一个半径为 Radius 的球体形状
+			SphereParams// 查询参数（包含忽略的 Actor）
+			);
+		for (FOverlapResult& Overlap : Overlaps)// 遍历所有重叠到的对象
+		{
+			//const bool ImplementsCombatInterface = Overlap.GetActor()->Implements<UCombatInterface>();// 判断这个 Actor 是否实现了 ICombatInterface 接口
+			//const bool IsAlive = !ICombatInterface::Execute_IsDead(Overlap.GetActor());// 调用接口函数 IsDead()，检查是否还活着
+			if (Overlap.GetActor()->Implements<UCombatInterface>() && !ICombatInterface::Execute_IsDead(Overlap.GetActor()))// 如果实现了接口，并且还活着
+			{
+				// 获取 Avatar（一般是 Pawn 或 Character），添加到输出数组，避免重复
+				OutOverlappingActors.AddUnique(ICombatInterface::Execute_GetAvatar(Overlap.GetActor()));
+			}
+		}
+	}
+}

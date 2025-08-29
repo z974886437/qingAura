@@ -47,4 +47,7 @@ public:
 
 	UFUNCTION(BlueprintCallable,Category = "AuraAbilitySystemLibary|GameplayEffects")
 	static void SetIsCriticalHit(UPARAM(ref) FGameplayEffectContextHandle& EffectContextHandle,bool bInIsCriticalHit);//设置暴击命中
+
+	UFUNCTION(BlueprintCallable,Category = "AuraAbilitySystemLibary|GameplayMechanics")
+	static void GetLivePlayersWithinRadius(const UObject* WorldContextObject,TArray<AActor*>& OutOverlappingActors,const TArray<AActor*>& ActorsToIgnore,float Radius,const FVector& SphereOrigin);//在半径内获取现场玩家
 };

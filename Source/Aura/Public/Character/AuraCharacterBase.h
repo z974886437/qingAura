@@ -26,8 +26,13 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;//接口函数的重写声明，用于告诉 GAS 如何获取角色或 Actor 上的 AbilitySystemComponent
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
 
-	virtual UAnimMontage* GetHitReactMontage_Implementation() override;//Get Hit React 蒙太奇实现
-	virtual void Die() override;//死
+	/* Combat Interface */
+    virtual UAnimMontage* GetHitReactMontage_Implementation() override;//Get Hit React 蒙太奇实现
+    virtual void Die() override;//死
+    virtual FVector GetCombatSocketLocation_Implementation() override;//获取战斗插槽位置
+    virtual bool IsDead_Implementation() const override;//死亡
+    virtual AActor* GetAvatar_Implementation()  override;//获取Avatar
+    /* end Combat Interface*/
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
 	virtual void MulticastHandleDeath();//多播句柄死亡
@@ -41,8 +46,8 @@ protected:
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	FName WeaponTipSocketName;//武器尖端插座名称
 
-	virtual FVector GetCombatSocketLocation_Implementation() override;//获取战斗插槽位置
-
+	bool bDead = false;//b死亡
+	
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;//设置成U属性，获得一个指向属性集的指针

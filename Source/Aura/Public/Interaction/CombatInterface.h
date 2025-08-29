@@ -35,4 +35,10 @@ public:
 	UAnimMontage* GetHitReactMontage();//被击中反应蒙太奇
 
 	virtual void Die() = 0;//死亡
+
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
+	bool IsDead() const;//死亡
+
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
+	AActor* GetAvatar() ;//获取 Avatar
 };

@@ -58,6 +58,7 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);// 禁用角色的胶囊体碰撞 → 避免和 ragdoll 骨骼产生双重碰撞
 	Dissolve();//溶解
+	bDead = true;
 }
 
 // Called when the game starts or when spawned
@@ -71,6 +72,16 @@ FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation()
 {
 	check(Weapon);
 	return Weapon->GetSocketLocation(WeaponTipSocketName);
+}
+
+bool AAuraCharacterBase::IsDead_Implementation() const
+{
+	return bDead;
+}
+
+AActor* AAuraCharacterBase::GetAvatar_Implementation() 
+{
+	return this;
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()
