@@ -55,6 +55,10 @@ public:
 
 	FGameplayTag Abilities_Attack;//技能_攻击
 
+	FGameplayTag Montage_Attack_Weapon;//蒙太奇_攻击_武器
+	FGameplayTag Montage_Attack_RightHand;//蒙太奇_攻击_右手
+	FGameplayTag Montage_Attack_LeftHand;//蒙太奇_攻击_左手
+
 	TMap<FGameplayTag,FGameplayTag> DamageTypesToResistance;//抵抗伤害类型
 
 	FGameplayTag Effects_HitReact;//击中反应
