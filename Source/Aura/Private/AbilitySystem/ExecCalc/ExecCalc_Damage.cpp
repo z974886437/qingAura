@@ -115,17 +115,19 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	{
 		const FGameplayTag DamageTypeTag = Pair.Key;// 从 Pair 中获取伤害类型的标签
 		const FGameplayTag ResistanceTag = Pair.Value;// 从 Pair 中获取伤害类型对应的抗性标签
-		
+
+		// 检查抗性标签是否在 TagsToCaptureDefs 表里，避免没有注册时崩溃（运行时安全保护）
 		checkf(AuraDamageStatics().TagsToCaptureDefs.Contains(ResistanceTag),TEXT("TagsToCaptureDefs does't contain Tag: [%s] in ExecCalc_Damage"),*ResistanceTag.ToString());
 		const FGameplayEffectAttributeCaptureDefinition CaptureDef = AuraDamageStatics().TagsToCaptureDefs[ResistanceTag]; // 根据抗性标签找到对应的捕获定义（告诉引擎抓取谁的什么属性）
 
-		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key); // 从 Spec（技能效果规格）中读取该伤害类型的实际数值
+		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key);// 从技能规格（Spec）里读取该伤害类型的数值，比如火球术可能带有 FireDamage=50
 
 		float Resistance = 0.f;
+		// 尝试从目标角色的属性集中抓取对应的抗性数值（例如 FireResistance = 30）
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(CaptureDef,EvaluationParameters,Resistance);
-		Resistance = FMath::Clamp(Resistance,0.f,100.f);
+		Resistance = FMath::Clamp(Resistance,0.f,100.f);// 抗性限制在 0-100 范围内，避免出现负数或超过 100% 的情况
 
-		DamageTypeValue *= (100.f - Resistance ) / 100.f;
+		DamageTypeValue *= (100.f - Resistance ) / 100.f;// 按公式计算最终伤害：伤害值 * (1 - 抗性百分比)	
 		
 		Damage += DamageTypeValue; // 把该类型的伤害值累加到总伤害中
 	}
