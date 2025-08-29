@@ -4,6 +4,7 @@
 #include "Character/AuraCharacterBase.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
@@ -68,10 +69,23 @@ void AAuraCharacterBase::BeginPlay()
 	
 }
 
-FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation()
+FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag)
 {
-	check(Weapon);
-	return Weapon->GetSocketLocation(WeaponTipSocketName);
+	//TODO Return correct socket based on montageTag.根据 montageTag 返回正确的套接字
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 GameplayTags 单例，方便比较标签
+	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_Weapon) && IsValid(Weapon))// 如果技能蒙太奇标签是“武器攻击”，并且武器有效 → 返回武器尖端的插槽位置（常用于生成投射物、特效）
+	{
+		return Weapon->GetSocketLocation(WeaponTipSocketName);
+	}
+	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_LeftHand))// 如果技能蒙太奇标签是“左手攻击” → 返回左手骨骼插槽位置
+	{
+		return GetMesh()->GetSocketLocation(LeftHandSocketName);
+	}
+	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_RightHand))// 如果技能蒙太奇标签是“右手攻击” → 返回右手骨骼插槽位置
+	{
+		return GetMesh()->GetSocketLocation(RightHandSocketName);
+	}
+	return FVector();// 如果没有匹配到任何标签 → 返回一个零向量（相当于无效位置）
 }
 
 bool AAuraCharacterBase::IsDead_Implementation() const

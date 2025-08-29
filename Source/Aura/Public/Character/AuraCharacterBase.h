@@ -29,7 +29,7 @@ public:
 	/* Combat Interface */
     virtual UAnimMontage* GetHitReactMontage_Implementation() override;//Get Hit React 蒙太奇实现
     virtual void Die() override;//死
-    virtual FVector GetCombatSocketLocation_Implementation() override;//获取战斗插槽位置
+    virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;//获取战斗插槽位置
     virtual bool IsDead_Implementation() const override;//死亡
     virtual AActor* GetAvatar_Implementation()  override;//获取Avatar
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() override;//获取攻击蒙太奇
@@ -50,6 +50,12 @@ protected:
 
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	FName WeaponTipSocketName;//武器尖端插座名称
+
+	UPROPERTY(EditAnywhere,Category = "Combat")
+	FName LeftHandSocketName;
+
+	UPROPERTY(EditAnywhere,Category = "Combat")
+	FName RightHandSocketName;
 
 	bool bDead = false;//b死亡
 	

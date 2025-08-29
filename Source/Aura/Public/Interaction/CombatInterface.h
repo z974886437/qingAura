@@ -39,7 +39,7 @@ public:
 	virtual int32 GetPlayerLevel();
 
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
-	FVector GetCombatSocketLocation();//获取战斗插槽位置
+	FVector GetCombatSocketLocation(const FGameplayTag& MontageTag);//获取战斗插槽位置
 
 	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
 	void UpdataFacingTarget(const FVector& Target);//更新面向目标

@@ -27,7 +27,9 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();// 判断是否在服务器执行（Actor 生成必须在服务端，否则客户端不同步）
 	if (!bIsServer) return;// 客户端直接返回，不生成投射物
 	
-	const FVector SocketLocation =ICombatInterface::Execute_GetCombatSocketLocation(GetAvatarActorFromActorInfo());// 从战斗接口获取发射插槽位置（解耦角色，统一从接口拿位置）
+	const FVector SocketLocation =ICombatInterface::Execute_GetCombatSocketLocation(
+		GetAvatarActorFromActorInfo(),
+		FAuraGameplayTags::Get().Montage_Attack_Weapon);// 从战斗接口获取发射插槽位置（解耦角色，统一从接口拿位置）
 	// 计算从发射点指向目标点的旋转角度（让投射物面向目标方向）
 	// (目标位置 - 发射位置) 得到方向向量，再用 Rotation() 转成 FRotator
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
