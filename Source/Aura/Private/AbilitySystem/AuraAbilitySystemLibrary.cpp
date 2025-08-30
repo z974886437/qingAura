@@ -189,3 +189,11 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 		}
 	}
 }
+
+bool UAuraAbilitySystemLibrary::IsNotFriend(AActor* FirstActor, AActor* SecondActor)
+{
+	const bool bBothArePlayers = FirstActor->ActorHasTag(FName("Player")) && SecondActor->ActorHasTag(FName("Player"));// 判断两个Actor是否都是玩家
+	const bool bBothAreEnemies = FirstActor->ActorHasTag(FName("Enemy")) && SecondActor->ActorHasTag(FName("Enemy"));// 判断两个Actor是否都是敌人
+	const bool bFriends = bBothArePlayers || bBothAreEnemies;// 如果两个都是玩家，或者两个都是敌人，就认为他们是“朋友”
+	return !bFriends;// 返回是否是敌人（即不是朋友）
+}
