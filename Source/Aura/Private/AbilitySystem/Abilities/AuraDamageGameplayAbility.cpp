@@ -22,3 +22,14 @@ void UAuraDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 		UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor));
 	
 }
+
+FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const
+{
+	if (TaggedMontages.Num() > 0)// 如果数组中至少有一个元素
+	{
+		const int32 Selection = FMath::RandRange(0,TaggedMontages.Num() - 1);// 从 0 到 (数组长度-1) 之间随机生成一个整数索引
+		return TaggedMontages[Selection];// 返回该索引对应的蒙太奇
+	}
+
+	return FTaggedMontage();// 如果数组是空的，直接返回一个默认构造的 FTaggedMontage（即空对象）
+}
