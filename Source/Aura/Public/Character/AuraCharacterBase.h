@@ -104,6 +104,9 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
 	UNiagaraSystem* BloodEffect;//血液效应
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
+	USoundBase* DeathSound;//死亡声音
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")

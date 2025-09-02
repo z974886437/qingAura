@@ -8,6 +8,7 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "WorldPartition/Cook/WorldPartitionCookPackage.h"
 
 // Sets default values
@@ -48,6 +49,9 @@ void AAuraCharacterBase::Die()
 
 void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 {
+	// 在角色当前位置和朝向播放死亡音效，使用全局工具类 UGameplayStatics
+	UGameplayStatics::PlaySoundAtLocation(this,DeathSound,GetActorLocation(),GetActorRotation());
+	
 	Weapon->SetSimulatePhysics(true);// 开启物理模拟 → 武器不再由动画/代码控制位置，而是交给物理引擎计算
 	Weapon->SetEnableGravity(true);// 启用重力 → 武器会像真实物体一样掉到地上
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);// 开启碰撞（仅物理碰撞，不用于射线检测）→ 避免武器穿过地面
