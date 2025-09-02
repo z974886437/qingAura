@@ -9,6 +9,7 @@
 #include "AuraCharacterBase.generated.h"
 
 
+class UNiagaraSystem;
 class UGameplayAbility;
 class UAbilitySystemComponent;
 class UAttributeSet;
@@ -33,6 +34,7 @@ public:
     virtual bool IsDead_Implementation() const override;//死亡
     virtual AActor* GetAvatar_Implementation()  override;//获取Avatar
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() override;//获取攻击蒙太奇
+	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;
     /* end Combat Interface*/
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
@@ -98,6 +100,9 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	TObjectPtr<UMaterialInstance> WeaponDissolveMaterialInstance;//武器溶解材质实例
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
+	UNiagaraSystem* BloodEffect;//血液效应
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")
