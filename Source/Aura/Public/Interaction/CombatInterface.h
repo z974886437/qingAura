@@ -22,6 +22,9 @@ struct FTaggedMontage
 	FGameplayTag MontageTage;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	FGameplayTag SocketTage;
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	USoundBase* ImpactSound = nullptr;
 };
 
@@ -65,4 +68,7 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	UNiagaraSystem* GetBloodEffect();//获取血液效果
+
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
+	FTaggedMontage GetTaggedMontageByTag(const FGameplayTag& MontageTag);//按标签获取标记蒙太奇
 };

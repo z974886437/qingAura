@@ -29,7 +29,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	
 	const FVector SocketLocation =ICombatInterface::Execute_GetCombatSocketLocation(
 		GetAvatarActorFromActorInfo(),
-		FAuraGameplayTags::Get().Montage_Attack_Weapon);// 从战斗接口获取发射插槽位置（解耦角色，统一从接口拿位置）
+		FAuraGameplayTags::Get().CombatSocket_Weapon);// 从战斗接口获取发射插槽位置（解耦角色，统一从接口拿位置）
 	// 计算从发射点指向目标点的旋转角度（让投射物面向目标方向）
 	// (目标位置 - 发射位置) 得到方向向量，再用 Rotation() 转成 FRotator
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();

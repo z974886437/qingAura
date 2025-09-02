@@ -73,15 +73,15 @@ FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGamepl
 {
 	//TODO Return correct socket based on montageTag.根据 montageTag 返回正确的套接字
 	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 GameplayTags 单例，方便比较标签
-	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_Weapon) && IsValid(Weapon))// 如果技能蒙太奇标签是“武器攻击”，并且武器有效 → 返回武器尖端的插槽位置（常用于生成投射物、特效）
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_Weapon) && IsValid(Weapon))// 如果技能蒙太奇标签是“武器攻击”，并且武器有效 → 返回武器尖端的插槽位置（常用于生成投射物、特效）
 	{
 		return Weapon->GetSocketLocation(WeaponTipSocketName);
 	}
-	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_LeftHand))// 如果技能蒙太奇标签是“左手攻击” → 返回左手骨骼插槽位置
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_LeftHand))// 如果技能蒙太奇标签是“左手攻击” → 返回左手骨骼插槽位置
 	{
 		return GetMesh()->GetSocketLocation(LeftHandSocketName);
 	}
-	if (MontageTag.MatchesTagExact(GameplayTags.Montage_Attack_RightHand))// 如果技能蒙太奇标签是“右手攻击” → 返回右手骨骼插槽位置
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_RightHand))// 如果技能蒙太奇标签是“右手攻击” → 返回右手骨骼插槽位置
 	{
 		return GetMesh()->GetSocketLocation(RightHandSocketName);
 	}
@@ -106,6 +106,18 @@ TArray<FTaggedMontage> AAuraCharacterBase::GetAttackMontages_Implementation()
 UNiagaraSystem* AAuraCharacterBase::GetBloodEffect_Implementation()
 {
 	return BloodEffect;
+}
+
+FTaggedMontage AAuraCharacterBase::GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag)
+{
+	for (FTaggedMontage TaggedMontage : AttackMontages)// 遍历 AttackMontages 数组中的每一个元素（类型是 FTaggedMontage）
+	{
+		if (TaggedMontage.MontageTage == MontageTag)// 如果当前元素的 MontageTage 等于传入的 MontageTag
+		{
+			return TaggedMontage;// 就返回这个 FTaggedMontage 作为结果
+		}
+	}
+	return FTaggedMontage();
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()
