@@ -58,6 +58,7 @@ public:
 	FGameplayTag CombatSocket_Weapon;//战斗插座_武器
 	FGameplayTag CombatSocket_RightHand;//战斗插座_右手
 	FGameplayTag CombatSocket_LeftHand;//战斗插座_左手
+	FGameplayTag CombatSocket_Tail;//战斗插座_尾部
 
 	FGameplayTag Montage_Attack_1;//蒙太奇_攻击1
 	FGameplayTag Montage_Attack_2;//蒙太奇_攻击2

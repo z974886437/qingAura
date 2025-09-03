@@ -60,6 +60,9 @@ protected:
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	FName RightHandSocketName;
 
+	UPROPERTY(EditAnywhere,Category = "Combat")
+	FName TailSocketName;//尾部插座名称
+
 	bool bDead = false;//b死亡
 	
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。

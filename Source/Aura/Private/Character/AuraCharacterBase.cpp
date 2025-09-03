@@ -89,6 +89,10 @@ FVector AAuraCharacterBase::GetCombatSocketLocation_Implementation(const FGamepl
 	{
 		return GetMesh()->GetSocketLocation(RightHandSocketName);
 	}
+	if (MontageTag.MatchesTagExact(GameplayTags.CombatSocket_Tail))// 如果技能蒙太奇标签是“右手攻击” → 返回右手骨骼插槽位置
+	{
+		return GetMesh()->GetSocketLocation(TailSocketName);
+	}
 	return FVector();// 如果没有匹配到任何标签 → 返回一个零向量（相当于无效位置）
 }
 
