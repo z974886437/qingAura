@@ -21,7 +21,7 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	//UKismetSystemLibrary::PrintString(this,FString("ActivateAbility (C++)"),true,true,FLinearColor::Yellow,3);//界面显示C++调试
 }
 
-void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation)
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation,const FGameplayTag& SocketTag)
 {
 	
 	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();// 判断是否在服务器执行（Actor 生成必须在服务端，否则客户端不同步）
@@ -29,7 +29,8 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	
 	const FVector SocketLocation =ICombatInterface::Execute_GetCombatSocketLocation(
 		GetAvatarActorFromActorInfo(),
-		FAuraGameplayTags::Get().CombatSocket_Weapon);// 从战斗接口获取发射插槽位置（解耦角色，统一从接口拿位置）
+		SocketTag);// 从战斗接口获取发射插槽位置（解耦角色，统一从接口拿位置）
+	
 	// 计算从发射点指向目标点的旋转角度（让投射物面向目标方向）
 	// (目标位置 - 发射位置) 得到方向向量，再用 Rotation() 转成 FRotator
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
