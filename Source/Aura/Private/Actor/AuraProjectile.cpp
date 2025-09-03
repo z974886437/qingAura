@@ -55,6 +55,7 @@ void AAuraProjectile::Destroyed()
 		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
 		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
+		bHit = true;
 	}
 	Super::Destroyed();// 调用父类的 Destroyed()，确保父类的销毁逻辑被执行（比如清理引用、释放资源等）
 }
@@ -79,6 +80,7 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
 		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
+		bHit = true;
 	}
 	
 	if (HasAuthority())	// 仅在服务器端执行销毁（避免客户端直接删除导致状态不同步）
