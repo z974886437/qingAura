@@ -41,15 +41,15 @@ protected:
 		const FHitResult& SweepResult// [参数6] 如果是 Sweep 触发，这里有命中信息（位置、法线等）
 		);//球体覆盖
 
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
+	TObjectPtr<USphereComponent> Sphere;//球体
+	
 private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float LifeSpan = 15.f;//寿命
 
 	bool bHit = false;
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<USphereComponent> Sphere;//球体
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> ImpactEffect;//冲击效果
