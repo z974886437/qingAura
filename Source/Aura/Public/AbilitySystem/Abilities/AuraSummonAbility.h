@@ -18,6 +18,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	TArray<FVector> GetSpawnLocations();//获取生成位置
 
+	UFUNCTION(BlueprintPure,Category = "Summoning")
+	TSubclassOf<APawn> GetRandomMinionClass();//获得随机仆从职业
+	
 	UPROPERTY(EditDefaultsOnly,Category = "Summoning")
 	int32 NumMinions = 5;//仆从数
 
@@ -32,4 +35,5 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,Category = "Summoning")
 	float SpawnSpread = 90.f;//生成范围
+
 };

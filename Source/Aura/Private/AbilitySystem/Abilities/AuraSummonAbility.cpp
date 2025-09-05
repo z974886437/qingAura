@@ -17,18 +17,32 @@ TArray<FVector> UAuraSummonAbility::GetSpawnLocations()
 	{
 		const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i,FVector::UpVector);// 从左边界开始，每次往右旋转 DeltaSpread 度，得到不同方向
 		// 在这个方向上，随机选取一个距离（范围 = [MinSpawnDistance, MaxSpawnDistance]）
-		const FVector ChosenSpawnLocation = Location + Direction * FMath::FRandRange(MinSpawnDistance,MaxSpawnDistance);
+		FVector ChosenSpawnLocation = Location + Direction * FMath::FRandRange(MinSpawnDistance,MaxSpawnDistance);
+
+		FHitResult Hit;
+		GetWorld()->LineTraceSingleByChannel(Hit,ChosenSpawnLocation + FVector(0.f,0.f,400.f),ChosenSpawnLocation - FVector(0.f,0.f,400.f),ECC_Visibility);
+		if (Hit.bBlockingHit)
+		{
+			ChosenSpawnLocation = Hit.ImpactPoint;
+		}
+		
 		SpawnLocations.Add(ChosenSpawnLocation);// 把生成点存到数组里，供后续使用（比如召唤小怪）
 
-		// 🔽 以下是调试可视化 🔽
-		// 画一个青色球，显示实际的生成位置
-		DrawDebugSphere(GetWorld(),ChosenSpawnLocation,18.f,12,FColor::Cyan,false,3.f);
-		// 画一条绿色箭头，从角色位置指向方向的最远点（MaxSpawnDistance）
-		UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(),Location,Location + Direction * MaxSpawnDistance,4.f,FLinearColor::Green,3.f);
-		// 画两个红色球：方向上的最小距离点和最大距离点，用来显示随机范围
-		DrawDebugSphere(GetWorld(),Location + Direction * MinSpawnDistance,5.f,12,FColor::Red,false,3.f);
-		DrawDebugSphere(GetWorld(),Location + Direction * MaxSpawnDistance,5.f,12,FColor::Red,false,3.f);
+		// // 🔽 以下是调试可视化 🔽
+		// // 画一个青色球，显示实际的生成位置
+		// DrawDebugSphere(GetWorld(),ChosenSpawnLocation,18.f,12,FColor::Cyan,false,3.f);
+		// // 画一条绿色箭头，从角色位置指向方向的最远点（MaxSpawnDistance）
+		// UKismetSystemLibrary::DrawDebugArrow(GetAvatarActorFromActorInfo(),Location,Location + Direction * MaxSpawnDistance,4.f,FLinearColor::Green,3.f);
+		// // 画两个红色球：方向上的最小距离点和最大距离点，用来显示随机范围
+		// DrawDebugSphere(GetWorld(),Location + Direction * MinSpawnDistance,5.f,12,FColor::Red,false,3.f);
+		// DrawDebugSphere(GetWorld(),Location + Direction * MaxSpawnDistance,5.f,12,FColor::Red,false,3.f);
 	}
 	
 	return SpawnLocations;// 当前只返回一个空数组（还没真正生成坐标点）
+}
+
+TSubclassOf<APawn> UAuraSummonAbility::GetRandomMinionClass()
+{
+	const int32 Selection = FMath::RandRange(0,MinionClasses.Num() - 1);
+	return MinionClasses[Selection];
 }
