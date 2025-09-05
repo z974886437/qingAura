@@ -36,6 +36,7 @@ public:
 	virtual TArray<FTaggedMontage> GetAttackMontages_Implementation() override;//获取攻击蒙太奇
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;//获取血液效果
 	virtual FTaggedMontage GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag) override;//按标签获取标记蒙太奇
+	virtual int32 GetMinionCount_Implementation() override;//获取仆从数量
     /* end Combat Interface*/
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
@@ -110,6 +111,10 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
 	USoundBase* DeathSound;//死亡声音
+
+	/* Minions 仆从 */
+
+	int32 MinionCount = 0;//仆从数量
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")

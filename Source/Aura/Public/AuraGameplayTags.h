@@ -54,6 +54,7 @@ public:
 	FGameplayTag Damage_Physical;//物理伤害
 
 	FGameplayTag Abilities_Attack;//技能_攻击
+	FGameplayTag Abilities_Summon;//技能_召唤
 
 	FGameplayTag CombatSocket_Weapon;//战斗插座_武器
 	FGameplayTag CombatSocket_RightHand;//战斗插座_右手
