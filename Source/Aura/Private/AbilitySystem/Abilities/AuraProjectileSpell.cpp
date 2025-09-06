@@ -21,7 +21,7 @@ void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Hand
 	//UKismetSystemLibrary::PrintString(this,FString("ActivateAbility (C++)"),true,true,FLinearColor::Yellow,3);//界面显示C++调试
 }
 
-void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation,const FGameplayTag& SocketTag)
+void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocation,const FGameplayTag& SocketTag,bool bOverridePitch,float PitchOverride)
 {
 	
 	const bool bIsServer = GetAvatarActorFromActorInfo()->HasAuthority();// 判断是否在服务器执行（Actor 生成必须在服务端，否则客户端不同步）
@@ -34,11 +34,15 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	// 计算从发射点指向目标点的旋转角度（让投射物面向目标方向）
 	// (目标位置 - 发射位置) 得到方向向量，再用 Rotation() 转成 FRotator
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
+	if (bOverridePitch)// 如果启用 Pitch 覆盖，就强制把俯仰角设置为指定值 这样可以忽略目标的高度差，用固定角度发射投射物（例如箭矢抛物线）
+	{
+		Rotation.Pitch = PitchOverride;
+	}
 		
 	FTransform SpawnTransform;// 用于描述生成位置、旋转、缩放的变换数据
 	SpawnTransform.SetLocation(SocketLocation);// 设置生成位置（旋转稍后可设置）
-	//ToDo:Set the Projectile Rotation 设置弹丸旋转
 	SpawnTransform.SetRotation(Rotation.Quaternion());// 将计算好的朝向角（FRotator）转成四元数，设置到生成变换中
+	
 		
 	AAuraProjectile* Projectile = GetWorld()->SpawnActorDeferred<AAuraProjectile>(// 延迟生成一个 AAuraProjectile 类型的 Actor
 		ProjectileClass,// 要生成的类（这里是你的投射物类，比如火球）
