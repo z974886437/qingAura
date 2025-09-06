@@ -120,7 +120,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		checkf(AuraDamageStatics().TagsToCaptureDefs.Contains(ResistanceTag),TEXT("TagsToCaptureDefs does't contain Tag: [%s] in ExecCalc_Damage"),*ResistanceTag.ToString());
 		const FGameplayEffectAttributeCaptureDefinition CaptureDef = AuraDamageStatics().TagsToCaptureDefs[ResistanceTag]; // 根据抗性标签找到对应的捕获定义（告诉引擎抓取谁的什么属性）
 
-		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key);// 从技能规格（Spec）里读取该伤害类型的数值，比如火球术可能带有 FireDamage=50
+		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key,false);// 从技能规格（Spec）里读取该伤害类型的数值，比如火球术可能带有 FireDamage=50
 
 		float Resistance = 0.f;
 		// 尝试从目标角色的属性集中抓取对应的抗性数值（例如 FireResistance = 30）

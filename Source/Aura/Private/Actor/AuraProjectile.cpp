@@ -75,6 +75,7 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 	}
 	if (!bHit)
 	{
+		//UE_LOG(LogTemp,Warning,TEXT("[%s] spawned"),*GetName());
 		// 在当前Actor位置播放音效（比如子弹击中声音）
 		// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
 		UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
