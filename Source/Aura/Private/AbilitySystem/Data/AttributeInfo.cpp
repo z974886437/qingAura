@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Data/AttributeInfo.h"
 
+#include "Aura/AuraLogChannels.h"
+
 FAuraAttributeInfo UAttributeInfo::FindAttributeInfoForTag(const FGameplayTag& AttributeTag, bool bLogNotFound) const
 {
 	// 遍历 AttributeInformation 数组中的每一个属性信息
@@ -20,7 +22,7 @@ FAuraAttributeInfo UAttributeInfo::FindAttributeInfoForTag(const FGameplayTag& A
 	if (bLogNotFound)
 	{
 		// 打印错误日志，标明找不到对应的属性信息
-		UE_LOG(LogTemp,Error,TEXT("Can't find Info for AttributeTag [%s] on AttributeInfo [%s]."),*AttributeTag.ToString(),*GetNameSafe(this));
+		UE_LOG(LogAura,Error,TEXT("Can't find Info for AttributeTag [%s] on AttributeInfo [%s]."),*AttributeTag.ToString(),*GetNameSafe(this));
 	}
 
 	// 返回一个默认构造的 FAuraAttributeInfo（即空对象）

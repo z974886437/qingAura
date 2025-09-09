@@ -64,6 +64,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;//消息小部件数据表
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Widget Data")
+	TObjectPtr<UAbilityInfo> AbilityInfo;//技能信息
+
 	template<typename T>
 	T* GetDataTableRowByTag(UDataTable* DataTable,const FGameplayTag& Tag);//按标签的表格行 接受一个数据表和一个标签
 };

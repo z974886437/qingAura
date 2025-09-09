@@ -56,6 +56,8 @@ public:
 	FGameplayTag Abilities_Attack;//技能_攻击
 	FGameplayTag Abilities_Summon;//技能_召唤
 
+	FGameplayTag Abilities_Fire_FireBolt;//技能_火_火弩箭
+
 	FGameplayTag CombatSocket_Weapon;//战斗插座_武器
 	FGameplayTag CombatSocket_RightHand;//战斗插座_右手
 	FGameplayTag CombatSocket_LeftHand;//战斗插座_左手
