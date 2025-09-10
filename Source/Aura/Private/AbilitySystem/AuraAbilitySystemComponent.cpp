@@ -38,6 +38,8 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 		}
 		// 将这个技能赋予角色，并且只激活一次（比如一次性技能）
 		//GiveAbilityAndActivateOnce(AbilitySpec);
+		bStartupAbilitiesGiven = true;
+		AbilitiesGivenDelegate.Broadcast(this);
 	}
 }
 

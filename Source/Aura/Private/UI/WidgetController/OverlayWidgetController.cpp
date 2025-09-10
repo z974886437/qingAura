@@ -50,27 +50,48 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			}
 		);
 
-	//在注册一个对 Gameplay Tag 事件的监听函数（Lambda）
-	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
-		[this](const FGameplayTagContainer& AssetTags)
+	if (UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))//  检查并初始化 Aura ASC
+	{
+		if (AuraASC->bStartupAbilitiesGiven)// 如果 ASC 已经初始化过起始技能，则直接调用初始化逻辑
 		{
-			for (const FGameplayTag Tag : AssetTags)
+			OnInitializeStartupAbilities(AuraASC);
+		}
+		else
+		{
+			AuraASC->AbilitiesGivenDelegate.AddUObject(this,&UOverlayWidgetController::OnInitializeStartupAbilities);// 否则注册一个回调，等它初始化完成后再调用
+		}
+		
+		//在注册一个对 Gameplay Tag 事件的监听函数（Lambda）
+		AuraASC->EffectAssetTags.AddLambda(
+			[this](const FGameplayTagContainer& AssetTags)
 			{
-				// For example, soy that Tag =  Message.HealthPotion 例如，大豆的标签（Tag）为“健康药水（HealthPotion）
-				//* "Message.HealthPotion".MatchesTag("Message") will return True, "Message".MatchesTag("Message.HealthPotion") will return False
-				//"Message.HealthPotion"。如果与标签"Message"匹配，将返回True；如果与标签"Message.HealthPotion"匹配，将返回False
-				FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
-				if (Tag.MatchesTag(MessageTag))
+				for (const FGameplayTag Tag : AssetTags)
 				{
-					//Broadcast the tag to the Widget Controller 将标签广播至小部件控制器
-					//将资产标签中的每个标签添加到屏幕上 添加调试消息
-					// const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
-					// GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue,Msg);
-					const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable,Tag);
-					MessageWidgetRowDelegate.Broadcast(*Row);//消息部件委托进行广播
-					
+					// For example, soy that Tag =  Message.HealthPotion 例如，大豆的标签（Tag）为“健康药水（HealthPotion）
+					//* "Message.HealthPotion".MatchesTag("Message") will return True, "Message".MatchesTag("Message.HealthPotion") will return False
+					//"Message.HealthPotion"。如果与标签"Message"匹配，将返回True；如果与标签"Message.HealthPotion"匹配，将返回False
+					FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
+					if (Tag.MatchesTag(MessageTag))
+					{
+						//Broadcast the tag to the Widget Controller 将标签广播至小部件控制器
+						//将资产标签中的每个标签添加到屏幕上 添加调试消息
+						// const FString Msg = FString::Printf(TEXT("GE Tag: %s"), *Tag.ToString());
+						// GEngine->AddOnScreenDebugMessage(-1, 8.f, FColor::Blue,Msg);
+						const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable,Tag);// 根据标签从数据表里找到对应的 UI 数据行
+						MessageWidgetRowDelegate.Broadcast(*Row);//消息部件委托进行广播
+						
+					}
 				}
 			}
-		}
-	);
+		);
+	}
+
+}
+
+void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent)
+{
+	//Get information about all given abilities,look up their Ability Info,and broadcast it to widgets.获取有关所有给定能力的信息，查找他们的能力信息，并将其广播到小部件。
+	if (!AuraAbilitySystemComponent->bStartupAbilitiesGiven) return;
+
+	
 }

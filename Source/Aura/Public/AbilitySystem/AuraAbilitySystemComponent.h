@@ -7,6 +7,7 @@
 #include "AuraAbilitySystemComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer& /* Asset Tags */);
+DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitiesGiven,UAuraAbilitySystemComponent*);
 
 /**
  * 
@@ -20,8 +21,10 @@ public:
 	void AbilityActorInfoSet();
 
 	FEffectAssetTags EffectAssetTags;//效果资产标签
+	FAbilitiesGiven AbilitiesGivenDelegate;//能力赋予委托
 
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力
+	bool bStartupAbilitiesGiven = false;//给定的启动能力
 
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);//持续能力输入标签
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);//释放能力输入标签

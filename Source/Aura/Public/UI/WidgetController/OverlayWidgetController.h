@@ -69,6 +69,8 @@ protected:
 
 	template<typename T>
 	T* GetDataTableRowByTag(UDataTable* DataTable,const FGameplayTag& Tag);//按标签的表格行 接受一个数据表和一个标签
+
+	void OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent);//初始化启动能力
 };
 
 template <typename T>
