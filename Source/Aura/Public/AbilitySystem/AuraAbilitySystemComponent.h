@@ -10,6 +10,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitiesGiven,UAuraAbilitySystemComponent*)
 DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);
 
+
 /**
  * 
  */
@@ -36,6 +37,8 @@ public:
 
 protected:
 
+	virtual void OnRep_ActivateAbilities() override;//在重复激活技能时
+	
 	UFUNCTION(Client,Reliable)// 用于标识该函数是一个客户端 RPC（远程过程调用）函数，且调用是可靠的。
 	void ClientEffectApplied(UAbilitySystemComponent* AbilitySystemComponent,const FGameplayEffectSpec& EffectSpec,FActiveGameplayEffectHandle ActiveEffectHandle);//客户端应用效果
 };

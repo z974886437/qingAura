@@ -105,4 +105,6 @@ void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemCo
 		AbilityInfoDelegate.Broadcast(Info); // 3. 把完整的技能信息广播出去，让 UI 刷新（比如技能栏显示图标/冷却）
 	});
 	AuraAbilitySystemComponent->ForEachAbility(BroadcastDelegate);// 遍历所有技能，逐个执行上面绑定的 Lambda
+	
+	
 }

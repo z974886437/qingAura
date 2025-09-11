@@ -113,6 +113,18 @@ FGameplayTag UAuraAbilitySystemComponent::GetInputTagFromSpec(const FGameplayAbi
 	return FGameplayTag(); // 如果没有找到，返回空标签
 }
 
+void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
+{
+	Super::OnRep_ActivateAbilities();
+
+	if (!bStartupAbilitiesGiven)// 如果初始技能还没被标记为“已赋予”
+	{
+		bStartupAbilitiesGiven = true;// 标记一下，避免重复广播
+		AbilitiesGivenDelegate.Broadcast(this);// 广播一个委托，告诉外部：初始技能已经同步完成，可以做 UI 或初始化逻辑
+	}
+}
+
+
 void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent,
                                                                      const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)
 {
