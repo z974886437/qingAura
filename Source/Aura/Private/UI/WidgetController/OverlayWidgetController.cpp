@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
@@ -90,8 +91,18 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent)
 {
-	//Get information about all given abilities,look up their Ability Info,and broadcast it to widgets.获取有关所有给定能力的信息，查找他们的能力信息，并将其广播到小部件。
-	if (!AuraAbilitySystemComponent->bStartupAbilitiesGiven) return;
+	//TODO Get information about all given abilities,look up their Ability Info,and broadcast it to widgets.获取有关所有给定能力的信息，查找他们的能力信息，并将其广播到小部件。
+	if (!AuraAbilitySystemComponent->bStartupAbilitiesGiven) return;// 如果初始技能还没分发，就直接返回（防止重复初始化）
 
-	
+	FForEachAbility BroadcastDelegate;// 定义一个委托，等下遍历所有技能时会执行
+	// 给委托绑定一个 Lambda
+	BroadcastDelegate.BindLambda([this,AuraAbilitySystemComponent](const FGameplayAbilitySpec& AbilitySpec)
+	{
+		//TODO need a way to figure out the ability tag for a given ability spec.需要一种方法来找出给定技能规格的能力标签。
+		// 1. 根据技能实例 (AbilitySpec) 拿到技能标签 (Abilities.xxx)
+		FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AuraAbilitySystemComponent->GetAbilityTagFromSpec(AbilitySpec));
+		Info.InputTag = AuraAbilitySystemComponent->GetInputTagFromSpec(AbilitySpec);// 2. 再拿到该技能对应的输入标签 (InputTag.Q / InputTag.LMB)
+		AbilityInfoDelegate.Broadcast(Info); // 3. 把完整的技能信息广播出去，让 UI 刷新（比如技能栏显示图标/冷却）
+	});
+	AuraAbilitySystemComponent->ForEachAbility(BroadcastDelegate);// 遍历所有技能，逐个执行上面绑定的 Lambda
 }

@@ -7,7 +7,8 @@
 #include "AuraAbilitySystemComponent.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer& /* Asset Tags */);
-DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitiesGiven,UAuraAbilitySystemComponent*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FAbilitiesGiven,UAuraAbilitySystemComponent*)
+DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);
 
 /**
  * 
@@ -28,6 +29,10 @@ public:
 
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);//持续能力输入标签
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);//释放能力输入标签
+	void ForEachAbility(const FForEachAbility& Delegate);//对于每个能力
+
+	static FGameplayTag GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取能力标签
+	static FGameplayTag GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取输入标签
 
 protected:
 

@@ -5,6 +5,7 @@
 
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
+#include "Aura/AuraLogChannels.h"
 
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
@@ -73,8 +74,47 @@ void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 	}
 }
 
+void UAuraAbilitySystemComponent::ForEachAbility(const FForEachAbility& Delegate)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);// 🔒 给 AbilitySystemComponent 加一个临时锁，保证遍历 ActivatableAbilities 的过程中不会被并发修改
+	for (const FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())// 遍历 AbilitySystemComponent 中的所有可激活技能（存储在 ActivatableAbilities 容器里）
+	{
+		if (!Delegate.ExecuteIfBound(AbilitySpec))// 如果传进来的委托有效，就用当前 AbilitySpec 调用一次
+		{
+			UE_LOG(LogAura,Error,TEXT("Failed to execute delegate in %hs"),__FUNCTION__);
+		}
+	}
+}
+
+FGameplayTag UAuraAbilitySystemComponent::GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	if (AbilitySpec.Ability)// 如果这个技能有效
+	{
+		for (FGameplayTag Tag : AbilitySpec.Ability.Get()->AbilityTags)// 遍历该技能自带的标签列表（AbilityTags 通常在技能蓝图里配置）
+		{
+			if (Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Abilities"))))// 判断当前标签是否属于 "Abilities" 标签的子类
+			{
+				return Tag; // 找到后立即返回（第一个匹配的）
+			}
+		}
+	}
+	return FGameplayTag(); // 如果没找到，返回一个空的 GameplayTag
+}
+
+FGameplayTag UAuraAbilitySystemComponent::GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	for (FGameplayTag Tag : AbilitySpec.DynamicAbilityTags)// 遍历技能实例（AbilitySpec）上动态附加的标签
+	{
+		if (Tag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("InputTag")))) // 判断是否属于 InputTag 分类
+		{
+			return Tag;// 找到第一个匹配的输入标签就返回
+		}
+	}
+	return FGameplayTag(); // 如果没有找到，返回空标签
+}
+
 void UAuraAbilitySystemComponent::ClientEffectApplied_Implementation(UAbilitySystemComponent* AbilitySystemComponent,
-                                                const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)
+                                                                     const FGameplayEffectSpec& EffectSpec, FActiveGameplayEffectHandle ActiveEffectHandle)
 {
 	//GEngine->AddOnScreenDebugMessage(1, 8.f, FColor::Blue, FString("Effect Applied!"));
 	FGameplayTagContainer TagContainer;//用于存储多个标签的结构

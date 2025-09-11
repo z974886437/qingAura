@@ -7,6 +7,8 @@
 #include "UI/WidgetController/AuraWidgetController.h"
 #include "OverlayWidgetController.generated.h"
 
+struct FAuraAbilityInfo;
+
 USTRUCT(BlueprintType)
 struct FUIWidgetRow : public  FTableRowBase
 {
@@ -29,8 +31,9 @@ class UAbilityInfo;
 class UAuraAbilitySystemComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);//用于声明一个支持蓝图绑定的多播委托
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature,FUIWidgetRow,Row);//消息小部件行签名
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature,const FAuraAbilityInfo&,Info);//技能信息签名
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature,FUIWidgetRow,Row);
 
 /**
  * 
@@ -57,6 +60,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable,Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;//消息小部件 行 委托
+
+	UPROPERTY(BlueprintAssignable,Category = "GAS|Messages")
+	FAbilityInfoSignature AbilityInfoDelegate;//技能信息委托
 	
 
 protected:
