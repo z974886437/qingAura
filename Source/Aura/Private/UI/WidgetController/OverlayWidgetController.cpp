@@ -30,6 +30,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	
+	
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AuraAttributeSet->GetMaxHealthAttribute()).AddLambda(
 			[this](const FOnAttributeChangeData& Data)
 			{
@@ -66,7 +67,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 		AuraASC->EffectAssetTags.AddLambda(
 			[this](const FGameplayTagContainer& AssetTags)
 			{
-				for (const FGameplayTag Tag : AssetTags)
+				for (const FGameplayTag& Tag : AssetTags)
 				{
 					// For example, soy that Tag =  Message.HealthPotion 例如，大豆的标签（Tag）为“健康药水（HealthPotion）
 					//* "Message.HealthPotion".MatchesTag("Message") will return True, "Message".MatchesTag("Message.HealthPotion") will return False

@@ -76,7 +76,7 @@ public:
 	
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;//预属性更改
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;//游戏后效果执行
-
+	
 	// 创建一个映射表 TagsToAttributes：
 	// 键（Key）：FGameplayTag，代表一个属性标签（如 Attributes.Primary.Strength）
 	// 值（Value）：函数指针（FFuncPtr），指向一个返回 FGameplayAttribute、无参数的静态函数
@@ -94,22 +94,22 @@ public:
 	 *  Primar Attributes 主要属性
 	 */
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Strength,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Strength,Category = "Primary Attributes")
 	FGameplayAttributeData	Strength;//力量
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Strength);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
-
+	
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Intelligence,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Intelligence,Category = "Primary Attributes")
 	FGameplayAttributeData	Intelligence;//智力
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Intelligence);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Resilience,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Resilience,Category = "Primary Attributes")
 	FGameplayAttributeData	Resilience;//韧性
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Resilience);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
 
 	//蓝图可读取但不可修改，启用网络同步，并在值同步变化时自动调用 OnRep_Strength() 函数（客户端）
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Vigor,Category = "Primar Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Vigor,Category = "Primary Attributes")
 	FGameplayAttributeData	Vigor;//活力
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Vigor);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribut
 
@@ -149,11 +149,11 @@ public:
 	FGameplayAttributeData	ManaRegeneration;//法力恢复
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,ManaRegeneration);
 
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxHealth,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxHealth,Category = "Vital Attributes")
 	FGameplayAttributeData MaxHealth;//最大健康
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxHealth);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Mana,Category = "Secondary Attributes")
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_MaxMana,Category = "Vital Attributes")
 	FGameplayAttributeData MaxMana;//最大法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,MaxMana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
 
@@ -186,7 +186,7 @@ public:
 	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Health,Category = "Vital Attributes")
 	FGameplayAttributeData Health;//健康
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Health);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
-
+	
 	UPROPERTY(BlueprintReadOnly,ReplicatedUsing = OnRep_Mana,Category = "Vital Attributes")
 	FGameplayAttributeData Mana;//法力值
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,Mana);//Gameplay Ability System（GAS） 提供的一个快捷宏，用来一键生成多个访问器函数，简化 Attribute 的声明和使用
@@ -195,7 +195,7 @@ public:
 	 *  Meta Attribute 元属性
 	 */
 
-	UPROPERTY(BlueprintReadOnly,category = "Meta Attributes")
+	UPROPERTY(BlueprintReadOnly,Category = "Meta Attributes")
 	FGameplayAttributeData IncomingDamage;//传入伤害
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,IncomingDamage);
 
@@ -260,7 +260,7 @@ public:
 	void OnRep_PhysicalResistance(const FGameplayAttributeData& OldPhysicalResistance) const;//用于实现 属性的网络同步 + 通知响应
 	
 
-protected:
+private:
 	void SetEffectProperties(const struct FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
 	void ShowFloatingText(const FEffectProperties& Props,float Damage,bool bBlockedHit,bool bCriticalHit) const;//显示浮动文本
 

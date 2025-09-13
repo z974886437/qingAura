@@ -36,6 +36,7 @@ UAuraAttributeSet::UAuraAttributeSet()
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitChance,GetCriticalHitChanceAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitDamage,GetCriticalHitDamageAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitResistance,GetCriticalHitResistanceAttribute);
+	
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_HealthRegeneration,GetHealthRegenerationAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_ManaRegeneration,GetManaRegenerationAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_MaxHealth,GetMaxHealthAttribute);
@@ -113,7 +114,7 @@ void UAuraAttributeSet::SetEffectProperties(const struct FGameplayEffectModCallb
 	// 来源 = 效果的原因，目标等于目标的效果（该属性的所有者设置正确，目标是收到影响的事物）
 	Props.EffectContextHandle = Data.EffectSpec.GetContext();
 	//获取这次 GameplayEffect 的原始施法者（Instigator）所拥有的 ASC
-	Props.SourceASC= Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();//源能力系统组件
+	Props.SourceASC = Props.EffectContextHandle.GetOriginalInstigatorAbilitySystemComponent();//源能力系统组件
 	
 	//ASC 为空或已被销毁 && GAS 未初始化完 Actor Info && Avatar 可能已被销毁或未设置
 	if (IsValid(Props.SourceASC) && Props.SourceASC->AbilityActorInfo.IsValid() && Props.SourceASC->AbilityActorInfo->AvatarActor.IsValid())
@@ -255,9 +256,9 @@ void UAuraAttributeSet::OnRep_BlockChance(const FGameplayAttributeData& OldBlock
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet,BlockChance,OldBlockChance);//用于实现 格挡几率属性的网络同步 + 通知响应
 }
 
-void UAuraAttributeSet::OnRep_CriticalHitChance(const FGameplayAttributeData& OldCriticelHitChance) const
+void UAuraAttributeSet::OnRep_CriticalHitChance(const FGameplayAttributeData& OldCriticalHitChance) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet,CriticalHitChance,OldCriticelHitChance);//用于实现 暴击几率属性的网络同步 + 通知响应
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet,CriticalHitChance,OldCriticalHitChance);//用于实现 暴击几率属性的网络同步 + 通知响应
 }
 
 void UAuraAttributeSet::OnRep_CriticalHitDamage(const FGameplayAttributeData& OldCriticalHitDamage) const
