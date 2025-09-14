@@ -34,6 +34,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FAuraLevelUpInfo> LevelUpInformation;//升级信息
 
-	int32 FindLevelForXP(int32 XP);//查找 XP 级别
+	int32 FindLevelForXP(int32 XP) const;//查找 XP 级别
 	
 };

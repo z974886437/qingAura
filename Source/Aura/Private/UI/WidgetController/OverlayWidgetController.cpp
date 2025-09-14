@@ -6,6 +6,8 @@
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
+#include "AbilitySystem/Data/LevelUpInfo.h"
+#include "Player/AuraPlayerState.h"
 
 void UOverlayWidgetController::BroadcastInitialValues()
 {
@@ -13,13 +15,15 @@ void UOverlayWidgetController::BroadcastInitialValues()
 
 	OnHealthChanged.Broadcast(AuraAttributeSet->GetHealth());//广播一个多播委托事件，并传递当前角色的生命值（Health）给所有监听者（比如 UI 血条）
 	OnMaxHealthChanged.Broadcast(AuraAttributeSet->GetMaxHealth());
-
 	OnManaChanged.Broadcast(AuraAttributeSet->GetMana());
 	OnMaxManaChanged.Broadcast(AuraAttributeSet->GetMaxMana());
 }
 
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
+	AuraPlayerState->OnXPChangedDelegate.AddUObject(this,&UOverlayWidgetController::OnXPChanged);// 把当前控制器的 OnXPChanged 绑定到经验值变化事件 → XP 一更新就能自动调用 UI 更新函数
+	
 	const UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
 
 	//将一个函数（HealthChanged）绑定到 GAS（Gameplay Ability System）中的属性变更事件委托上，属于 GAS 属性监听的标准写法
@@ -108,4 +112,28 @@ void UOverlayWidgetController::OnInitializeStartupAbilities(UAuraAbilitySystemCo
 	AuraAbilitySystemComponent->ForEachAbility(BroadcastDelegate);// 遍历所有技能，逐个执行上面绑定的 Lambda
 	
 	
+}
+
+// 当玩家经验值发生变化时触发 → 计算当前等级进度百分比并通知 UI 更新
+void UOverlayWidgetController::OnXPChanged(int32 NewXP) const
+{
+	const AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
+	const ULevelUpInfo* LevelUpInfo = AuraPlayerState->LevelUpInfo;// 获取等级信息表 → 必须在蓝图中配置好，否则直接报错
+	checkf(LevelUpInfo,TEXT("Unabled to find LevelUpInfo. Please fill out AuraPlayerState Blueprint"));
+
+	const int32 Level = LevelUpInfo->FindLevelForXP(NewXP);// 根据当前 XP 查找对应等级
+	const int32 MaxLevel = LevelUpInfo->LevelUpInformation.Num();// 获取最高等级，用来防止越界
+
+	if (Level <= MaxLevel && Level > 0)// 确保等级合法（1 到 MaxLevel）
+	{
+		const int32 LevelUpRequirement = LevelUpInfo->LevelUpInformation[Level].LevelUpRequirement;// 当前等级升级所需总 XP
+		const int32 PreviousLevelUpRequirement = LevelUpInfo->LevelUpInformation[Level - 1].LevelUpRequirement; // 上一级升级所需总 XP（比如等级 5 升级需要 500，总 XP 是 500；等级 4 升级需要 300，总 XP 是 300）
+
+		const int32 DeltaLevelRequirement = LevelUpRequirement - PreviousLevelUpRequirement;// 当前等级区间所需 XP（比如等级 4 → 5 需要 200）
+		const int32 XPForThisLevel = NewXP - PreviousLevelUpRequirement;// 玩家在当前等级区间已经获得的 XP（比如当前 XP=350，那就是 350-300=50）
+
+		const float XPBarPercent = static_cast<float>(XPForThisLevel) / static_cast<float>(DeltaLevelRequirement); // 计算经验条百分比（0~1）
+
+		OnXPPercentChangeDelegate.Broadcast(XPBarPercent);  // 通知 UI 更新经验条进度
+	}
 }

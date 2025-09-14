@@ -10,6 +10,7 @@
 
 class UAbilitySystemComponent;
 class UAttributeSet;
+class ULevelUpInfo;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged,int32/*StatValue 统计数据*/)//玩家统计数据更改
 
@@ -28,6 +29,9 @@ public:
 
 	FORCEINLINE int32 GetPlayerLevel() const {return Level;}// 强制代码内联
 	FORCEINLINE int32 GetXP() const { return XP;}
+
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<ULevelUpInfo> LevelUpInfo;//等级升级信息
 
 	FOnPlayerStatChanged OnXPChangedDelegate;//在 XP 更改委托时
 	FOnPlayerStatChanged OnLevelChangedDelegate;//在等级更改委托时
