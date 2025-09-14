@@ -20,6 +20,8 @@ AAuraCharacter::AAuraCharacter()
 	bUseControllerRotationPitch = false;//用来控制角色是否跟随控制器的 Pitch（俯仰）旋转的
 	bUseControllerRotationRoll = false;//控制角色是否跟随控制器的 Roll（翻滚）旋转
 	bUseControllerRotationYaw = false;//控制角色是否跟随控制器的 Yaw（左右转头）旋转
+
+	CharacterClass = ECharacterClass::Elementalist;
 }
 
 void AAuraCharacter::PossessedBy(AController* NewController)

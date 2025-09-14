@@ -6,6 +6,7 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
 #include "Interaction/CombatInterface.h"
+#include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AuraCharacterBase.generated.h"
 
 
@@ -37,7 +38,9 @@ public:
 	virtual UNiagaraSystem* GetBloodEffect_Implementation() override;//获取血液效果
 	virtual FTaggedMontage GetTaggedMontageByTag_Implementation(const FGameplayTag& MontageTag) override;//按标签获取标记蒙太奇
 	virtual int32 GetMinionCount_Implementation() override;//获取仆从数量
-	virtual void IncrementMinionCount_Implementation(int32 Amount) override;
+	virtual void IncrementMinionCount_Implementation(int32 Amount) override;//增加仆从数量
+	virtual ECharacterClass GetCharacterClass_Implementation() override;//获取角色类
+	
     /* end Combat Interface*/
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
@@ -116,6 +119,9 @@ protected:
 	/* Minions 仆从 */
 
 	int32 MinionCount = 0;//仆从数量
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Character Class Defaults")
+	ECharacterClass CharacterClass = ECharacterClass::Warrior;
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")
