@@ -199,6 +199,10 @@ public:
 	FGameplayAttributeData IncomingDamage;//传入伤害
 	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,IncomingDamage);
 
+	UPROPERTY(BlueprintReadOnly,Category = "Meta Attributes")
+	FGameplayAttributeData IncomingXP;//传入伤害
+	ATTRIBUTE_ACCESSORS(UAuraAttributeSet,IncomingXP);
+
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;//用于实现 属性的网络同步 + 通知响应
 
