@@ -11,6 +11,8 @@
 class UAbilitySystemComponent;
 class UAttributeSet;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged,int32/*StatValue 统计数据*/)//玩家统计数据更改
+
 /**
  * 
  */
@@ -25,6 +27,16 @@ public:
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
 
 	FORCEINLINE int32 GetPlayerLevel() const {return Level;}// 强制代码内联
+	FORCEINLINE int32 GetXP() const { return XP;}
+
+	FOnPlayerStatChanged OnXPChangedDelegate;//在 XP 更改委托时
+	FOnPlayerStatChanged OnLevelChangedDelegate;//在等级更改委托时
+
+	void AddToXP(int32 InXP);
+	void AddToLevel(int32 InLevel);
+	
+	void SetXP(int32 InXP);
+	void SetLevel(int32 InLevel);
 	
 protected:
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。
@@ -40,6 +52,12 @@ private:
 	UPROPERTY(VisibleAnywhere,ReplicatedUsing=OnRep_Level)//网络同步变量（Replicated），但使用的是 “OnRep 回调函数”机制
 	int32 Level = 1;
 
+	UPROPERTY(VisibleAnywhere,ReplicatedUsing=OnRep_XP)//网络同步变量（Replicated），但使用的是 “OnRep 回调函数”机制
+	int32 XP = 1;
+
 	UFUNCTION()
 	void OnRep_Level(int32 OldLevel);//网络同步 + 通知响应
+
+	UFUNCTION()
+	void OnRep_XP(int32 OldXP);//网络同步 + 通知响应
 };
