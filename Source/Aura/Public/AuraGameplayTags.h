@@ -39,6 +39,7 @@ public:
 	FGameplayTag Attributes_Resistance_Arcane;//抗性_奥术
 	FGameplayTag Attributes_Resistance_Physical;//抗性_物理
 
+	FGameplayTag Attributes_Meta_IncomingXP;//元_传入XP
 	
 	FGameplayTag InputTag_LMB;//鼠标左键
 	FGameplayTag InputTag_RMB;//鼠标右键

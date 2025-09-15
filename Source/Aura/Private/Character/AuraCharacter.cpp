@@ -55,10 +55,11 @@ void AAuraCharacter::InitAbilityActorInfo()
 	check(AuraPlayerState);
 	//初始化 AuraPlayerState，让它知道谁是“实际拥有者”和“执行者”
 	AuraPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(AuraPlayerState,this);
-	Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();
+	Cast<UAuraAbilitySystemComponent>(AuraPlayerState->GetAbilitySystemComponent())->AbilityActorInfoSet();// 调用 AuraAbilitySystemComponent 的扩展方法，做额外初始化（比如绑定事件）
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();//设置Auar角色能力系统组件
 	AttributeSet = AuraPlayerState->GetAttributeSet();//设置属性集
 
+	// 如果角色有控制器，并且控制器有 HUD，则初始化 UI Overlay，把必要数据传给 HUD
 	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
 	{
 		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(AuraPlayerController->GetHUD()))

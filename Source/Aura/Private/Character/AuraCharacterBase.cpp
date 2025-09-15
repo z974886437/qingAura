@@ -173,6 +173,7 @@ void AAuraCharacterBase::AddCharacterAbilities()
 	if (!HasAuthority()) return;//如果当前对象不是服务端（Authority），就直接返回，不执行后续逻辑。
 
 	AuraASC->AddCharacterAbilities(StartupAbilities);
+	AuraASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);
 }
 
 void AAuraCharacterBase::Dissolve()

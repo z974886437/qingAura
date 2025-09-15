@@ -37,10 +37,20 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 			// 将这个技能赋予角色（但不会自动激活）
 			GiveAbility(AbilitySpec);
 		}
-		// 将这个技能赋予角色，并且只激活一次（比如一次性技能）
-		//GiveAbilityAndActivateOnce(AbilitySpec);
-		bStartupAbilitiesGiven = true;
-		AbilitiesGivenDelegate.Broadcast(this);
+	}
+	// 将这个技能赋予角色，并且只激活一次（比如一次性技能）
+	//GiveAbilityAndActivateOnce(AbilitySpec);
+	bStartupAbilitiesGiven = true;
+	AbilitiesGivenDelegate.Broadcast(this);
+}
+
+void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities)
+{
+	for (const TSubclassOf<UGameplayAbility> AbilityClass : StartupPassiveAbilities)
+	{
+		// 遍历所有预设的技能类（StartupAbilities 是一个 TArray<TSubclassOf<UGameplayAbility>>）
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);
+		GiveAbilityAndActivateOnce(AbilitySpec);
 	}
 }
 

@@ -25,7 +25,8 @@ public:
 	FEffectAssetTags EffectAssetTags;//效果资产标签
 	FAbilitiesGiven AbilitiesGivenDelegate;//能力赋予委托
 
-	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力
+	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力。
+	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);//添加角色被动能力
 	bool bStartupAbilitiesGiven = false;//给定的启动能力
 
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);//持续能力输入标签
