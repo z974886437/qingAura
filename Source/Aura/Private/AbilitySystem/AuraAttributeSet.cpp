@@ -12,6 +12,7 @@
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Aura/AuraLogChannels.h"
 #include "Interaction/CombatInterface.h"
+#include "Interaction/PlayerInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerController.h"
 
@@ -195,9 +196,15 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	}
 	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute())
 	{
-		const float LocalIncomingXP = GetIncomingXP();
-		SetIncomingXP(0.f);
+		const float LocalIncomingXP = GetIncomingXP();// 取出临时存放的经验值
+		SetIncomingXP(0.f);// 把 IncomingXP 清零，避免经验值重复计算
 		//UE_LOG(LogAura,Log,TEXT("Incoming XP:%f"),LocalIncomingXP);
+
+		//TODO:See if we should level up 判断是否应该升级
+		if (Props.SourceCharacter->Implements<UPlayerInterface>())// 确认角色实现了 PlayerInterface 才能调用接口
+		{
+			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 调用接口，把经验加到 SourceCharacter（通常是玩家自己）身上
+		}
 	}
 }
 

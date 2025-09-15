@@ -40,6 +40,14 @@ void AAuraCharacter::OnRep_PlayerState()
 	InitAbilityActorInfo();
 }
 
+void AAuraCharacter::AddToXP_Implementation(int32 InXP)
+{
+	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
+	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	check(AuraPlayerState);
+	AuraPlayerState->AddToXP(InXP);
+}
+
 int32 AAuraCharacter::GetPlayerLevel()
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
