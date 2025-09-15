@@ -98,9 +98,9 @@ void UAuraAbilitySystemLibrary::GiveStartupAbilities(const UObject* WorldContext
 	const FCharacterClassDefaultInfo& DefaultInfo = CharacterClassInfo->GetClassDefaultInfo(CharacterClass);// 获取该职业的默认配置（不同职业有不同的初始技能）
 	for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultInfo.StartupAbilities)// 遍历“初始技能”数组（这些技能通常随角色等级变化）
 	{
-		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(ASC->GetAvatarActor()))// 如果角色实现了 ICombatInterface，就能获取玩家等级
+		if (ASC->GetAvatarActor()->Implements<UCombatInterface>())// 如果角色实现了 ICombatInterface，就能获取玩家等级
 		{
-			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,CombatInterface->GetPlayerLevel()); // 创建技能规格：技能类 + 角色当前等级
+			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,ICombatInterface::Execute_GetPlayerLevel(ASC->GetAvatarActor())); // 创建技能规格：技能类 + 角色当前等级
 			ASC->GiveAbility(AbilitySpec);// 授予技能给 ASC
 		}
 	}

@@ -210,9 +210,9 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 
 void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
 {
-	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetCharacter))// 判断目标是否实现了战斗接口（CombatInterface），确保能获取等级和职业
+	if (Props.TargetCharacter->Implements<UCombatInterface>())// 判断目标是否实现了战斗接口（CombatInterface），确保能获取等级和职业
 	{
-		const int32 TargetLevel = CombatInterface->GetPlayerLevel();// 获取目标角色等级
+		const int32 TargetLevel = ICombatInterface::Execute_GetPlayerLevel(Props.TargetCharacter);// 获取目标角色等级
 		const ECharacterClass TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);// 获取目标角色职业（比如战士、法师）
 		const int32 XPReward = UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(Props.TargetCharacter,TargetClass,TargetLevel);// 根据目标职业和等级，计算应该奖励多少经验值
 

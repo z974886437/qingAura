@@ -96,11 +96,20 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 {
 	const UAbilitySystemComponent* SourceASC = ExecutionParams.GetSourceAbilitySystemComponent();// 从 ExecutionParams 获取技能的来源（施法者）的 AbilitySystemComponent
 	const UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();// 从 ExecutionParams 获取技能的目标（被击中者）的 AbilitySystemComponent
-
+	
 	AActor* SourceAvatar = SourceASC ? SourceASC->GetAvatarActor() : nullptr;// 从来源 ASC 拿到施法者的 AvatarActor（通常是角色 Pawn/Character）
 	AActor* TargetAvatar = TargetASC ? TargetASC->GetAvatarActor() : nullptr;// 从目标 ASC 拿到目标的 AvatarActor
-	ICombatInterface* SourceCombatInterface = Cast<ICombatInterface>(SourceAvatar);// 尝试将施法者的 Avatar 转成战斗接口类型
-	ICombatInterface* TargetCombatInterface = Cast<ICombatInterface>(TargetAvatar);// 尝试将目标的 Avatar 转成战斗接口类型
+
+	int32 SourcePlayerLevel = 1;
+	if (SourceAvatar->Implements<UCombatInterface>())
+	{
+		SourcePlayerLevel = ICombatInterface::Execute_GetPlayerLevel(SourceAvatar);// 如果目标对象实现了 CombatInterface，则调用接口获取目标等级
+	}
+	int32 TargetPlayerLevel = 1;
+	if (TargetAvatar->Implements<UCombatInterface>())
+	{
+		TargetPlayerLevel = ICombatInterface::Execute_GetPlayerLevel(TargetAvatar);// 如果目标对象实现了 CombatInterface，则调用接口获取目标等级
+	}
 
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();// 获取当前正在执行的 GameplayEffectSpec（包含技能等级、标签、SetByCaller 参数等）
 
@@ -178,13 +187,13 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	// FindCurve 参数：FName("ArmorPenetration") = 曲线名，FString() = 子曲线名（可选，留空则找主曲线）
 	const FRealCurve* ArmorPenetrationCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("ArmorPenetration"),FString());
 	// 根据施法者等级（从 CombatInterface 获取）在曲线上评估对应的护甲穿透系数
-	const float ArmorPenetrationCoefficient = ArmorPenetrationCurve->Eval(SourceCombatInterface->GetPlayerLevel());
+	const float ArmorPenetrationCoefficient = ArmorPenetrationCurve->Eval(SourcePlayerLevel);
 
 	// 先计算“有效护甲”- TargetArmor = 目标的护甲- SourceArmorPenetration = 攻击方的护甲穿透百分比 - 乘以 0.25f 表示：穿透只发挥 25% 的效率（相当于削弱护甲，而不是完全无效化）- (100 - X) / 100.f 把百分比转成倍率
 	const float EffectiveArmor = TargetArmor * ( 100 - SourceArmorPenetration * ArmorPenetrationCoefficient ) / 100.f;
 
 	const FRealCurve* EffectiveArmorCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("EffectiveArmor"),FString());
-	const float EffectiveArmorCoefficient = EffectiveArmorCurve->Eval(TargetCombatInterface->GetPlayerLevel());
+	const float EffectiveArmorCoefficient = EffectiveArmorCurve->Eval(TargetPlayerLevel);
 	// 计算最终伤害缩放 - 有效护甲每 1 点 ≈ 0.333% 的减伤（这里用 *0.333f 来近似） - (100 - 减伤%) / 100.f 得到最终伤害倍率
 	Damage *= ( 100 - EffectiveArmor * EffectiveArmorCoefficient ) / 100.f;
 
@@ -209,7 +218,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	// 从角色职业信息中获取伤害计算相关系数表里的 "CriticalHitResistance" 曲线
 	const FRealCurve* CriticalHitResistanceCurve = CharacterClassInfo->DamageCalculationCoefficients->FindCurve(FName("CriticalHitResistance"),FString());
 	// 根据目标玩家等级，从曲线上评估对应的暴击抗性系数
-	const float CriticalHitResistanceCoefficient = CriticalHitResistanceCurve->Eval(TargetCombatInterface->GetPlayerLevel());
+	const float CriticalHitResistanceCoefficient = CriticalHitResistanceCurve->Eval(TargetPlayerLevel);
 	
 	// Critical Hit Resistance reduces Critical Hit Chance by a certain percentage暴击抗性使暴击率降低一定百分比
 	// 计算有效暴击率：来源暴击率 - (目标暴击抗性 * 系数) 系数 0.15f 表示：每点抗性降低 0.15% 的暴击几率

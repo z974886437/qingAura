@@ -48,7 +48,12 @@ void AAuraCharacter::AddToXP_Implementation(int32 InXP)
 	AuraPlayerState->AddToXP(InXP);
 }
 
-int32 AAuraCharacter::GetPlayerLevel()
+void AAuraCharacter::LevelUp_Implementation()
+{
+	
+}
+
+int32 AAuraCharacter::GetPlayerLevel_Implementation()
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
 	const AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();

@@ -32,8 +32,11 @@ float UMMC_MaxMana::CalculateBaseMagnitude_Implementation(const FGameplayEffectS
 	GetCapturedAttributeMagnitude(IntDef,Spec,EvaluationParameters,Int);
 	Int = FMath::Max<float>(Int,0.f);//Int 最小值为0
 
-	ICombatInterface* CombatInterface = Cast<ICombatInterface>(Spec.GetContext().GetSourceObject());
-	const int32 PlayerLevel = CombatInterface->GetPlayerLevel();
-
+	int32 PlayerLevel = 1;// 默认玩家等级为 1
+	if (Spec.GetContext().GetSourceObject()->Implements<UCombatInterface>())// 如果技能效果的来源对象实现了 CombatInterface 接口
+	{
+		PlayerLevel = ICombatInterface::Execute_GetPlayerLevel(Spec.GetContext().GetSourceObject());// 通过接口获取来源对象的玩家等级，并赋值给 PlayerLevel
+	}
+	
 	return 50.f + 2.5f * Int + 15.f * PlayerLevel;
 }
