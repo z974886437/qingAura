@@ -267,5 +267,5 @@ public:
 private:
 	void SetEffectProperties(const struct FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
 	void ShowFloatingText(const FEffectProperties& Props,float Damage,bool bBlockedHit,bool bCriticalHit) const;//显示浮动文本
-
+	void SendXPEvent(const FEffectProperties& Props);//发送 XP 事件
 };

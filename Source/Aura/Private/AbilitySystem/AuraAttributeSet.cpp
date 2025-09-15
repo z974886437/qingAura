@@ -8,6 +8,7 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 #include "AuraGameplayTags.h"
+#include "NativeGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Aura/AuraLogChannels.h"
 #include "Interaction/CombatInterface.h"
@@ -178,6 +179,7 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 				{
 					CombatInterface->Die();// 调用接口里的 Die() 函数 → 触发目标的死亡逻辑
 				}
+				SendXPEvent(Props);
 			}
 			else
 			{
@@ -195,7 +197,24 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 	{
 		const float LocalIncomingXP = GetIncomingXP();
 		SetIncomingXP(0.f);
-		UE_LOG(LogAura,Log,TEXT("Incoming XP:%f"),LocalIncomingXP);
+		//UE_LOG(LogAura,Log,TEXT("Incoming XP:%f"),LocalIncomingXP);
+	}
+}
+
+void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
+{
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetCharacter))// 判断目标是否实现了战斗接口（CombatInterface），确保能获取等级和职业
+	{
+		const int32 TargetLevel = CombatInterface->GetPlayerLevel();// 获取目标角色等级
+		const ECharacterClass TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);// 获取目标角色职业（比如战士、法师）
+		const int32 XPReward = UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(Props.TargetCharacter,TargetClass,TargetLevel);// 根据目标职业和等级，计算应该奖励多少经验值
+
+		const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 获取全局 GameplayTags 单例，用于标记事件类型
+		FGameplayEventData Payload;// 构造 GameplayEvent 的数据载体（Payload）
+		Payload.EventTag = GameplayTags.Attributes_Meta_IncomingXP;// 事件标签 → "获得经验"
+		Payload.EventMagnitude = XPReward; // 事件强度 → 经验数值
+		// 发送 GameplayEvent 给源角色（通常是击杀者），让它能获得经验奖励
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Props.SourceCharacter,GameplayTags.Attributes_Meta_IncomingXP,Payload);
 	}
 }
 
