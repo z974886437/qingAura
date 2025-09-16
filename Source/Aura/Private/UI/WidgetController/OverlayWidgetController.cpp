@@ -23,6 +23,13 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
 	AuraPlayerState->OnXPChangedDelegate.AddUObject(this,&UOverlayWidgetController::OnXPChanged);// 把当前控制器的 OnXPChanged 绑定到经验值变化事件 → XP 一更新就能自动调用 UI 更新函数
+	AuraPlayerState->OnLevelChangedDelegate.AddLambda(
+		[this](int32 NewLevel)
+		{
+			OnPlayerLevelChangedDelegate.Broadcast(NewLevel);	
+		}
+	);
+	
 	
 	const UAuraAttributeSet* AuraAttributeSet = CastChecked<UAuraAttributeSet>(AttributeSet);
 
