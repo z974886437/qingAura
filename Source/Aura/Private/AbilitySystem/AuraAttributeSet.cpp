@@ -201,8 +201,33 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 		//UE_LOG(LogAura,Log,TEXT("Incoming XP:%f"),LocalIncomingXP);
 
 		//TODO:See if we should level up 判断是否应该升级
-		if (Props.SourceCharacter->Implements<UPlayerInterface>())// 确认角色实现了 PlayerInterface 才能调用接口
+
+		//Source Character is the owner, since GA_ListenForEvents applies GE_EventBasedEffect,adding to InComingXP
+		//源字符是所有者，因为GA_ListenForEvents应用GE_EventBasedEffect，添加到 InComingXP
+		if (Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())// 确认角色实现了 PlayerInterface 才能调用接口
 		{
+			const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);// 获取角色当前等级（通过 CombatInterface）
+			const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);// 获取角色当前经验值（通过 PlayerInterface）
+			
+			const int32 NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter,CurrentXP + LocalIncomingXP);// 计算加上这次获得的经验后的新等级
+			const int32 NumLevelUps = NewLevel - CurrentLevel;// 计算实际升级了多少级（新等级 - 旧等级）
+			if (NumLevelUps > 0)// 如果确实升级了（等级差 > 0）
+			{
+				// TODO: 目前只取当前等级的奖励，通常应该按每一级循环发放奖励
+				const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter,CurrentLevel);
+				const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter,CurrentLevel);
+
+				IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter,NumLevelUps);// 给角色增加等级
+				IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter,AttributePointsReward);// 增加属性点奖励
+				IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter,SpellPointsReward);// 增加技能点奖励
+
+				// 升级时满血满蓝
+				SetHealth(GetMaxHealth());
+				SetMana(GetMaxMana());
+				
+				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);// 调用角色的升级事件（比如播放特效、UI提示）
+			}
+			
 			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 调用接口，把经验加到 SourceCharacter（通常是玩家自己）身上
 		}
 	}
