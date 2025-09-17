@@ -9,10 +9,27 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
+#include "NiagaraComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "UI/HUD/AuraHUD.h"
 
 AAuraCharacter::AAuraCharacter()
 {
+	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");// 创建一个弹簧臂组件，用于挂载摄像机并控制其跟随和旋转
+	CameraBoom->SetupAttachment(GetRootComponent());// 将弹簧臂挂载到角色根组件上
+	CameraBoom->SetUsingAbsoluteRotation(true);// 使用绝对旋转而非继承自父组件的旋转
+	CameraBoom->bDoCollisionTest = false;// 禁用碰撞检测，避免弹簧臂被墙壁等阻挡摄像机
+
+	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>("ToDownCameraComponent");// 创建一个摄像机组件，作为顶视摄像机
+	TopDownCameraComponent->SetupAttachment(CameraBoom,USpringArmComponent::SocketName);// 将摄像机挂载到弹簧臂末端
+	TopDownCameraComponent->bUsePawnControlRotation = false;// 摄像机不使用角色控制器旋转（顶视角通常不需要角色旋转影响）
+	
+	LevelUpNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>("LevelUpNiagaraComponent");// 创建一个 Niagara 粒子组件，用于播放升级特效
+	LevelUpNiagaraComponent->SetupAttachment(GetRootComponent());// 将粒子组件挂载到角色根组件
+	LevelUpNiagaraComponent->bAutoActivate = false;// 默认不自动激活，需要手动触发特效
+	
+	
 	GetCharacterMovement()->bOrientRotationToMovement = true;//让角色的朝向跟随移动方向自动旋转
 	GetCharacterMovement()->RotationRate = FRotator(0.f,400.f,0.f);//设置角色移动组件（Character Movement Component）的旋转速率
 	GetCharacterMovement()->bConstrainToPlane = true;//限制角色移动在一个特定平面上
@@ -51,7 +68,19 @@ void AAuraCharacter::AddToXP_Implementation(int32 InXP)
 
 void AAuraCharacter::LevelUp_Implementation()
 {
-	
+	MulticastLevelUpParticles();
+}
+
+void AAuraCharacter::MulticastLevelUpParticles_Implementation() const
+{
+	if (IsValid(LevelUpNiagaraComponent))// 检查粒子组件是否有效，避免空指针或已被销毁
+	{
+		const FVector CameraLocation = TopDownCameraComponent->GetComponentLocation(); // 获取摄像机当前位置
+		const FVector NiagaraSystemLocation = LevelUpNiagaraComponent->GetComponentLocation();// 获取粒子系统当前位置
+		const FRotator ToCameraRotation = (CameraLocation - NiagaraSystemLocation).Rotation();// 计算粒子系统指向摄像机的旋转（让粒子面向摄像机）
+		LevelUpNiagaraComponent->SetWorldRotation(ToCameraRotation);// 设置粒子系统的世界旋转，使其朝向摄像机
+		LevelUpNiagaraComponent->Activate(true); // 激活粒子系统，播放升级特效
+	}
 }
 
 int32 AAuraCharacter::GetXP_Implementation() const
@@ -133,4 +162,6 @@ void AAuraCharacter::InitAbilityActorInfo()
 	}
 	InitializeDefaultAttributes();//初始化默认属性
 }
+
+
 
