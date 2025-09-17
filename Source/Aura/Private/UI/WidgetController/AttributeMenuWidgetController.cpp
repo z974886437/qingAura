@@ -6,6 +6,7 @@
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/AttributeInfo.h"
 #include "AuraGameplayTags.h"
+#include "Player/AuraPlayerState.h"
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
@@ -35,6 +36,15 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
+
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
+	// 给 AuraPlayerState 的“属性点变化”委托绑定一个 Lambda（匿名函数）
+	AuraPlayerState->OnAttributePointsChangedDelegate.AddLambda(
+		[this](int32 Points)// 捕获 this，接收属性点变化后的值
+		{
+			AttributePointsChangedDelegate.Broadcast(Points);// 转发广播 → 把 PlayerState 的事件再通知到自己（WidgetController）
+		}
+	);
 }
 
 

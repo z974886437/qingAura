@@ -26,6 +26,9 @@ public:
 	UPROPERTY(BlueprintAssignable,Category = "GSA|Attributes")
 	FAttributeInfoSignature AttributeInfoDelegate;//属性信息委托
 
+	UPROPERTY(BlueprintAssignable,Category = "GSA|Attributes")
+	FOnPlayerStatChangedSignature AttributePointsChangedDelegate;
+
 protected:
 
 	UPROPERTY(EditDefaultsOnly)
