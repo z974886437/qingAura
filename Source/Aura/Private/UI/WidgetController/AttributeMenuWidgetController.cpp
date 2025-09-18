@@ -47,8 +47,6 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 	);
 }
 
-
-
 void UAttributeMenuWidgetController::BroadcastInitialValues()
 {
 	// 将 AttributeSet 强制转换为 UAuraAttributeSet 类型，确保是我们定义的属性集类
@@ -66,6 +64,10 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	{
 		BroadcastAttributeInfo(Pair.Key,Pair.Value());
 	}
+
+	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
+	AttributePointsChangedDelegate.Broadcast(AuraPlayerState->GetAttributePoints());
+	
 }
 
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag,const FGameplayAttribute& Attribute) const
