@@ -35,16 +35,22 @@ public:
 	int32 GetSpellPointsReward(int32 Level) const;//获得法术积分奖励
 
 	UFUNCTION(BlueprintNativeEvent)
-	void AddToXP(int32 InXP);
+	void AddToXP(int32 InXP);//添加到XP
 
 	UFUNCTION(BlueprintNativeEvent)
-	void AddToPlayerLevel(int32 InPlayerLevel);
+	void AddToPlayerLevel(int32 InPlayerLevel);//添加到玩家等级
 
 	UFUNCTION(BlueprintNativeEvent)
-	void AddToAttributePoints(int32 InAttributePoints);
+	void AddToAttributePoints(int32 InAttributePoints);//添加到属性点
 
 	UFUNCTION(BlueprintNativeEvent)
-	void AddToSpellPoints(int32 InSpellPoints);
+	int32 GetAttributePoints() const;//获取属性点
+
+	UFUNCTION(BlueprintNativeEvent)
+	void AddToSpellPoints(int32 InSpellPoints);//添加到法术点
+
+	UFUNCTION(BlueprintNativeEvent)
+	int32 GetSpellPoints() const;//获取法术点
 	
 	UFUNCTION(BlueprintNativeEvent)
 	void LevelUp();

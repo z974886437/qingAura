@@ -6,6 +6,7 @@
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/AttributeInfo.h"
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Player/AuraPlayerState.h"
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
@@ -68,6 +69,14 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
 	AttributePointsChangedDelegate.Broadcast(AuraPlayerState->GetAttributePoints());
 	
+}
+
+void UAttributeMenuWidgetController::UpgradeAttribute(const FGameplayTag& AttributeTag)
+{
+	// 把基类 AbilitySystemComponent 强转为我们项目自定义的 AuraASC
+	// CastChecked：强转失败会直接报错，保证类型一定正确
+	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
+	AuraASC->UpgradeAttribute(AttributeTag); // 调用 AuraASC 内部的 UpgradeAttribute 方法，执行属性升级逻辑
 }
 
 void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& AttributeTag,const FGameplayAttribute& Attribute) const

@@ -140,6 +140,22 @@ void AAuraCharacter::AddToSpellPoints_Implementation(int32 InSpellPoints)
 	AuraPlayerState->AddToSpellPoints(InSpellPoints);
 }
 
+int32 AAuraCharacter::GetAttributePoints_Implementation() const
+{
+	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
+	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	check(AuraPlayerState);
+	return AuraPlayerState->GetAttributePoints();
+}
+
+int32 AAuraCharacter::GetSpellPoints_Implementation() const
+{
+	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
+	AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
+	check(AuraPlayerState);
+	return AuraPlayerState->GetSpellPoints();
+}
+
 int32 AAuraCharacter::GetPlayerLevel_Implementation()
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）

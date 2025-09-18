@@ -3,9 +3,11 @@
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "Aura/AuraLogChannels.h"
+#include "Interaction/PlayerInterface.h"
 
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
@@ -121,6 +123,32 @@ FGameplayTag UAuraAbilitySystemComponent::GetInputTagFromSpec(const FGameplayAbi
 		}
 	}
 	return FGameplayTag(); // 如果没有找到，返回空标签
+}
+
+void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag)// 升级指定属性：检查是否有可用点数，有的话通知服务端执行升级
+{
+	if (GetAvatarActor()->Implements<UPlayerInterface>())// 判断角色是否实现了 PlayerInterface（只有玩家才有属性点）
+	{
+		if (IPlayerInterface::Execute_GetAttributePoints(GetAvatarActor()) > 0)// 从接口获取当前可用的属性点数，只有 > 0 才能升级
+		{
+			ServerUpgradeAttribute(AttributeTag); // 调用服务端 RPC，真正执行属性升级逻辑（防止客户端作弊）
+		}
+	}
+}
+
+void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FGameplayTag& AttributeTag)// 服务端执行属性升级：触发 GameplayEvent 并消耗 1 点属性点
+{
+	// 构造事件数据：指定事件标签（要升级的属性）和数值（升级幅度）
+	FGameplayEventData Payload;
+	Payload.EventTag = AttributeTag;
+	Payload.EventMagnitude = 1.f;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(GetAvatarActor(),AttributeTag,Payload);// 向 AvatarActor 发送 GameplayEvent，触发 GAS 中对应的 Ability 或 Effect
+
+	if (GetAvatarActor()->Implements<UPlayerInterface>())// 如果是玩家角色，就从接口中减去 1 点属性点
+	{
+		IPlayerInterface::Execute_AddToAttributePoints(GetAvatarActor(),-1);
+	}
 }
 
 void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
