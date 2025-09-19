@@ -222,14 +222,30 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectMo
 				IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter,SpellPointsReward);// 增加技能点奖励
 
 				// 升级时满血满蓝
-				SetHealth(GetMaxHealth());
-				SetMana(GetMaxMana());
+				bTopOffHealth = true;
+				bTopOffMana = true;
 				
 				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);// 调用角色的升级事件（比如播放特效、UI提示）
 			}
 			
 			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 调用接口，把经验加到 SourceCharacter（通常是玩家自己）身上
 		}
+	}
+}
+
+void UAuraAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)// 当属性值发生改变时会调用这个回调函数
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);// 先调用父类逻辑，保证基类处理正常
+
+	if (Attribute == GetMaxHealthAttribute() && bTopOffHealth)// 如果 MaxHealth 被修改，并且允许 TopOff（把血量补满）
+	{
+		SetHealth(GetMaxHealth());// 把当前血量直接设置为最大血量
+		bTopOffHealth = false;
+	}
+	if (Attribute == GetMaxManaAttribute() && bTopOffMana)// 如果 MaxMana 被修改，并且允许 TopOff（把蓝量补满）
+	{
+		SetMana(GetMaxMana());// 把当前法力值直接设置为最大法力
+		bTopOffMana = false;
 	}
 }
 
