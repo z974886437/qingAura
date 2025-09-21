@@ -59,6 +59,18 @@ public:
 
 	FGameplayTag Abilities_Attack;//技能_攻击
 	FGameplayTag Abilities_Summon;//技能_召唤
+
+	FGameplayTag Abilities_HitReact;//技能_击中反应
+
+	FGameplayTag Abilities_Status_Locked;//技能_状态_锁定
+	FGameplayTag Abilities_Status_Eligible;//技能_状态_资格
+	FGameplayTag Abilities_Status_Unlocked;//技能_状态_锁定
+	FGameplayTag Abilities_Status_Equipped;//技能_状态_装备
+
+	FGameplayTag Abilities_Type_Offensive;//能力_类型_攻击
+	FGameplayTag Abilities_Type_Passive;//能力_类型_被动
+	FGameplayTag Abilities_Type_None;//能力_类型_无
+	
 	FGameplayTag Abilities_Fire_FireBolt;//技能_火_火弩箭
 
 	FGameplayTag Cooldown_Fire_FireBolt;//冷却_火_火弩箭

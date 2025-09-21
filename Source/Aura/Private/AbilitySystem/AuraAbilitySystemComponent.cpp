@@ -24,26 +24,29 @@ void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 	// 	);
 }
 
+// 作用：为角色批量添加预设技能，并给这些技能打上初始标签
+// 原因：在角色初始化时需要绑定固定技能（比如普攻、冲刺），并标记它们的状态和输入映射
 void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities)
 {
-	for (const TSubclassOf<UGameplayAbility> AbilityClass : StartupAbilities)
+	for (const TSubclassOf<UGameplayAbility> AbilityClass : StartupAbilities) // 遍历传入的所有技能类
 	{
 		// 遍历所有预设的技能类（StartupAbilities 是一个 TArray<TSubclassOf<UGameplayAbility>>）
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);// 创建一个技能实例说明（Spec），默认等级为1
 		
-		if (const UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec.Ability))
+		if (const UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec.Ability)) // 确认这个技能是自定义的 UAuraGameplayAbility（确保有我们扩展的字段）
 		{
 			// 将技能的 StartupInputTag 添加到这个技能实例的“动态标签列表”中
 			// 动态标签可以在运行时控制技能行为，例如绑定输入、分组判断等
 			AbilitySpec.DynamicAbilityTags.AddTag(AuraAbility->StartupInputTag);
+			AbilitySpec.DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Abilities_Status_Equipped);// 给技能额外打上一个“装备中”状态标签，方便统一管理
 			// 将这个技能赋予角色（但不会自动激活）
 			GiveAbility(AbilitySpec);
 		}
 	}
 	// 将这个技能赋予角色，并且只激活一次（比如一次性技能）
 	//GiveAbilityAndActivateOnce(AbilitySpec);
-	bStartupAbilitiesGiven = true;
-	AbilitiesGivenDelegate.Broadcast();
+	bStartupAbilitiesGiven = true;// 记录“初始化技能已赋予”，避免重复执行
+	AbilitiesGivenDelegate.Broadcast();// 广播一个事件，告诉外界“技能已经全部给完”
 }
 
 void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities)
@@ -123,6 +126,20 @@ FGameplayTag UAuraAbilitySystemComponent::GetInputTagFromSpec(const FGameplayAbi
 		}
 	}
 	return FGameplayTag(); // 如果没有找到，返回空标签
+}
+
+// 作用：从 AbilitySpec 的标签中找到一个 "Abilities.Status" 相关的状态标签
+// 原因：技能在被授予时可能动态附加状态标签，这里需要快速提取对应的状态（如眩晕、中毒）
+FGameplayTag UAuraAbilitySystemComponent::GetStatusFromSpec(const FGameplayAbilitySpec& AbilitySpec)
+{
+	for (FGameplayTag StatusTag : AbilitySpec.DynamicAbilityTags)// 遍历这个技能实例的动态标签
+	{
+		if (StatusTag.MatchesTag(FGameplayTag::RequestGameplayTag(FName("Abilities.Status")))) // 如果这个标签属于 "Abilities.Status" 范畴（比如 Abilities.Status.Stun）
+		{
+			return StatusTag;// 找到后立即返回这个具体状态标签
+		}
+	}
+	return FGameplayTag();// 如果没有找到，返回一个空的 GameplayTag
 }
 
 void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag)// 升级指定属性：检查是否有可用点数，有的话通知服务端执行升级
