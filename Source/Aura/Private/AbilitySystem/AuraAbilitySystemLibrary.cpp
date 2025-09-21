@@ -8,47 +8,65 @@
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
-#include "UI/WidgetController//AuraWidgetController.h"
 #include "Player/AuraPlayerState.h"
 #include "UI/HUD/AuraHUD.h"
+#include "UI/WidgetController/AuraWidgetController.h"
+
+bool UAuraAbilitySystemLibrary::MakeWidgetControllerParams(const UObject* WorldContextObject,FWidgetControllerParams& OutWCParams,AAuraHUD*& OutAuraHUD)
+{
+	// 尝试从世界上下文对象获取索引为 0 的玩家控制器（一般是本地玩家）
+	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject,0))
+	{
+		OutAuraHUD = Cast<AAuraHUD>(PC->GetHUD());// 获取当前 HUD，并转型为自定义的 AAuraHUD
+		if (OutAuraHUD)// 如果 HUD 有效，继续提取 GAS 相关对象
+		{
+			AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>();// 玩家状态，存放 GAS 相关信息
+			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();// AbilitySystemComponent：GAS 核心组件，管理技能和效果
+			UAttributeSet* AS = PS->GetAttributeSet();// AttributeSet：存放血量、蓝量、攻击力等属性
+
+			// 把这些依赖打包进 WidgetControllerParams
+			OutWCParams.AttributeSet = AS;
+			OutWCParams.AbilitySystemComponent = ASC;
+			OutWCParams.PlayerState = PS;
+			OutWCParams.PlayerController = PC;
+			return true;// 成功构建参数
+		}
+	}
+	return false; // 获取失败，HUD 或 PC 不存在
+}
 
 // 获取用于控制主 UI 叠加层（Overlay）的 Widget 控制器（Controller）对象
 UOverlayWidgetController* UAuraAbilitySystemLibrary::GetOverlayWidgetController(const UObject* WorldContextObject)
 {
-	// 尝试从世界上下文对象获取索引为 0 的玩家控制器（一般是本地玩家）
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject,0))
+	FWidgetControllerParams WCParams; // 声明一个 WidgetController 参数结构体（用于初始化控制器）
+	AAuraHUD* AuraHUD = nullptr;// 准备一个 HUD 指针，用来接收 AuraHUD
+	if (MakeWidgetControllerParams(WorldContextObject,WCParams,AuraHUD))// 调用上一个工具函数，尝试获取 WCParams 和 AuraHUD
 	{
-		// 将 HUD 强转为自定义的 AAuraHUD，确保我们有能力访问 Aura 专属的 UI 系统
-		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
-		{
-			AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>();// 获取玩家状态（PlayerState），通常保存属性和能力组件
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();// 从 PlayerState 获取 GAS 的核心组件 AbilitySystemComponent
-			UAttributeSet* AS = PS->GetAttributeSet();// 获取属性集 AttributeSet，包含血量、法力等自定义属性
-			const FWidgetControllerParams WidgetControllerParams(PC,PS,ASC,AS);// 构造控件控制器所需的参数结构体（封装了 UI 所需要的数据来源）
-			return AuraHUD->GetOverlayWidgetController(WidgetControllerParams);// 返回主 UI 控制器实例（用于驱动血条、蓝条等 HUD 显示）
-		}
+		return AuraHUD->GetOverlayWidgetController(WCParams);// 如果成功，就从 HUD 里获取 OverlayWidgetController
 	}
-	return nullptr;// 如果以上任何一步失败，返回空指针
+	return nullptr;// 如果失败（找不到 PlayerController/HUD/PlayerState/ASC/AS），返回空指针
 }
 
-UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidgetController(
-	const UObject* WorldContextObject)
+UAttributeMenuWidgetController* UAuraAbilitySystemLibrary::GetAttributeMenuWidgetController(const UObject* WorldContextObject)
 {
-	// 尝试从世界上下文对象获取索引为 0 的玩家控制器（一般是本地玩家）
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(WorldContextObject,0))
+	FWidgetControllerParams WCParams; // 声明一个 WidgetController 参数结构体（用于初始化控制器）
+	AAuraHUD* AuraHUD = nullptr;// 准备一个 HUD 指针，用来接收 AuraHUD
+	if (MakeWidgetControllerParams(WorldContextObject,WCParams,AuraHUD))// 调用上一个工具函数，尝试获取 WCParams 和 AuraHUD
 	{
-		// 将 HUD 强转为自定义的 AAuraHUD，确保我们有能力访问 Aura 专属的 UI 系统
-		if (AAuraHUD* AuraHUD = Cast<AAuraHUD>(PC->GetHUD()))
-		{
-			AAuraPlayerState* PS = PC->GetPlayerState<AAuraPlayerState>();// 获取玩家状态（PlayerState），通常保存属性和能力组件
-			UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();// 从 PlayerState 获取 GAS 的核心组件 AbilitySystemComponent
-			UAttributeSet* AS = PS->GetAttributeSet();// 获取属性集 AttributeSet，包含血量、法力等自定义属性
-			const FWidgetControllerParams WidgetControllerParams(PC,PS,ASC,AS);// 构造控件控制器所需的参数结构体（封装了 UI 所需要的数据来源）
-			return AuraHUD->GetAttributeMenuWidgetController(WidgetControllerParams);// 返回属性菜单小部件控制器
-		}
+		return AuraHUD->GetAttributeMenuWidgetController(WCParams);// 如果成功，就从 HUD 里获取 OverlayWidgetController
 	}
-	return nullptr;// 如果以上任何一步失败，返回空指针
-	
+	return nullptr;// 如果失败（找不到 PlayerController/HUD/PlayerState/ASC/AS），返回空指针
+}
+
+USpellMenuWidgetController* UAuraAbilitySystemLibrary::GetSpellMenuWidgetController(const UObject* WorldContextObject)
+{
+	FWidgetControllerParams WCParams; // 声明一个 WidgetController 参数结构体（用于初始化控制器）
+	AAuraHUD* AuraHUD = nullptr;// 准备一个 HUD 指针，用来接收 AuraHUD
+	if (MakeWidgetControllerParams(WorldContextObject,WCParams,AuraHUD))// 调用上一个工具函数，尝试获取 WCParams 和 AuraHUD
+	{
+		return AuraHUD->GetSpellMenuWidgetController(WCParams);// 如果成功，就从 HUD 里获取 OverlayWidgetController
+	}
+	return nullptr;// 如果失败（找不到 PlayerController/HUD/PlayerState/ASC/AS），返回空指针
 }
 
 void UAuraAbilitySystemLibrary::InitializeDefaultAttributes(const UObject* WorldContextObject,ECharacterClass CharacterClass, float Level,UAbilitySystemComponent* ASC)

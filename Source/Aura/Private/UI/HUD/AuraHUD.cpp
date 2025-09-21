@@ -7,6 +7,7 @@
 #include "UI/Widget/AuraUserWidget.h"
 #include "UI/WidgetController/AttributeMenuWidgetController.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
+#include "UI/WidgetController/SpellMenuWidgetController.h"
 
 // 获取主 UI 控件控制器（OverlayWidgetController）
 // 如果尚未创建，则创建、初始化并绑定依赖项
@@ -36,6 +37,18 @@ UAttributeMenuWidgetController* AAuraHUD::GetAttributeMenuWidgetController(const
 	return AttributeMenuWidgetController;// 返回已存在或刚创建好的控件控制器
 }
 
+USpellMenuWidgetController* AAuraHUD::GetSpellMenuWidgetController(const FWidgetControllerParams& WCParams)
+{
+	if (SpellMenuWidgetController == nullptr)
+	{
+		// 创建 SpellMenuWidgetController 对象，父对象是 this，类型来自 SpellMenuWidgetControllerClass
+		SpellMenuWidgetController = NewObject<USpellMenuWidgetController>(this,SpellMenuWidgetControllerClass);
+		SpellMenuWidgetController->SetWidgetControllerParams(WCParams);// 给控制器传递初始化参数（通常是玩家状态、能力系统组件、属性集等）
+		SpellMenuWidgetController->BindCallbacksToDependencies();// 绑定控制器和数据依赖，比如监听属性变化、事件回调等
+	}
+	return SpellMenuWidgetController;// 返回 SpellMenuWidgetController 引用
+}
+
 void AAuraHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySystemComponent* ASC, UAttributeSet* AS)
 {
 	//叠加小部件控制器类未初始化，请填写BP_AuraHUD
@@ -49,18 +62,11 @@ void AAuraHUD::InitOverlay(APlayerController* PC, APlayerState* PS, UAbilitySyst
 	//UI 控制器初始化流程
 	const FWidgetControllerParams WidgetControllerParams(PC,PS,ASC,AS);
 	UOverlayWidgetController* WidgetController = GetOverlayWidgetController(WidgetControllerParams);
-
-	//把控制器（WidgetController）传递给 UI Widget（OverlayWidget），通常是为了让 UI 组件能够访问、绑定、响应控制器中的数据或事件
-	OverlayWidget->SetWidgetController(WidgetController);
-	//初始化 UI 的显示内容 —— 比如血条、蓝条、经验条，在 UI 创建后立即更新为当前角色的实际值
-	WidgetController->BroadcastInitialValues();
+	
+	OverlayWidget->SetWidgetController(WidgetController);//把控制器（WidgetController）传递给 UI Widget（OverlayWidget），通常是为了让 UI 组件能够访问、绑定、响应控制器中的数据或事件
+	WidgetController->BroadcastInitialValues();//初始化 UI 的显示内容 —— 比如血条、蓝条、经验条，在 UI 创建后立即更新为当前角色的实际值
 	
 	Widget->AddToViewport();//添加到视口
 	
 }
 
-// void AAuraHUD::BeginPlay()
-// {
-// 	Super::BeginPlay();
-// 	
-// }
