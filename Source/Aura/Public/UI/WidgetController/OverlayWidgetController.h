@@ -33,7 +33,7 @@ class UAuraAbilitySystemComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);//属性更改签名的多播委托
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature,FUIWidgetRow,Row);//消息小部件行签名
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAbilityInfoSignature,const FAuraAbilityInfo&,Info);//技能信息签名
+
 
 
 
@@ -63,9 +63,6 @@ public:
 	UPROPERTY(BlueprintAssignable,Category = "GAS|Messages")
 	FMessageWidgetRowSignature MessageWidgetRowDelegate;//消息小部件 行 委托
 
-	UPROPERTY(BlueprintAssignable,Category = "GAS|Messages")
-	FAbilityInfoSignature AbilityInfoDelegate;//技能信息委托
-
 	UPROPERTY(BlueprintAssignable,Category = "GAS|XP")
 	FOnAttributeChangedSignature OnXPPercentChangeDelegate;//在 XP 百分比变化委托上
 
@@ -77,15 +74,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Widget Data")
 	TObjectPtr<UDataTable> MessageWidgetDataTable;//消息小部件数据表
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly,Category = "Widget Data")
-	TObjectPtr<UAbilityInfo> AbilityInfo;//技能信息
-
 	template<typename T>
 	T* GetDataTableRowByTag(UDataTable* DataTable,const FGameplayTag& Tag);//按标签的表格行 接受一个数据表和一个标签
 
-	void OnInitializeStartupAbilities(UAuraAbilitySystemComponent* AuraAbilitySystemComponent);//初始化启动能力
-
-	void OnXPChanged(int32 NewXP) const;//经验值更改
+	void OnXPChanged(int32 NewXP);//经验值更改
 };
 
 template <typename T>

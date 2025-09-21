@@ -43,7 +43,7 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 	// 将这个技能赋予角色，并且只激活一次（比如一次性技能）
 	//GiveAbilityAndActivateOnce(AbilitySpec);
 	bStartupAbilitiesGiven = true;
-	AbilitiesGivenDelegate.Broadcast(this);
+	AbilitiesGivenDelegate.Broadcast();
 }
 
 void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities)
@@ -158,7 +158,7 @@ void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
 	if (!bStartupAbilitiesGiven)// 如果初始技能还没被标记为“已赋予”
 	{
 		bStartupAbilitiesGiven = true;// 标记一下，避免重复广播
-		AbilitiesGivenDelegate.Broadcast(this);// 广播一个委托，告诉外部：初始技能已经同步完成，可以做 UI 或初始化逻辑
+		AbilitiesGivenDelegate.Broadcast();// 广播一个委托，告诉外部：初始技能已经同步完成，可以做 UI 或初始化逻辑
 	}
 }
 

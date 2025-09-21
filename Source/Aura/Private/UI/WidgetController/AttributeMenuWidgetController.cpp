@@ -11,15 +11,11 @@
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
-	// 将基类 AttributeSet 强制转换为你自定义的 AuraAttributeSet，方便访问你自定义的 TagsToAttributes 等内容
-	// CastChecked 如果转换失败，会在开发环境中触发断言，便于调试
-	UAuraAttributeSet* AS = CastChecked<UAuraAttributeSet>(AttributeSet);
-
 	check(AttributeInfo);// 检查 AttributeInfo 是否有效，防止后续空指针崩溃
 	
 	// 遍历你在 AttributeSet 中维护的 标签 → 属性 映射表（TagsToAttributes）
 	// 例如：FGameplayTag("Attributes.Health") → FGameplayAttribute(Health)
-	for (auto& Pair : AS->TagsToAttributes)
+	for (auto& Pair : GetAuraAS()->TagsToAttributes)
 	{
 		// 对每一个属性（比如 Health、Mana）注册一个值变化的回调函数（Delegate）
 		// 当这个属性数值发生变化时，会自动触发这个 lambda 回调
@@ -37,10 +33,9 @@ void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 			}
 		);
 	}
-
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
+	
 	// 给 AuraPlayerState 的“属性点变化”委托绑定一个 Lambda（匿名函数）
-	AuraPlayerState->OnAttributePointsChangedDelegate.AddLambda(
+	GetAuraPS()->OnAttributePointsChangedDelegate.AddLambda(
 		[this](int32 Points)// 捕获 this，接收属性点变化后的值
 		{
 			AttributePointsChangedDelegate.Broadcast(Points);// 转发广播 → 把 PlayerState 的事件再通知到自己（WidgetController）
@@ -65,9 +60,8 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	{
 		BroadcastAttributeInfo(Pair.Key,Pair.Value());
 	}
-
-	AAuraPlayerState* AuraPlayerState = CastChecked<AAuraPlayerState>(PlayerState);// CastChecked：把基类 PlayerState 强转为 AAuraPlayerState，失败会直接报错 → 保证类型一定正确
-	AttributePointsChangedDelegate.Broadcast(AuraPlayerState->GetAttributePoints());
+	
+	AttributePointsChangedDelegate.Broadcast(GetAuraPS()->GetAttributePoints());
 	
 }
 
