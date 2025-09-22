@@ -5,7 +5,9 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AuraGameplayTags.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "Aura/AuraLogChannels.h"
 #include "Interaction/PlayerInterface.h"
 
@@ -142,6 +144,22 @@ FGameplayTag UAuraAbilitySystemComponent::GetStatusFromSpec(const FGameplayAbili
 	return FGameplayTag();// 如果没有找到，返回一个空的 GameplayTag
 }
 
+FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)// 根据技能标签查找对应的 AbilitySpec，返回指针，如果没找到返回 nullptr
+{
+	FScopedAbilityListLock ActiveScopeLoc(*this);// 加锁，防止在遍历技能列表时发生并发修改（如添加/移除技能）
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())// 遍历当前角色所有可激活的技能（AbilitySpec 是技能实例化后的数据）
+	{
+		for (FGameplayTag Tag : AbilitySpec.Ability.Get()->AbilityTags)// 遍历该技能的标签（AbilityTags 通常标识技能类别/用途）
+		{
+			if (Tag.MatchesTag(AbilityTag))// 判断技能是否匹配目标标签（MatchesTag 支持层级匹配，比如 Fire.Skill 匹配 Fire）
+			{
+				return &AbilitySpec;	// 找到就返回该技能的 AbilitySpec 指针
+			}
+		}
+	}
+	return nullptr;// 没找到就返回空指针
+}
+
 void UAuraAbilitySystemComponent::UpgradeAttribute(const FGameplayTag& AttributeTag)// 升级指定属性：检查是否有可用点数，有的话通知服务端执行升级
 {
 	if (GetAvatarActor()->Implements<UPlayerInterface>())// 判断角色是否实现了 PlayerInterface（只有玩家才有属性点）
@@ -165,6 +183,26 @@ void UAuraAbilitySystemComponent::ServerUpgradeAttribute_Implementation(const FG
 	if (GetAvatarActor()->Implements<UPlayerInterface>())// 如果是玩家角色，就从接口中减去 1 点属性点
 	{
 		IPlayerInterface::Execute_AddToAttributePoints(GetAvatarActor(),-1);
+	}
+}
+
+// 根据玩家等级更新技能状态：
+// 如果等级达标但技能还没获得，就分发给玩家并标记为“可用”
+void UAuraAbilitySystemComponent::UpdateAbilityStatuses(int32 Level)
+{
+	// 从 AbilitySystemLibrary 获取技能配置信息（包含所有技能的需求等级和标签）
+	UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	for (const FAuraAbilityInfo& Info : AbilityInfo->AbilityInformation)// 遍历技能信息表，逐个检查
+	{
+		if (!Info.AbilityTag.IsValid()) continue;// 如果技能没有标签，跳过（无效数据）
+		if (Level < Info.LevelRequirement) continue;// 如果当前等级不足以满足技能需求等级，跳过（玩家等级不够解锁）
+		if (GetSpecFromAbilityTag(Info.AbilityTag)  == nullptr)// 如果玩家还没获得这个技能（根据标签在已有技能里查不到）
+		{
+			FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(Info.Ability,1);// 创建一个技能实例（FGameplayAbilitySpec：存放技能等级、冷却、状态等）
+			AbilitySpec.DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Abilities_Status_Eligible);// 给这个技能动态加一个“可用”状态标签（Eligible）
+			GiveAbility(AbilitySpec);// 把技能分发给玩家（真正添加到 AbilitySystemComponent）
+			MarkAbilitySpecDirty(AbilitySpec);// 标记这个技能的状态已更新（确保同步到客户端/持久化）
+		}
 	}
 }
 
