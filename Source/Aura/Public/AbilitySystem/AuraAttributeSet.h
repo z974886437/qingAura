@@ -75,7 +75,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;//预属性更改
-	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;//游戏后效果执行
+	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;//游戏后效果执行
 	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;//属性更改后
 	
 	// 创建一个映射表 TagsToAttributes：
@@ -266,7 +266,7 @@ public:
 	
 
 private:
-	void SetEffectProperties(const struct FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
+	void SetEffectProperties(const  FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
 	void ShowFloatingText(const FEffectProperties& Props,float Damage,bool bBlockedHit,bool bCriticalHit) const;//显示浮动文本
 	void SendXPEvent(const FEffectProperties& Props);//发送 XP 事件
 	bool bTopOffHealth = false;//补充健康

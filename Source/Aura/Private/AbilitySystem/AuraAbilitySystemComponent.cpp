@@ -202,6 +202,7 @@ void UAuraAbilitySystemComponent::UpdateAbilityStatuses(int32 Level)
 			AbilitySpec.DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Abilities_Status_Eligible);// 给这个技能动态加一个“可用”状态标签（Eligible）
 			GiveAbility(AbilitySpec);// 把技能分发给玩家（真正添加到 AbilitySystemComponent）
 			MarkAbilitySpecDirty(AbilitySpec);// 标记这个技能的状态已更新（确保同步到客户端/持久化）
+			ClientUpdateAbilityStatus(Info.AbilityTag,FAuraGameplayTags::Get().Abilities_Status_Eligible);// 通知客户端更新 UI，显示该技能状态为 Eligible
 		}
 	}
 }
@@ -215,6 +216,11 @@ void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
 		bStartupAbilitiesGiven = true;// 标记一下，避免重复广播
 		AbilitiesGivenDelegate.Broadcast();// 广播一个委托，告诉外部：初始技能已经同步完成，可以做 UI 或初始化逻辑
 	}
+}
+
+void UAuraAbilitySystemComponent::ClientUpdateAbilityStatus_Implementation(const FGameplayTag& AbilityTag,const FGameplayTag& StatusTag)
+{
+	AbilityStatusChanged.Broadcast(AbilityTag,StatusTag);
 }
 
 

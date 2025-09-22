@@ -8,20 +8,13 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 #include "AuraGameplayTags.h"
-#include "NativeGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
-#include "Aura/AuraLogChannels.h"
 #include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
-#include "Kismet/GameplayStatics.h"
 #include "Player/AuraPlayerController.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
-	//InitHealth(10.f);//启动健康，初始化健康为100
-	//InitMana(10.f);//初始化法力为50
-	//InitMaxHealth(100.f);//
-	//InitMaxMana(50.f);//初始化最大健康为100
 
 	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取 Aura 项目中定义的所有 GameplayTag 单例引用（用于查找标签）
 	/* Primary Attributes */
@@ -37,8 +30,8 @@ UAuraAttributeSet::UAuraAttributeSet()
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_ArmorPenetration,GetArmorPenetrationAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_BlockChance,GetBlockChanceAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitChance,GetCriticalHitChanceAttribute);
-	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitDamage,GetCriticalHitDamageAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitResistance,GetCriticalHitResistanceAttribute);
+	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_CriticalHitDamage,GetCriticalHitDamageAttribute);
 	
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_HealthRegeneration,GetHealthRegenerationAttribute);
 	TagsToAttributes.Add(GameplayTags.Attributes_Secondary_ManaRegeneration,GetManaRegenerationAttribute);
@@ -105,7 +98,7 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 	}
 }
 
-void UAuraAttributeSet::SetEffectProperties(const struct FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const
+void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const
 {
 		// if (Data.EvaluatedData.Attribute == GetHealthAttribute())//判断是哪种属性被修改 
 	// {
@@ -148,7 +141,7 @@ void UAuraAttributeSet::SetEffectProperties(const struct FGameplayEffectModCallb
 	}
 }
 
-void UAuraAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
+void UAuraAttributeSet::PostGameplayEffectExecute(const  FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
 
@@ -257,7 +250,7 @@ void UAuraAttributeSet::SendXPEvent(const FEffectProperties& Props)
 		const ECharacterClass TargetClass = ICombatInterface::Execute_GetCharacterClass(Props.TargetCharacter);// 获取目标角色职业（比如战士、法师）
 		const int32 XPReward = UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(Props.TargetCharacter,TargetClass,TargetLevel);// 根据目标职业和等级，计算应该奖励多少经验值
 
-		const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 获取全局 GameplayTags 单例，用于标记事件类型
+		const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局 GameplayTags 单例，用于标记事件类型
 		FGameplayEventData Payload;// 构造 GameplayEvent 的数据载体（Payload）
 		Payload.EventTag = GameplayTags.Attributes_Meta_IncomingXP;// 事件标签 → "获得经验"
 		Payload.EventMagnitude = XPReward; // 事件强度 → 经验数值
@@ -286,6 +279,7 @@ void UAuraAttributeSet::ShowFloatingText(const FEffectProperties& Props, float D
 
 void UAuraAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) const
 {
+	//UE_LOG(LogTemp, Warning, TEXT("OnRep_Health Triggered! New=%f"), GetHealth());
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet,Health,OldHealth);//用于实现 生命属性的网络同步 + 通知响应
 }
 
