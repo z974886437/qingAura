@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
+class UAbilityInfo;
 class UCharacterClassInfo;//角色类别信息
 /**
  * 
@@ -18,4 +19,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,Category = "Character Class Defaults")
 	TObjectPtr<UCharacterClassInfo> CharacterClassInfo;//角色类别信息
+
+	UPROPERTY(EditDefaultsOnly,Category = "Ability Info")
+	TObjectPtr<UAbilityInfo> AbilityInfo;//技能信息
 };

@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "AuraAbilitySystemLibrary.generated.h"
 
+class UAbilityInfo;
 class AAuraHUD;
 class USpellMenuWidgetController;
 struct FGameplayEffectContextHandle;
@@ -44,6 +45,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibary|CharacterClassDefaults")
 	static UCharacterClassInfo* GetCharacterClassInfo(const UObject* WorldContextObject);//获取角色类信息
 
+	UFUNCTION(BlueprintCallable, Category = "AuraAbilitySystemLibary|CharacterClassDefaults")
+	static UAbilityInfo* GetAbilityInfo(const UObject* WorldContextObject);//获取技能信息
+
 	UFUNCTION(BlueprintPure,Category = "AuraAbilitySystemLibary|GameplayEffects")
 	static bool IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle);//判断是否是一次格挡命中
 
@@ -60,8 +64,8 @@ public:
 	static void GetLivePlayersWithinRadius(const UObject* WorldContextObject,TArray<AActor*>& OutOverlappingActors,const TArray<AActor*>& ActorsToIgnore,float Radius,const FVector& SphereOrigin);//在半径内获取现场玩家
 
 	UFUNCTION(BlueprintPure,Category = "AuraAbilitySystemLibary|GameplayMechanics")
-	static bool IsNotFriend(AActor* FirstActor,AActor* SecondActor);
+	static bool IsNotFriend(AActor* FirstActor,AActor* SecondActor);//不是朋友
 
 	
-	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject,ECharacterClass CharacterClass,int32 CharacterLevel);
+	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject,ECharacterClass CharacterClass,int32 CharacterLevel);//获得职业和等级的 XP 奖励
 };

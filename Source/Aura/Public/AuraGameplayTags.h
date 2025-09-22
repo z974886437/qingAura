@@ -72,6 +72,7 @@ public:
 	FGameplayTag Abilities_Type_None;//能力_类型_无
 	
 	FGameplayTag Abilities_Fire_FireBolt;//技能_火_火弩箭
+	FGameplayTag Abilities_Lightning_Electrocute;//技能_闪电_触电
 
 	FGameplayTag Cooldown_Fire_FireBolt;//冷却_火_火弩箭
 	

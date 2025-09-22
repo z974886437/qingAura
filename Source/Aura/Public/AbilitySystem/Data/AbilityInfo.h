@@ -7,28 +7,36 @@
 #include "Engine/DataAsset.h"
 #include "AbilityInfo.generated.h"
 
+class  UGameplayAbility;
+
 USTRUCT(BlueprintType)
 struct FAuraAbilityInfo
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	FGameplayTag AbilityTag = FGameplayTag();
+	FGameplayTag AbilityTag = FGameplayTag();//能力标签
 
 	UPROPERTY(BlueprintReadOnly)
-	FGameplayTag InputTag = FGameplayTag();
+	FGameplayTag InputTag = FGameplayTag();//输入标签
 
 	UPROPERTY(BlueprintReadOnly)
-	FGameplayTag StatusTag = FGameplayTag();
+	FGameplayTag StatusTag = FGameplayTag();//状态标签
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	FGameplayTag CooldownTag = FGameplayTag();
+	FGameplayTag CooldownTag = FGameplayTag();//冷却标签
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TObjectPtr<const UTexture2D> Icon = nullptr;
+	TObjectPtr<const UTexture2D> Icon = nullptr;//图标
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
-	TObjectPtr<const UMaterialInterface> BackgroundMaterial = nullptr;
+	TObjectPtr<const UMaterialInterface> BackgroundMaterial = nullptr;//背景材质
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	int32 LevelRequirement = 1;//等级要求
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	TSubclassOf<UGameplayAbility> Ability;
 };
 /**
  * 
