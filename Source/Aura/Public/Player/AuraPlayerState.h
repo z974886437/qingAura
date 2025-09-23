@@ -32,8 +32,8 @@ public:
 
 	FOnPlayerStatChanged OnXPChangedDelegate;//在 XP 更改委托时
 	FOnPlayerStatChanged OnLevelChangedDelegate;//在等级更改委托时
-	FOnPlayerStatChanged OnAttributePointsChangedDelegate;
-	FOnPlayerStatChanged OnSpellPointsChangedDelegate;
+	FOnPlayerStatChanged OnAttributePointsChangedDelegate;//属性点已更改委托
+	FOnPlayerStatChanged OnSpellPointsChangedDelegate;//在法术点更改的委托上
 
 	FORCEINLINE int32 GetPlayerLevel() const {return Level;}// 强制代码内联
 	FORCEINLINE int32 GetXP() const { return XP;}

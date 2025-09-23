@@ -5,10 +5,13 @@
 
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
+#include "Player/AuraPlayerState.h"
 
 void USpellMenuWidgetController::BroadcastInitialValues()
 {
 	BroadcastAbilityInfo();
+	SpellPointsChanged.Broadcast(GetAuraPS()->GetSpellPoints());
+	
 }
 
 // 绑定回调函数到依赖（这里是绑定技能状态变化的回调）
@@ -24,5 +27,10 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 			Info.StatusTag = StatusTag;// 更新技能的当前状态标签（比如 Locked / Eligible / Unlocked）
 			AbilityInfoDelegate.Broadcast(Info);// 广播给 UI（比如技能树、技能菜单），让界面显示最新状态
 		}
+	});
+
+	GetAuraPS()->OnSpellPointsChangedDelegate.AddLambda([this](int32 SpellPoints)
+	{
+		SpellPointsChanged.Broadcast(SpellPoints);
 	});
 }
