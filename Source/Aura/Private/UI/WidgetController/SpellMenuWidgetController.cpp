@@ -3,6 +3,7 @@
 
 #include "UI/WidgetController/SpellMenuWidgetController.h"
 
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "Player/AuraPlayerState.h"
@@ -33,4 +34,70 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 	{
 		SpellPointsChanged.Broadcast(SpellPoints);
 	});
+}
+
+// 当某个技能球（SpellGlobe）被选中时调用
+// 根据技能标签判断其状态，并决定“消耗点数按钮”和“装备按钮”是否启用
+void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityTag)
+{
+	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 获取全局技能标签单例
+	const int32 SpellPoints = GetAuraPS()->GetSpellPoints();// 获取当前可用技能点
+	FGameplayTag AbilityStatus; // 用于存储该技能的状态（Locked/Unlocked/Equipped/Eligible）
+
+	// 检查技能标签和技能规格
+	const bool bTagValid = AbilityTag.IsValid();// 标签是否有效
+	const bool bTagNone = AbilityTag.MatchesTag(GameplayTags.Abilities_None);// 是否是“无技能”占位符
+	const FGameplayAbilitySpec* AbilitySpec = GetAuraASC()->GetSpecFromAbilityTag(AbilityTag);// 根据标签找技能规格
+	const bool bSpecValid = AbilitySpec != nullptr;  // 判断是否成功获取到技能规格
+	
+	if (!bTagValid || bTagNone || !bSpecValid) // 如果无效 → 设置为“锁定状态”；否则从 AbilitySpec 获取真实状态
+	{
+		AbilityStatus = GameplayTags.Abilities_Status_Locked; // 状态强制设为“锁定”
+	}
+	else
+	{
+		AbilityStatus = GetAuraASC()->GetStatusFromSpec(*AbilitySpec);// 否则从技能规格里获取该技能的真实状态
+	}
+
+	// 调用逻辑函数，决定按钮是否启用
+	bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
+	bool bEnableEquip = false; // 是否启用“装备技能”按钮
+	ShouldEnableButtons(AbilityStatus,SpellPoints,bEnableSpendPoints,bEnableEquip);// 根据状态和点数计算按钮可用性
+	SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip);// 广播事件，通知 UI 更新按钮可用性
+}
+
+// 判断技能按钮是否应该启用（消耗技能点按钮 & 装备按钮）
+// 参数：AbilityStatus 表示技能当前状态，SpellPoints 表示可用技能点数量
+// 返回：通过引用参数设置两个 bool 值
+void USpellMenuWidgetController::ShouldEnableButtons(const FGameplayTag& AbilityStatus, int32 SpellPoints,bool& bShouldEnableSpellPointsButton, bool& bShouldEnableEquipButton)
+{
+	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 获取全局定义的技能标签单例
+
+	// 默认禁用两个按钮
+	bShouldEnableSpellPointsButton = false; // 默认关闭“消耗技能点按钮”
+	bShouldEnableEquipButton = false;// 默认关闭“装备按钮”
+	if (AbilityStatus.MatchesTagExact(GameplayTags.Abilities_Status_Equipped)) // 情况 1：如果技能状态是“已装备”
+	{
+		bShouldEnableEquipButton = true;   // 已装备的技能，装备按钮保持可用
+		if (SpellPoints > 0) // 如果玩家还有技能点
+		{
+			bShouldEnableSpellPointsButton = true;// 点数按钮也可用（可以升级）
+		}
+	}
+	else if (AbilityStatus.MatchesTagExact(GameplayTags.Abilities_Status_Eligible))// 情况 2：如果技能状态是“符合条件但未装备”
+	{
+		bShouldEnableEquipButton = false; // 符合条件但未装备 → 装备按钮暂不可用
+		if (SpellPoints > 0)// 如果玩家还有技能点
+		{
+			bShouldEnableSpellPointsButton = true;// 点数按钮可用（可以解锁/升级）
+		}
+	}
+	else if (AbilityStatus.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))// 情况 3：如果技能状态是“已解锁（可装备）”
+	{
+		bShouldEnableEquipButton = true;// 已解锁技能 → 装备按钮可用
+		if (SpellPoints > 0)// 如果玩家还有技能点
+		{
+			bShouldEnableSpellPointsButton = true;// 点数按钮也可用（继续升级）
+		}
+	}
 }

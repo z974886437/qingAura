@@ -57,6 +57,8 @@ public:
 	FGameplayTag Damage_Arcane;//伤害_奥术
 	FGameplayTag Damage_Physical;//物理伤害
 
+	FGameplayTag Abilities_None;//技能_无
+
 	FGameplayTag Abilities_Attack;//技能_攻击
 	FGameplayTag Abilities_Summon;//技能_召唤
 

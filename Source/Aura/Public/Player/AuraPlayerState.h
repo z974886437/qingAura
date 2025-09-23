@@ -69,7 +69,7 @@ private:
 	int32 AttributePoints = 0;
 
 	UPROPERTY(VisibleAnywhere,ReplicatedUsing=OnRep_Spellpoints)//网络同步变量（Replicated），但使用的是 “OnRep 回调函数”机制
-	int32 SpellPoints = 1;
+	int32 SpellPoints = 0;
 
 	UFUNCTION()
 	void OnRep_Level(int32 OldLevel);//网络同步 + 通知响应
