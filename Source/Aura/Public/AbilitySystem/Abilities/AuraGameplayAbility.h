@@ -18,5 +18,7 @@ public:
 	UPROPERTY(EditDefaultsOnly,Category = "Input")
 	FGameplayTag StartupInputTag;//启动输入标签
 
-	
+	virtual FString GetDescription(int32 Level);//获取描述
+	virtual FString GetNextLevelDescription(int32 Level);//获取下一级描述
+	static FString GetLockedDescription(int32 Level);//获取锁定描述
 };

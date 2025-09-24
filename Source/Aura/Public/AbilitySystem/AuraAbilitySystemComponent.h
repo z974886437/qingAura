@@ -49,6 +49,8 @@ public:
 
 	UFUNCTION(Server,Reliable)
 	void ServerSpendSpellPoint(const FGameplayTag& AbilityTag);//服务器花费法术点
+
+	bool GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag,FString& OutDescription,FString& OutNextLevelDescription);//按能力标签获取描述
 protected:
 
 	virtual void OnRep_ActivateAbilities() override;//在重复激活技能时

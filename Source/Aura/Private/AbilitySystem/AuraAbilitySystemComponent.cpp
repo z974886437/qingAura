@@ -227,6 +227,27 @@ void UAuraAbilitySystemComponent::ServerSpendSpellPoint_Implementation(const FGa
 	}
 }
 
+// 根据技能标签获取技能描述和下一级技能描述
+// 返回值：true = 技能已解锁（有 AbilitySpec），false = 技能未解锁（显示锁定描述）
+bool UAuraAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag, FString& OutDescription,FString& OutNextLevelDescription)
+{
+	if (const FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))// 先根据技能标签找到对应的技能规格（AbilitySpec），如果没找到就是没解锁
+	{
+		if (UAuraGameplayAbility* AuraAbility = Cast<UAuraGameplayAbility>(AbilitySpec->Ability))// 如果 Ability 是 UAuraGameplayAbility 类型，就可以调用它的描述函数
+		{
+			OutDescription = AuraAbility->GetDescription(AbilitySpec->Level);// 获取当前等级的技能描述
+			OutNextLevelDescription = AuraAbility->GetNextLevelDescription(AbilitySpec->Level + 1);// 获取下一等级的技能描述（等级+1）
+			return true;// 找到了有效技能，返回 true
+		}
+	}
+	// 如果没找到 AbilitySpec，说明技能还没解锁
+	// 就去 AbilityInfo 数据表里查找技能的解锁需求
+	const UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
+	OutDescription = UAuraGameplayAbility::GetLockedDescription(AbilityInfo->FindAbilityInfoForTag(AbilityTag).LevelRequirement);// 设置描述为锁定状态（例如：“需要等级5才能解锁”）
+	OutNextLevelDescription = FString();// 未解锁时没有下一等级描述
+	return false;// 返回 false 表示技能未解锁
+}
+
 void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
 {
 	Super::OnRep_ActivateAbilities();

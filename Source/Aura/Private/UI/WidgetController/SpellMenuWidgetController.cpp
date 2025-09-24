@@ -28,7 +28,11 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 			bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
 			bool bEnableEquip = false; // 是否启用“装备技能”按钮
 			ShouldEnableButtons(StatusTag,CurrentSpellPoints,bEnableSpendPoints,bEnableEquip);// 根据状态和点数计算按钮可用性
-			SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip);// 广播事件，通知 UI 更新按钮可用性
+			// 定义两个字符串变量，用来接收技能描述和下一级技能描述
+			FString Description;
+			FString NextLevelDescription;
+			GetAuraASC()->GetDescriptionsByAbilityTag(AbilityTag,Description,NextLevelDescription);// 调用 ASC 的函数，根据技能标签获取描述（已解锁就返回真实描述，未解锁返回锁定提示）
+			SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip,Description,NextLevelDescription);// 广播事件，通知 UI 更新按钮可用性
 		}
 		
 		if (AbilityInfo)// 如果技能信息表存在
@@ -47,7 +51,11 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 		bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
 		bool bEnableEquip = false; // 是否启用“装备技能”按钮
 		ShouldEnableButtons(SelectedAbility.Status,CurrentSpellPoints,bEnableSpendPoints,bEnableEquip);// 根据状态和点数计算按钮可用性
-		SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip);// 广播事件，通知 UI 更新按钮可用性
+		// 定义两个字符串变量，用来接收技能描述和下一级技能描述
+		FString Description;
+		FString NextLevelDescription;
+		GetAuraASC()->GetDescriptionsByAbilityTag(SelectedAbility.Ability,Description,NextLevelDescription);// 调用 ASC 的函数，根据技能标签获取描述（已解锁就返回真实描述，未解锁返回锁定提示）
+		SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip,Description,NextLevelDescription);// 广播事件，通知 UI 更新按钮可用性
 	});
 }
 
@@ -81,7 +89,11 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 	bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
 	bool bEnableEquip = false; // 是否启用“装备技能”按钮
 	ShouldEnableButtons(AbilityStatus,SpellPoints,bEnableSpendPoints,bEnableEquip);// 根据状态和点数计算按钮可用性
-	SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip);// 广播事件，通知 UI 更新按钮可用性
+	// 定义两个字符串变量，用来接收技能描述和下一级技能描述
+	FString Description;
+	FString NextLevelDescription;
+	GetAuraASC()->GetDescriptionsByAbilityTag(AbilityTag,Description,NextLevelDescription);// 调用 ASC 的函数，根据技能标签获取描述（已解锁就返回真实描述，未解锁返回锁定提示）
+	SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip,Description,NextLevelDescription);// 广播事件，通知 UI 更新按钮可用性
 }
 
 void USpellMenuWidgetController::SpendPointButtonPressed()
