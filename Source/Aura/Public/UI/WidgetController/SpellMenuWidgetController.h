@@ -37,6 +37,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpellGlobeSelected(const FGameplayTag& AbilityTag);//已选择法术地球仪
 
+	UFUNCTION(BlueprintCallable)
+	void SpendPointButtonPressed();//花费点按钮按下
+
 private:
 
 	static void ShouldEnableButtons(const FGameplayTag& AbilityStatus,int32 SpellPoints,bool& bShouldEnableSpellPointsButton,bool& bShouldEnableEquipButton);//应该启用按钮

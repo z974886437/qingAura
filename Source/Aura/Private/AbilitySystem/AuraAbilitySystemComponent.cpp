@@ -15,15 +15,6 @@
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
 	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this,&UAuraAbilitySystemComponent::ClientEffectApplied);//监听某个 GameplayEffect 被应用到自己（Self） 时触发的回调
-
-	// FAuraGameplayTags::Get().Attributes_Primary_Intelligence;
-	// const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();
-	// GEngine->AddOnScreenDebugMessage(
-	// 	-1,
-	// 	10.f,
-	// 	FColor::Orange,
-	// 	FString::Printf(TEXT("Tag:%s"),*GameplayTags.Attributes_Secondary_Armor.ToString())
-	// 	);
 }
 
 // 作用：为角色批量添加预设技能，并给这些技能打上初始标签
@@ -202,8 +193,37 @@ void UAuraAbilitySystemComponent::UpdateAbilityStatuses(int32 Level)
 			AbilitySpec.DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Abilities_Status_Eligible);// 给这个技能动态加一个“可用”状态标签（Eligible）
 			GiveAbility(AbilitySpec);// 把技能分发给玩家（真正添加到 AbilitySystemComponent）
 			MarkAbilitySpecDirty(AbilitySpec);// 标记这个技能的状态已更新（确保同步到客户端/持久化）
-			ClientUpdateAbilityStatus(Info.AbilityTag,FAuraGameplayTags::Get().Abilities_Status_Eligible);// 通知客户端更新 UI，显示该技能状态为 Eligible
+			ClientUpdateAbilityStatus(Info.AbilityTag,FAuraGameplayTags::Get().Abilities_Status_Eligible,1);// 通知客户端更新 UI，显示该技能状态为 Eligible
 		}
+	}
+}
+
+// 消耗一个技能点来升级或解锁技能（由服务端执行）
+void UAuraAbilitySystemComponent::ServerSpendSpellPoint_Implementation(const FGameplayTag& AbilityTag)
+{
+	if (FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))// 根据技能标签获取技能规格（AbilitySpec），如果没找到就返回空
+	{
+		if (GetAvatarActor()->Implements<UPlayerInterface>())// 如果当前角色实现了玩家接口，就减少一个技能点
+		{
+			IPlayerInterface::Execute_AddToSpellPoints(GetAvatarActor(),-1);
+		}
+		
+		const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 获取全局技能标签集合（方便后面做状态对比）
+		
+		FGameplayTag Status = GetStatusFromSpec(*AbilitySpec);// 获取该技能当前的状态标签（已解锁、已装备、可学习等）
+		if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Eligible))// 如果技能目前是“可学习”状态，就把它改为“已解锁”
+		{
+			AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Eligible);// 移除“可学习”标签
+			AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Unlocked);// 添加“已解锁”标签
+			Status = GameplayTags.Abilities_Status_Unlocked;// 更新状态变量
+		}
+		// 如果技能已经“解锁”或“已装备”，则直接增加技能等级
+		else if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Equipped) || Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))
+		{
+			AbilitySpec->Level += 1;
+		}
+		ClientUpdateAbilityStatus(AbilityTag,Status,AbilitySpec->Level);// 通知客户端更新技能状态和等级（保证 UI 同步）
+		MarkAbilitySpecDirty(*AbilitySpec);// 标记这个技能规格被修改过，让 GAS 知道要同步更新
 	}
 }
 
@@ -218,9 +238,9 @@ void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
 	}
 }
 
-void UAuraAbilitySystemComponent::ClientUpdateAbilityStatus_Implementation(const FGameplayTag& AbilityTag,const FGameplayTag& StatusTag)
+void UAuraAbilitySystemComponent::ClientUpdateAbilityStatus_Implementation(const FGameplayTag& AbilityTag,const FGameplayTag& StatusTag,int32 AbilityLevel)
 {
-	AbilityStatusChanged.Broadcast(AbilityTag,StatusTag);
+	AbilityStatusChanged.Broadcast(AbilityTag,StatusTag,AbilityLevel);
 }
 
 
