@@ -22,6 +22,15 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 	// 监听 AuraAbilitySystemComponent 的技能状态变化事件
 	GetAuraASC()->AbilityStatusChanged.AddLambda([this](const FGameplayTag& AbilityTag,const FGameplayTag& StatusTag)
 	{
+		if (SelectedAbility.Ability.MatchesTagExact(AbilityTag))
+		{
+			SelectedAbility.Status = StatusTag;// 设置当前选中的技能信息
+			bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
+			bool bEnableEquip = false; // 是否启用“装备技能”按钮
+			ShouldEnableButtons(StatusTag,CurrentSpellPoints,bEnableSpendPoints,bEnableEquip);// 根据状态和点数计算按钮可用性
+			SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip);// 广播事件，通知 UI 更新按钮可用性
+		}
+		
 		if (AbilityInfo)// 如果技能信息表存在
 		{
 			FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);// 根据技能标签查找对应的技能信息
@@ -32,7 +41,13 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 
 	GetAuraPS()->OnSpellPointsChangedDelegate.AddLambda([this](int32 SpellPoints)
 	{
-		SpellPointsChanged.Broadcast(SpellPoints);
+		SpellPointsChanged.Broadcast(SpellPoints);// 广播事件 → 通知 UI 显示最新的点数
+		CurrentSpellPoints = SpellPoints;// 缓存当前技能点数
+
+		bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
+		bool bEnableEquip = false; // 是否启用“装备技能”按钮
+		ShouldEnableButtons(SelectedAbility.Status,CurrentSpellPoints,bEnableSpendPoints,bEnableEquip);// 根据状态和点数计算按钮可用性
+		SpellGlobeSelectedDelegate.Broadcast(bEnableSpendPoints,bEnableEquip);// 广播事件，通知 UI 更新按钮可用性
 	});
 }
 
@@ -58,7 +73,10 @@ void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityT
 	{
 		AbilityStatus = GetAuraASC()->GetStatusFromSpec(*AbilitySpec);// 否则从技能规格里获取该技能的真实状态
 	}
-
+	
+	// 设置当前选中的技能信息
+	SelectedAbility.Ability = AbilityTag;
+	SelectedAbility.Status = AbilityStatus;
 	// 调用逻辑函数，决定按钮是否启用
 	bool bEnableSpendPoints = false; // 是否启用“消耗技能点”按钮
 	bool bEnableEquip = false; // 是否启用“装备技能”按钮
