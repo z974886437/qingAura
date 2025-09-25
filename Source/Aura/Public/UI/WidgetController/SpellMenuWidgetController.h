@@ -39,6 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpendPointButtonPressed();//花费点按钮按下
 
+	UFUNCTION(BlueprintCallable)
+	void GlobeDeselect();//地球取消选择
+
 private:
 
 	static void ShouldEnableButtons(const FGameplayTag& AbilityStatus,int32 SpellPoints,bool& bShouldEnableSpellPointsButton,bool& bShouldEnableEquipButton);//应该启用按钮

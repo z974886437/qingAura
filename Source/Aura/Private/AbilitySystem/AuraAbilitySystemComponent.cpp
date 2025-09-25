@@ -243,7 +243,14 @@ bool UAuraAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag
 	// 如果没找到 AbilitySpec，说明技能还没解锁
 	// 就去 AbilityInfo 数据表里查找技能的解锁需求
 	const UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(GetAvatarActor());
-	OutDescription = UAuraGameplayAbility::GetLockedDescription(AbilityInfo->FindAbilityInfoForTag(AbilityTag).LevelRequirement);// 设置描述为锁定状态（例如：“需要等级5才能解锁”）
+	if (!AbilityTag.IsValid() || AbilityTag.MatchesTagExact(FAuraGameplayTags::Get().Abilities_None))
+	{
+		OutDescription = FString();
+	}
+	else
+	{
+		OutDescription = UAuraGameplayAbility::GetLockedDescription(AbilityInfo->FindAbilityInfoForTag(AbilityTag).LevelRequirement);// 设置描述为锁定状态（例如：“需要等级5才能解锁”）
+	}
 	OutNextLevelDescription = FString();// 未解锁时没有下一等级描述
 	return false;// 返回 false 表示技能未解锁
 }

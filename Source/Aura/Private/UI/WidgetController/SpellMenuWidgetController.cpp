@@ -104,6 +104,14 @@ void USpellMenuWidgetController::SpendPointButtonPressed()
 	}
 }
 
+void USpellMenuWidgetController::GlobeDeselect()
+{
+	SelectedAbility.Ability = FAuraGameplayTags::Get().Abilities_None;
+	SelectedAbility.Status = FAuraGameplayTags::Get().Abilities_Status_Locked;
+
+	SpellGlobeSelectedDelegate.Broadcast(false,false,FString(),FString());// 广播事件，通知 UI 更新按钮可用性
+}
+
 // 判断技能按钮是否应该启用（消耗技能点按钮 & 装备按钮）
 // 参数：AbilityStatus 表示技能当前状态，SpellPoints 表示可用技能点数量
 // 返回：通过引用参数设置两个 bool 值
