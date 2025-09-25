@@ -33,3 +33,15 @@ FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const
 
 	return FTaggedMontage();// 如果数组是空的，直接返回一个默认构造的 FTaggedMontage（即空对象）
 }
+
+// 根据传入的伤害类型（DamageType）和技能等级（InLevel）返回伤害数值
+float UAuraDamageGameplayAbility::GetDamageByDamageType(float InLevel, const FGameplayTag& DamageType)
+{
+	// 校验：DamageTypes 是否包含该伤害类型
+	// 如果没有，会触发 checkf 崩溃并输出错误信息（方便调试）
+	checkf(DamageTypes.Contains(DamageType),TEXT("GameplayAbility [%s] does not contain DamageType [%s]"),
+		*GetNameSafe(this),// 技能名字（安全获取，即使对象是 nullptr 也不会崩）
+		*DamageType.ToString() // 伤害类型的字符串形式
+		);
+	return DamageTypes[DamageType].GetValueAtLevel(InLevel);// 从 DamageTypes 映射表中取出对应的数值，并根据等级 InLevel 计算实际伤害
+}

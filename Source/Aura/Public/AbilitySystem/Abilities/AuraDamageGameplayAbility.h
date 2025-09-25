@@ -28,4 +28,6 @@ protected:
 
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;//从数组中获取随机标记的蒙太奇
+
+	float GetDamageByDamageType(float InLevel,const FGameplayTag& DamageType);//按伤害类型获得伤害
 };

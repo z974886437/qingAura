@@ -11,74 +11,7 @@
 
 //#include "Kismet/KismetSystemLibrary.h"
 
-// 返回火球术技能的描述字符串（根据等级显示不同效果）
-FString UAuraProjectileSpell::GetDescription(int32 Level)
-{
-	const int32 Damage = DamageTypes[FAuraGameplayTags::Get().Damage_Fire].GetValueAtLevel(Level);// 根据技能等级获取火焰伤害数值
-	if (Level == 1)// 如果是等级 1，显示单发火球描述
-	{
-		// // 使用 FString::Printf 格式化技能描述（1 颗火球）
-		// return FString::Printf(
-		// 	TEXT("<Title>FIRE BOLT</>\n\n"
-		// 	"<Default>Launches a bolt of fire, exploding On impact and dealing: </>"
-		// 	"<Damage>%d</><Default> fire damage with a chance to burn </>\n\n"
-		// 	"<Small>Level: </><Level>%d</>"),
-		// 	Damage,// 替换 %d 为伤害数值
-		// 	Level// 替换 %d 为等级
-		// 	);
-		// 使用 FString::Printf 格式化技能描述（1 颗火球）
-		return FString::Printf(
-			TEXT("<Title>火球术</>\n\n"
-			"<Default>发射 1 个火球, 技能效果: </>"
-			"<Damage>%d</><Default> 火焰伤害，有几率燃烧 </>\n\n"
-			"<Small>等级: </><Level>%d</>"),
-			Damage,// 替换 %d 为伤害数值
-			Level// 替换 %d 为等级
-			);
-	}
-	else// 如果是等级 > 1，显示多发火球描述
-	{
-		// // 使用 FString::Printf 格式化技能描述（多颗火球，数量受 NumProjectiles 限制）
-		// return FString::Printf(
-		// 	TEXT("<Title>FIRE BOLT</>\n\n"
-		// 		"<Default>Launches %d bolts of fire, exploding On impact and dealing: </>"
-		// 		" <Damage>%d</><Default> fire damage with a chance to burn </>\n\n"
-		// 		"<Small>Level: </><Level>%d</>"),
-		// 		FMath::Min(Level,NumProjectiles),
-		// 		Damage,
-		// 		Level
-		// 		);
 
-		// 使用 FString::Printf 格式化技能描述（多颗火球，数量受 NumProjectiles 限制）
-		return FString::Printf(
-			TEXT("<Title>火球术</>\n\n"
-				"<Default>发射 %d 个火球, 技能效果: </>"
-				" <Damage>%d</><Default> 火焰伤害，有几率燃烧 </>\n\n"
-				"<Small>等级: </><Level>%d</>"),
-				FMath::Min(Level,NumProjectiles),
-				Damage,
-				Level
-				);
-	}
-}
-
-// 返回技能“下一级”的描述字符串（展示升级后技能效果）
-FString UAuraProjectileSpell::GetNextLevelDescription(int32 Level)
-{
-	// 根据等级获取火焰伤害数值
-	const int32 Damage = DamageTypes[FAuraGameplayTags::Get().Damage_Fire].GetValueAtLevel(Level);
-	//return FString::Printf(TEXT("<Title>Next Level</>\n\n<Default>Launches %d bolts of fire, exploding On impact and dealing: </> <Damage>%d</><Default> fire damage with a chance to burn </>\n\n<Small>Level: </><Level>%d</>"),FMath::Min(Level,NumProjectiles),Damage,Level);
-	// 使用 FString::Printf 格式化字符串，拼接技能说明
-	return FString::Printf(TEXT(// 技能描述模板（包含标题、技能效果、等级信息，带有自定义标签方便 UI 渲染）
-		"<Title>下一级</>\n\n"// 标题（显示“下一级”）
-		"<Default>发射 %d 个火球, 技能效果: </>"// 说明火球数量（受 NumProjectiles 限制）
-		" <Damage>%d</><Default> 火焰伤害，有几率燃烧 </>\n\n"// 显示伤害数值和附加效果
-		"<Small>等级: </>" // 小字提示
-		"<Level>%d</>"),// 显示技能等级	
-		FMath::Min(Level,NumProjectiles),// 火球数量：取等级和最大数量的最小值
-		Damage,// 火焰伤害数值
-		Level);// 技能等级
-}
 
 void UAuraProjectileSpell::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                            const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
