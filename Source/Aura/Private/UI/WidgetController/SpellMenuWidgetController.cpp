@@ -63,6 +63,13 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 // 根据技能标签判断其状态，并决定“消耗点数按钮”和“装备按钮”是否启用
 void USpellMenuWidgetController::SpellGlobeSelected(const FGameplayTag& AbilityTag)
 {
+	if (bWaitingForEquipSelection)
+	{
+		const FGameplayTag SelectedAbilityType = AbilityInfo->FindAbilityInfoForTag(AbilityTag).AbilityType;// 获取当前选中技能对应的类型（例如攻击、防御等）
+		StopWaitingForEquipDelegate.Broadcast(SelectedAbilityType); // 广播取消等待装备的事件，传递被取消技能的类型
+		bWaitingForEquipSelection = false;
+	}
+	
 	const FAuraGameplayTags GameplayTags = FAuraGameplayTags::Get();// 获取全局技能标签单例
 	const int32 SpellPoints = GetAuraPS()->GetSpellPoints();// 获取当前可用技能点
 	FGameplayTag AbilityStatus; // 用于存储该技能的状态（Locked/Unlocked/Equipped/Eligible）
@@ -104,12 +111,29 @@ void USpellMenuWidgetController::SpendPointButtonPressed()
 	}
 }
 
+// 技能菜单控件控制器中取消选中技能的逻辑
 void USpellMenuWidgetController::GlobeDeselect()
 {
-	SelectedAbility.Ability = FAuraGameplayTags::Get().Abilities_None;
-	SelectedAbility.Status = FAuraGameplayTags::Get().Abilities_Status_Locked;
+	if (bWaitingForEquipSelection)
+	{
+		const FGameplayTag SelectedAbilityType = AbilityInfo->FindAbilityInfoForTag(SelectedAbility.Ability).AbilityType;// 获取当前选中技能对应的类型（例如攻击、防御等）
+		StopWaitingForEquipDelegate.Broadcast(SelectedAbilityType); // 广播取消等待装备的事件，传递被取消技能的类型
+		bWaitingForEquipSelection = false;
+	}
+	
+	SelectedAbility.Ability = FAuraGameplayTags::Get().Abilities_None;// 将当前选中技能设置为“无技能”状态
+	SelectedAbility.Status = FAuraGameplayTags::Get().Abilities_Status_Locked;// 将当前选中技能状态重置为“锁定”状态（不可用）
 
-	SpellGlobeSelectedDelegate.Broadcast(false,false,FString(),FString());// 广播事件，通知 UI 更新按钮可用性
+	// 广播技能球取消选中事件，传递空字符串，用于通知 UI 更新按钮状态（禁用升级和装备按钮）
+	SpellGlobeSelectedDelegate.Broadcast(false,false,FString(),FString());
+}
+
+void USpellMenuWidgetController::EquipButtonPressed()
+{
+	const FGameplayTag AbilityType = AbilityInfo->FindAbilityInfoForTag(SelectedAbility.Ability).AbilityType;
+
+	WaitForEquipDelegate.Broadcast(AbilityType);
+	bWaitingForEquipSelection = true;
 }
 
 // 判断技能按钮是否应该启用（消耗技能点按钮 & 装备按钮）

@@ -10,6 +10,7 @@
 
 struct FAuraGameplayTags;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSpellGlobeSelectedSignature, bool, bSpendPointsButtonEnabled, bool,bEquipButtonEnabled,FString,DescriptionString,FString,NextLevelDescriptionString);//拼写地球仪选择签名
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWaitForEquipSelectionSignature,const FGameplayTag&, AbilityTye);//等待装备选择签名
 
 struct FSelectedAbility
 {
@@ -33,6 +34,12 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FSpellGlobeSelectedSignature SpellGlobeSelectedDelegate;//Spell Globe 选定代表
 
+	UPROPERTY(BlueprintAssignable)
+	FWaitForEquipSelectionSignature WaitForEquipDelegate;//等待装备委托
+
+	UPROPERTY(BlueprintAssignable)
+	FWaitForEquipSelectionSignature StopWaitingForEquipDelegate;//停止等待装备委托
+
 	UFUNCTION(BlueprintCallable)
 	void SpellGlobeSelected(const FGameplayTag& AbilityTag);//已选择法术地球仪
 
@@ -42,9 +49,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GlobeDeselect();//地球取消选择
 
+	UFUNCTION(BlueprintCallable)
+	void EquipButtonPressed();//装备按钮按下
+
 private:
 
 	static void ShouldEnableButtons(const FGameplayTag& AbilityStatus,int32 SpellPoints,bool& bShouldEnableSpellPointsButton,bool& bShouldEnableEquipButton);//应该启用按钮
 	FSelectedAbility SelectedAbility = { FAuraGameplayTags::Get().Abilities_None,FAuraGameplayTags::Get().Abilities_Status_Locked};//选择能力
 	int32 CurrentSpellPoints = 0;//当前法术点
+	bool bWaitingForEquipSelection = false;//等待装备选择
 };

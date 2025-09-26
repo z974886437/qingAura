@@ -25,6 +25,9 @@ struct FAuraAbilityInfo
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	FGameplayTag CooldownTag = FGameplayTag();//冷却标签
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
+	FGameplayTag AbilityType = FGameplayTag();//能力类型
 	
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TObjectPtr<const UTexture2D> Icon = nullptr;//图标
