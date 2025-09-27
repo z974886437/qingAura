@@ -78,6 +78,8 @@ protected:
 	T* GetDataTableRowByTag(UDataTable* DataTable,const FGameplayTag& Tag);//按标签的表格行 接受一个数据表和一个标签
 
 	void OnXPChanged(int32 NewXP);//经验值更改
+
+	void OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status,const FGameplayTag& Slot, const FGameplayTag& PreviousSlot) const;//装备能力
 };
 
 template <typename T>

@@ -3,6 +3,7 @@
 
 #include "UI/WidgetController/OverlayWidgetController.h"
 
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
@@ -59,6 +60,7 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 	if (GetAuraASC())//  检查并初始化 Aura ASC
 	{
+		GetAuraASC()->AbilityEquipped.AddUObject(this,&UOverlayWidgetController::OnAbilityEquipped);
 		if (GetAuraASC()->bStartupAbilitiesGiven)// 如果 ASC 已经初始化过起始技能，则直接调用初始化逻辑
 		{
 			BroadcastAbilityInfo();
@@ -116,4 +118,22 @@ void UOverlayWidgetController::OnXPChanged(int32 NewXP)
 
 		OnXPPercentChangeDelegate.Broadcast(XPBarPercent);  // 通知 UI 更新经验条进度
 	}
+}
+
+void UOverlayWidgetController::OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status,const FGameplayTag& Slot, const FGameplayTag& PreviousSlot) const
+{
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 Aura 游戏标签（单例）
+
+	FAuraAbilityInfo LastSlotInfo;// 构造一个“上一个槽位”的占位信息
+	LastSlotInfo.StatusTag = GameplayTags.Abilities_Status_Unlocked;// 标记为“已解锁”状态（即该槽位现在空了）
+	LastSlotInfo.InputTag = PreviousSlot;// 设置输入槽为之前的槽位
+	LastSlotInfo.AbilityTag = GameplayTags.Abilities_None;// 清空技能标签（代表没有技能）
+	// Broadcast empty info if PreviousSlot is a valid slot. Only if equipping on already-Equipped spell如果 PreviousSlot 是有效插槽，则广播空信息。仅当装备已经装备的法术时
+	AbilityInfoDelegate.Broadcast(LastSlotInfo); // 如果 PreviousSlot 有效，则广播空信息，让 UI 清掉旧槽的技能
+
+	FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag); // 查找新装备的技能信息
+	Info.StatusTag = Status;// 更新状态为最新（已装备）
+	Info.InputTag = Slot;// 更新绑定的槽位
+	AbilityInfoDelegate.Broadcast(Info);// 广播新的技能信息，让 UI 显示新技能
+	
 }
