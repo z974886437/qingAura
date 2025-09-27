@@ -11,6 +11,7 @@
 struct FAuraGameplayTags;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FSpellGlobeSelectedSignature, bool, bSpendPointsButtonEnabled, bool,bEquipButtonEnabled,FString,DescriptionString,FString,NextLevelDescriptionString);//拼写地球仪选择签名
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWaitForEquipSelectionSignature,const FGameplayTag&, AbilityTye);//等待装备选择签名
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpellGlobeReassignedSignature,const FGameplayTag&, AbilityTag);//法术地球仪重新分配签名
 
 struct FSelectedAbility
 {
@@ -39,6 +40,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FWaitForEquipSelectionSignature StopWaitingForEquipDelegate;//停止等待装备委托
+
+	UPROPERTY(BlueprintAssignable)
+	FSpellGlobeReassignedSignature SpellGlobeReassignedDelegate;//法术地球重新分配
 
 	UFUNCTION(BlueprintCallable)
 	void SpellGlobeSelected(const FGameplayTag& AbilityTag);//已选择法术地球仪

@@ -182,6 +182,8 @@ void USpellMenuWidgetController::OnAbilityEquipped(const FGameplayTag& AbilityTa
 	AbilityInfoDelegate.Broadcast(Info);// 广播新的技能信息，让 UI 显示新技能
 
 	StopWaitingForEquipDelegate.Broadcast(AbilityInfo->FindAbilityInfoForTag(AbilityTag).AbilityType);// 广播“停止等待装备”的事件，通知 UI 停止高亮/提示
+	SpellGlobeReassignedDelegate.Broadcast(AbilityTag);
+	GlobeDeselect();// 技能菜单控件控制器中取消选中技能的逻辑
 }
 
 // 判断技能按钮是否应该启用（消耗技能点按钮 & 装备按钮）
