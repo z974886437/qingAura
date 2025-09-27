@@ -10,6 +10,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer
 DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);
 DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityStatusChanged,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*StatusTag*/,int32 /*AbilityLevel*/);
+DECLARE_MULTICAST_DELEGATE_FourParams(FAbilityEquipped,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*Status*/,const FGameplayTag& /*Slot*/,const FGameplayTag& /*PrevSlot*/);//装备能力
 
 /**
  * 
@@ -25,6 +26,7 @@ public:
 	FEffectAssetTags EffectAssetTags;//效果资产标签
 	FAbilitiesGiven AbilitiesGivenDelegate;//能力赋予委托
 	FAbilityStatusChanged AbilityStatusChanged;//技能状态已更改
+	FAbilityEquipped AbilityEquipped;//装备能力
 
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力。
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);//添加角色被动能力
@@ -37,6 +39,8 @@ public:
 	static FGameplayTag GetAbilityTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取能力标签
 	static FGameplayTag GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取输入标签
 	static FGameplayTag GetStatusFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取状态
+	FGameplayTag GetStatusFromAbilityTag(const FGameplayTag& AbilityTag);//从技能标签获取状态
+	FGameplayTag GetInputTagFromAbilityTag(const FGameplayTag& AbilityTag);//从技能标签获取输入标签
 
 	FGameplayAbilitySpec* GetSpecFromAbilityTag(const FGameplayTag& AbilityTag);//从能力标签获取规格
 	
@@ -50,7 +54,16 @@ public:
 	UFUNCTION(Server,Reliable)
 	void ServerSpendSpellPoint(const FGameplayTag& AbilityTag);//服务器花费法术点
 
+	UFUNCTION(Server,Reliable)
+	void ServerEquipAbility(const FGameplayTag& AbilityTag,const FGameplayTag& Slot);//服务器装备能力
+
+	void ClientEquipAbility(const FGameplayTag& AbilityTag,const FGameplayTag& Status, const FGameplayTag& Slot,const FGameplayTag& PreviousSlot);//客户端装备能力
+
 	bool GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag,FString& OutDescription,FString& OutNextLevelDescription);//按能力标签获取描述
+
+	void ClearSlot(FGameplayAbilitySpec* Spec);//清除插槽
+	void ClearAbilitiesOfSlot(const FGameplayTag& Slot);//插槽的清除能力
+	static bool AbilityHasSlot(FGameplayAbilitySpec* Spec,const FGameplayTag& Slot);//能力有槽位
 protected:
 
 	virtual void OnRep_ActivateAbilities() override;//在重复激活技能时

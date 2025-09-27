@@ -52,10 +52,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EquipButtonPressed();//装备按钮按下
 
+	UFUNCTION(BlueprintCallable)
+	void SpellRowGlobePressed(const FGameplayTag& SlotTag,const FGameplayTag& AbilityType);//按下 Spell Row Globe
+
+	void OnAbilityEquipped(const FGameplayTag& AbilityTag,const FGameplayTag& Status,const FGameplayTag& Slot,const FGameplayTag& PreviousSlot);//装备能力
+
 private:
 
 	static void ShouldEnableButtons(const FGameplayTag& AbilityStatus,int32 SpellPoints,bool& bShouldEnableSpellPointsButton,bool& bShouldEnableEquipButton);//应该启用按钮
 	FSelectedAbility SelectedAbility = { FAuraGameplayTags::Get().Abilities_None,FAuraGameplayTags::Get().Abilities_Status_Locked};//选择能力
 	int32 CurrentSpellPoints = 0;//当前法术点
 	bool bWaitingForEquipSelection = false;//等待装备选择
+	FGameplayTag SelectedSlot;//选定的插槽
 };

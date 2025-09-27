@@ -43,6 +43,8 @@ void USpellMenuWidgetController::BindCallbacksToDependencies()
 		}
 	});
 
+	GetAuraASC()->AbilityEquipped.AddUObject(this,&USpellMenuWidgetController::OnAbilityEquipped);
+
 	GetAuraPS()->OnSpellPointsChangedDelegate.AddLambda([this](int32 SpellPoints)
 	{
 		SpellPointsChanged.Broadcast(SpellPoints);// 广播事件 → 通知 UI 显示最新的点数
@@ -128,12 +130,58 @@ void USpellMenuWidgetController::GlobeDeselect()
 	SpellGlobeSelectedDelegate.Broadcast(false,false,FString(),FString());
 }
 
+// 当玩家点击“装备”按钮时执行的逻辑
 void USpellMenuWidgetController::EquipButtonPressed()
 {
+	// 根据当前选中技能的标签，找到它对应的技能类型（例如攻击、防御、辅助）
 	const FGameplayTag AbilityType = AbilityInfo->FindAbilityInfoForTag(SelectedAbility.Ability).AbilityType;
 
-	WaitForEquipDelegate.Broadcast(AbilityType);
-	bWaitingForEquipSelection = true;
+	WaitForEquipDelegate.Broadcast(AbilityType);// 广播“等待装备”事件，通知 UI 或逻辑层进入技能装备流程
+	bWaitingForEquipSelection = true;// 标记当前状态为“正在等待玩家选择装备槽位”
+
+	const FGameplayTag SelectedStatus = GetAuraASC()->GetStatusFromAbilityTag(SelectedAbility.Ability);// 获取当前选中技能的状态（比如已解锁、已装备、冷却中等）
+	if (SelectedStatus.MatchesTagExact(FAuraGameplayTags::Get().Abilities_Status_Equipped))// 如果技能状态是“已装备”
+	{
+		SelectedSlot = GetAuraASC()->GetInputTagFromAbilityTag(SelectedAbility.Ability);// 获取该技能已经装备的输入标签（比如 Q/E/R 键），并保存到 SelectedSlot
+	}
+}
+
+// 当玩家点击某个法术槽时触发，决定是否能把当前选中的技能装备到该槽
+void USpellMenuWidgetController::SpellRowGlobePressed(const FGameplayTag& SlotTag, const FGameplayTag& AbilityType)
+{
+	if (!bWaitingForEquipSelection) return; // 如果当前没有在等待选择技能（比如没点击“装备”按钮），直接返回
+	//Check Selected ability against the Slot's Ability type.根据插槽的技能类型检查 选定技能
+	//(don't equip on offensive spell in a passive slot and vice versa) 不要在被动槽中装备进攻法术，反之亦然
+	const FGameplayTag& SelectedAbilityType = AbilityInfo->FindAbilityInfoForTag(SelectedAbility.Ability).AbilityType; // 获取当前选中技能的类型（例如：攻击型、被动型等）
+
+	// 如果槽位的类型和选中技能的类型不匹配，则返回（阻止错误装备）
+	// 举例：被动技能槽不能放攻击法术，攻击槽也不能放被动技能
+	if (!SelectedAbilityType.MatchesTagExact(AbilityType)) return;
+
+	GetAuraASC()->ServerEquipAbility(SelectedAbility.Ability,SlotTag);
+}
+
+// 当技能成功装备到槽位时，更新 UI 并广播相关信息
+void USpellMenuWidgetController::OnAbilityEquipped(const FGameplayTag& AbilityTag, const FGameplayTag& Status,const FGameplayTag& Slot, const FGameplayTag& PreviousSlot)
+{
+	bWaitingForEquipSelection = false;// 装备流程结束，取消等待状态
+
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 Aura 游戏标签（单例）
+
+	FAuraAbilityInfo LastSlotInfo;// 构造一个“上一个槽位”的占位信息
+	LastSlotInfo.StatusTag = GameplayTags.Abilities_Status_Unlocked;// 标记为“已解锁”状态（即该槽位现在空了）
+	LastSlotInfo.InputTag = PreviousSlot;// 设置输入槽为之前的槽位
+	LastSlotInfo.AbilityTag = GameplayTags.Abilities_None;// 清空技能标签（代表没有技能）
+	
+	// Broadcast empty info if PreviousSlot is a valid slot. Only if equipping on already-Equipped spell如果 PreviousSlot 是有效插槽，则广播空信息。仅当装备已经装备的法术时
+	AbilityInfoDelegate.Broadcast(LastSlotInfo); // 如果 PreviousSlot 有效，则广播空信息，让 UI 清掉旧槽的技能
+
+	FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag); // 查找新装备的技能信息
+	Info.StatusTag = Status;// 更新状态为最新（已装备）
+	Info.InputTag = Slot;// 更新绑定的槽位
+	AbilityInfoDelegate.Broadcast(Info);// 广播新的技能信息，让 UI 显示新技能
+
+	StopWaitingForEquipDelegate.Broadcast(AbilityInfo->FindAbilityInfoForTag(AbilityTag).AbilityType);// 广播“停止等待装备”的事件，通知 UI 停止高亮/提示
 }
 
 // 判断技能按钮是否应该启用（消耗技能点按钮 & 装备按钮）

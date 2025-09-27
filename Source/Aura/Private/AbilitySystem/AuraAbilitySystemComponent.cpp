@@ -135,6 +135,26 @@ FGameplayTag UAuraAbilitySystemComponent::GetStatusFromSpec(const FGameplayAbili
 	return FGameplayTag();// 如果没有找到，返回一个空的 GameplayTag
 }
 
+// 根据技能标签获取该技能的状态
+FGameplayTag UAuraAbilitySystemComponent::GetStatusFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	if (const FGameplayAbilitySpec* Spec = GetSpecFromAbilityTag(AbilityTag)) // 尝试通过技能标签获取对应的技能规格（FGameplayAbilitySpec 保存技能实例信息）
+	{
+		return GetStatusFromSpec(*Spec);// 如果找到了对应的技能规格，则根据规格返回技能状态（比如已解锁、可用、冷却中等）
+	}
+	return FGameplayTag();// 如果找不到该技能的规格，返回一个空的 FGameplayTag（表示无状态）
+}
+
+// 根据技能标签获取该技能的输入标签（比如 Q/E/R 键位）
+FGameplayTag UAuraAbilitySystemComponent::GetInputTagFromAbilityTag(const FGameplayTag& AbilityTag)
+{
+	if (const FGameplayAbilitySpec* Spec = GetSpecFromAbilityTag(AbilityTag)) // 尝试通过技能标签获取对应的技能规格（FGameplayAbilitySpec 保存技能实例信息）
+	{
+		return GetInputTagFromSpec(*Spec);// 如果找到对应的技能规格，则返回它绑定的输入标签（即技能按键）
+	}
+	return FGameplayTag();// 如果找不到该技能的规格，返回一个空的 FGameplayTag（表示无状态）
+}
+
 FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)// 根据技能标签查找对应的 AbilitySpec，返回指针，如果没找到返回 nullptr
 {
 	FScopedAbilityListLock ActiveScopeLoc(*this);// 加锁，防止在遍历技能列表时发生并发修改（如添加/移除技能）
@@ -227,6 +247,44 @@ void UAuraAbilitySystemComponent::ServerSpendSpellPoint_Implementation(const FGa
 	}
 }
 
+// 服务器端实现：把某个技能绑定到指定的槽位
+void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGameplayTag& AbilityTag,const FGameplayTag& Slot)
+{
+	if (FGameplayAbilitySpec* AbilitySpec = GetSpecFromAbilityTag(AbilityTag))// 根据技能标签找到对应的技能规格（Spec）
+	{
+		const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get(); // 获取全局的 Aura 游戏标签（单例）
+		const FGameplayTag& PrevSlot = GetInputTagFromSpec(*AbilitySpec); // 获取该技能之前绑定的槽位
+		const FGameplayTag& Status = GetStatusFromSpec(*AbilitySpec);// 获取该技能的当前状态（解锁、装备、锁定等）
+
+		// 判断技能状态是否允许装备（必须是已解锁或已装备）
+		const bool bStatusValid = Status == GameplayTags.Abilities_Status_Equipped  || Status == GameplayTags.Abilities_Status_Unlocked;
+		if (bStatusValid)// 如果技能状态合法，才能继续执行装备逻辑
+		{
+			// Remove this InputTag (Slot) from ang Ability that has it.从拥有它的技能中删除此 InputTag（插槽）
+			ClearAbilitiesOfSlot(Slot);// 先清空目标槽位上已有的技能（保证槽位唯一性）
+			
+			// Clear this ability's slot,just in case,it's a different slot清除这个能力的槽位，以防万一，这是一个不同的槽位
+			ClearSlot(AbilitySpec);// 清空当前技能已有的槽位绑定（防止换槽时残留）
+			
+			//Now,assign this ability to this slot 现在，将此能力分配给此插槽
+			AbilitySpec->DynamicAbilityTags.AddTag(Slot); // 把当前技能绑定到新槽位
+			
+			if (Status.MatchesTagExact(GameplayTags.Abilities_Status_Unlocked))// 如果技能之前是“解锁”状态，换成“已装备”状态
+			{
+				AbilitySpec->DynamicAbilityTags.RemoveTag(GameplayTags.Abilities_Status_Unlocked); // 移除“解锁”状态标签
+				AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);// 添加“已装备”状态标签
+			}
+			MarkAbilitySpecDirty(*AbilitySpec); // 标记技能规格已修改，触发系统同步
+		}
+		ClientEquipAbility(AbilityTag,GameplayTags.Abilities_Status_Equipped,Slot,PrevSlot);// 通知客户端更新：传递技能、状态、新槽位和旧槽位
+	}
+}
+
+void UAuraAbilitySystemComponent::ClientEquipAbility(const FGameplayTag& AbilityTag, const FGameplayTag& Status,const FGameplayTag& Slot, const FGameplayTag& PreviousSlot)
+{
+	AbilityEquipped.Broadcast(AbilityTag,Status,Slot,PreviousSlot);
+}
+
 // 根据技能标签获取技能描述和下一级技能描述
 // 返回值：true = 技能已解锁（有 AbilitySpec），false = 技能未解锁（显示锁定描述）
 bool UAuraAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag, FString& OutDescription,FString& OutNextLevelDescription)
@@ -253,6 +311,40 @@ bool UAuraAbilitySystemComponent::GetDescriptionsByAbilityTag(const FGameplayTag
 	}
 	OutNextLevelDescription = FString();// 未解锁时没有下一等级描述
 	return false;// 返回 false 表示技能未解锁
+}
+
+// 清空指定技能在快捷槽上的绑定（移除输入标签）
+void UAuraAbilitySystemComponent::ClearSlot(FGameplayAbilitySpec* Spec)
+{
+	const FGameplayTag Slot = GetInputTagFromSpec(*Spec); // 获取该技能当前绑定的输入槽标签（比如 Q、E、R 等）
+	Spec->DynamicAbilityTags.RemoveTag(Slot); // 从技能的动态标签中移除这个输入槽标签
+	MarkAbilitySpecDirty(*Spec);// 标记技能规格已被修改，通知系统同步更新
+}
+
+// 清空指定槽位上绑定的所有技能
+void UAuraAbilitySystemComponent::ClearAbilitiesOfSlot(const FGameplayTag& Slot)
+{
+	FScopedAbilityListLock ActiveScopeLock(*this);// 加锁，保证遍历技能列表时数据不会被并发修改
+	for (FGameplayAbilitySpec& Spec : GetActivatableAbilities())// 遍历角色所有可激活的技能
+	{
+		if (AbilityHasSlot(&Spec,Slot))// 如果该技能绑定在指定槽位上
+		{
+			ClearSlot(&Spec);// 清空这个技能的槽位绑定
+		}
+	}
+}
+
+// 判断某个技能是否绑定在指定的快捷槽（输入标签）
+bool UAuraAbilitySystemComponent::AbilityHasSlot(FGameplayAbilitySpec* Spec, const FGameplayTag& Slot)
+{
+	for (FGameplayTag Tag : Spec->DynamicAbilityTags)// 遍历该技能的所有动态标签（可能包含槽位信息）
+	{
+		if (Tag.MatchesTagExact(Slot))// 如果某个标签和指定槽位完全匹配
+		{
+			return true; // 找到匹配的槽位，返回 true
+		}
+	}
+	return false; // 遍历完都没找到，说明该技能没绑定这个槽位
 }
 
 void UAuraAbilitySystemComponent::OnRep_ActivateAbilities()
