@@ -3,12 +3,10 @@
 
 #include "AbilitySystem/Abilities/AuraFireBolt.h"
 
-#include "AuraGameplayTags.h"
-
 // 返回火球术技能的描述字符串（根据等级显示不同效果）
 FString UAuraFireBolt::GetDescription(int32 Level)
 {
-	const int32 Damage = GetDamageByDamageType(Level,FAuraGameplayTags::Get().Damage_Fire);// 根据技能等级获取火焰伤害数值
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);// 根据技能等级获取火焰伤害数值
 	const float ManaCost = FMath::Abs(GetManaCost(Level));
 	const float Cooldown = GetCooldown(Level);
 	if (Level == 1)// 如果是等级 1，显示单发火球描述
@@ -33,7 +31,7 @@ FString UAuraFireBolt::GetDescription(int32 Level)
 			Level,// 替换 %d 为等级
 			ManaCost,
 			Cooldown,
-			Damage// 替换 %d 为伤害数值
+			ScaledDamage// 替换 %d 为伤害数值
 			);
 	}
 	else// 如果是等级 > 1，显示多发火球描述
@@ -60,7 +58,7 @@ FString UAuraFireBolt::GetDescription(int32 Level)
 			ManaCost,
 			Cooldown,
 			FMath::Min(Level,NumProjectiles),
-			Damage// 替换 %d 为伤害数值
+			ScaledDamage// 替换 %d 为伤害数值
 			);
 	}
 }
@@ -68,8 +66,7 @@ FString UAuraFireBolt::GetDescription(int32 Level)
 // 返回技能“下一级”的描述字符串（展示升级后技能效果）
 FString UAuraFireBolt::GetNextLevelDescription(int32 Level)
 {
-	// 根据等级获取火焰伤害数值
-	const int32 Damage = GetDamageByDamageType(Level,FAuraGameplayTags::Get().Damage_Fire);// 根据技能等级获取火焰伤害数值
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);// 根据技能等级获取火焰伤害数值
 	const float ManaCost = FMath::Abs(GetManaCost(Level));
 	const float Cooldown = GetCooldown(Level);
 	return FString::Printf(TEXT(
@@ -94,7 +91,7 @@ FString UAuraFireBolt::GetNextLevelDescription(int32 Level)
 			ManaCost,
 			Cooldown,
 			FMath::Min(Level,NumProjectiles),
-			Damage// 替换 %d 为伤害数值
+			ScaledDamage// 替换 %d 为伤害数值
 			);
 	
 }

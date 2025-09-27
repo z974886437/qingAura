@@ -118,7 +118,8 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	FAggregatorEvaluateParameters EvaluationParameters;// 定义一个参数结构，传给 AttemptCalculateCapturedAttributeMagnitude，用来影响属性计算
 	EvaluationParameters.SourceTags = SoureTags;// 来源的标签（可能影响属性，比如 Buff）
 	EvaluationParameters.TargetTags = Targetags; // 目标的标签（可能影响属性，比如 Debuff）
-	
+
+	// Get Damage Set by Caller Magnitude 获取按呼叫者大小设置的伤害
 	float Damage = 0.f;// 初始化总伤害为 0
 	for (const TTuple<FGameplayTag, FGameplayTag>& Pair : FAuraGameplayTags::Get().DamageTypesToResistance)// 遍历所有在标签容器（GameplayTags）里定义的伤害类型，例如火焰、冰霜、雷电等
 	{

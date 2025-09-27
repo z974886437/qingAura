@@ -35,11 +35,6 @@ public:
 	FGameplayTag Attributes_Secondary_MaxHealth;//最大生命值
 	FGameplayTag Attributes_Secondary_MaxMana;//最大法力值
 
-	FGameplayTag Attributes_Resistance_Fire;//抗性_火
-	FGameplayTag Attributes_Resistance_Lightning;//抗性_闪电
-	FGameplayTag Attributes_Resistance_Arcane;//抗性_奥术
-	FGameplayTag Attributes_Resistance_Physical;//抗性_物理
-
 	FGameplayTag Attributes_Meta_IncomingXP;//元_传入XP
 	
 	FGameplayTag InputTag_LMB;//鼠标左键
@@ -57,6 +52,16 @@ public:
 	FGameplayTag Damage_Arcane;//伤害_奥术
 	FGameplayTag Damage_Physical;//物理伤害
 
+	FGameplayTag Attributes_Resistance_Fire;//抗性_火
+	FGameplayTag Attributes_Resistance_Lightning;//抗性_闪电
+	FGameplayTag Attributes_Resistance_Arcane;//抗性_奥术
+	FGameplayTag Attributes_Resistance_Physical;//抗性_物理
+
+	FGameplayTag Debuff_Burn;//减益燃烧
+	FGameplayTag Debuff_Stun;//减益眩晕
+	FGameplayTag Debuff_Arcane;//减益奥术
+	FGameplayTag Debuff_Physical;//物理减益
+	
 	FGameplayTag Abilities_None;//技能_无
 
 	FGameplayTag Abilities_Attack;//技能_攻击
@@ -89,6 +94,7 @@ public:
 	FGameplayTag Montage_Attack_4;//蒙太奇_攻击4
 
 	TMap<FGameplayTag,FGameplayTag> DamageTypesToResistance;//抵抗伤害类型
+	TMap<FGameplayTag,FGameplayTag> DamageTypesToDebuff;//减益伤害类型
 
 	FGameplayTag Effects_HitReact;//击中反应
 private:

@@ -23,11 +23,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> DamageEffectClass;//伤害效果类
 
-	UPROPERTY(EditDefaultsOnly,Category = "Combat")
-	TMap<FGameplayTag,FScalableFloat> DamageTypes;//伤害类型
+	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	FGameplayTag DamageType;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	FScalableFloat Damage;
 
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;//从数组中获取随机标记的蒙太奇
-
-	float GetDamageByDamageType(float InLevel,const FGameplayTag& DamageType);//按伤害类型获得伤害
 };
