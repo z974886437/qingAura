@@ -42,64 +42,47 @@ void AAuraProjectile::BeginPlay()
 	LoopingSoundComponent = UGameplayStatics::SpawnSoundAttached(LoopingSound,GetRootComponent());// 播放一个持续循环的声音，并将其绑定到当前Actor的根组件上
 }
 
+// 处理 projectile 碰撞后的效果和逻辑
+void AAuraProjectile::OnHit()
+{
+	// 播放碰撞时的音效（ImpactSound）并设置音效的位置为当前投射物的位置
+	UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());// 在碰撞位置生成特效（ImpactEffect）
+	if (LoopingSoundComponent) LoopingSoundComponent->Stop();// 如果存在循环音效组件，则停止该循环音效
+	bHit = true;// 标记投射物已经命中
+}
+
 void AAuraProjectile::Destroyed()
 {
 	// 如果没有命中任何目标 且 当前不是服务器（说明是客户端自己看到的销毁）
 	// 这样做是为了客户端本地立即播放击中特效，减少网络延迟带来的体验落差
-	if (!bHit && !HasAuthority())
-	{
-		// 在当前Actor位置播放音效（比如子弹击中声音）
-		// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
-		UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
-		// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
-		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
-		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
-		bHit = true;
-	}
+	if (!bHit && !HasAuthority()) OnHit();
 	Super::Destroyed();// 调用父类的 Destroyed()，确保父类的销毁逻辑被执行（比如清理引用、释放资源等）
 }
 
+// 处理投射物与目标物体的重叠事件（如碰撞）
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// 检查伤害效果是否有效，或者施加者是否是自己，如果是则直接返回
-	if (!DamageEffectSpecHandle.Data.IsValid() || DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser() == OtherActor)
-	{
-		return;
-	}
-	// 检查施加者与目标是否是敌对关系，如果不是敌人（即友方），则不处理伤害
-	if (!UAuraAbilitySystemLibrary::IsNotFriend(DamageEffectSpecHandle.Data.Get()->GetContext().GetEffectCauser(),OtherActor))
-	{
-		return;
-	}
-	if (!bHit)
-	{
-		//UE_LOG(LogTemp,Warning,TEXT("[%s] spawned"),*GetName());
-		// 在当前Actor位置播放音效（比如子弹击中声音）
-		// 参数：this 是上下文对象，ImpactSound 是声音资源，位置是当前Actor位置，旋转是零
-		UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
-		// 在当前Actor位置生成 Niagara 粒子特效（比如爆炸特效）
-		// 参数：this 是上下文对象，ImpactEffect 是 Niagara 特效资源，位置是当前Actor位置
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());
-		if (LoopingSoundComponent) LoopingSoundComponent->Stop();
-		bHit = true;
-	}
+	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();// 获取施法者的 AvatarActor（通常是角色对象）
+
+	if (SourceAvatarActor == OtherActor) return;// 检查伤害效果是否有效，或者施加者是否是自己，如果是自己，直接返回（避免伤害自己）
+	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor,OtherActor)) return;// 检查施加者与目标是否是敌对关系，如果不是敌人（即友方），则不处理伤害
+	if (!bHit) OnHit();// 如果投射物未命中过，调用 OnHit 处理碰撞音效和特效等
 	
-	if (HasAuthority())	// 仅在服务器端执行销毁（避免客户端直接删除导致状态不同步）
+	if (HasAuthority())	// 确保只有在服务器端才会处理伤害与销毁逻辑（避免客户端与服务器不同步）
 	{
-		// 如果目标 Actor 有 AbilitySystemComponent
+		// 如果目标 Actor 有 AbilitySystemComponent（能力系统组件），则应用伤害
 		if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(OtherActor))
 		{
-			TargetASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get()); // 把准备好的效果规格(比如伤害/治疗)应用到这个目标自己身上
+			// 设置目标的 AbilitySystemComponent，并应用伤害效果
+			DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
+			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
 		}
 		
 		Destroy();// 销毁当前Actor（投射物）
 	}
-	else
-	{
-		bHit = true;
-	}
+	else bHit = true;// 如果是客户端，直接标记为已命中，防止重复触发
 }
 
 

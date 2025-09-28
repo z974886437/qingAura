@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayEffectTypes.h"
+#include "AuraAbilityTypes.h"
 #include "GameFramework/Actor.h"
 #include "AuraProjectile.generated.h"
 
@@ -25,10 +25,11 @@ public:
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovement;//抛射运动
 
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
-	FGameplayEffectSpecHandle DamageEffectSpecHandle;//伤害效果规格手柄
+	FDamageEffectParams DamageEffectParams;//伤害效果规格手柄
 
 protected:
 	virtual void BeginPlay() override;
+	void OnHit();
 	virtual void Destroyed() override;//摧毁
 	
 	UFUNCTION()

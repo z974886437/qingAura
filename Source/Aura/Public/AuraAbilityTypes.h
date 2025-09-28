@@ -18,10 +18,10 @@ struct FDamageEffectParams
 	TSubclassOf<UGameplayEffect> DamageGameplayEffectClass = nullptr;
 
 	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> SourceAbilitySystemComponent;
+	TObjectPtr<UAbilitySystemComponent> SourceAbilitySystemComponent;//源能力系统组件
 
 	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent;
+	TObjectPtr<UAbilitySystemComponent> TargetAbilitySystemComponent;//目标能力系统组件
 
 	UPROPERTY()
 	float BaseDamage = 0.f;
