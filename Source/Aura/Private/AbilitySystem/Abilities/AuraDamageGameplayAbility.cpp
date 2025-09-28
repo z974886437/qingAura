@@ -20,6 +20,24 @@ void UAuraDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 	
 }
 
+// 从技能类的默认值生成伤害效果参数，返回 FDamageEffectParams 结构体
+FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor) const
+{
+	FDamageEffectParams Params;// 定义一个伤害效果参数结构体
+	Params.WorldContextObject = GetAvatarActorFromActorInfo();// 设置上下文对象，这里是技能的施法者（AvatarActor）
+	Params.DamageGameplayEffectClass = DamageEffectClass;// 设置伤害效果类，通常是一个 GameplayEffect 蓝图类
+	Params.SourceAbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();// 设置来源的能力系统组件（施法者的 ASC）
+	Params.TargetAbilitySystemComponent = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);// 设置目标的能力系统组件（通过目标 Actor 获取）
+	Params.BaseDamage = Damage.GetValueAtLevel(GetAbilityLevel());// 设置基础伤害数值，根据技能等级从曲线/表格中取值
+	Params.AbilityLevel = GetAbilityLevel();// 设置技能等级，用于计算效果强度
+	Params.DamageType = DamageType;// 设置伤害类型（如火焰、冰霜等，通常是 GameplayTag 或枚举）
+	Params.DebuffChance = DebuffChance;// 设置 Debuff 触发几率
+	Params.DebuffDamage = DebuffDamage;// 设置 Debuff 每次触发的伤害
+	Params.DebuffDuration = DebuffDuration;// 设置 Debuff 持续时间
+	Params.DebuffFrequency = DebuffFrequency;// 设置 Debuff 触发频率（如每秒几次）
+	return Params;// 返回最终填充好的参数
+}
+
 FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const
 {
 	if (TaggedMontages.Num() > 0)// 如果数组中至少有一个元素

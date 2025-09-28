@@ -3,8 +3,10 @@
 
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.h"
+#include "AuraGameplayTags.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -234,6 +236,31 @@ bool UAuraAbilitySystemLibrary::IsNotFriend(AActor* FirstActor, AActor* SecondAc
 	const bool bBothAreEnemies = FirstActor->ActorHasTag(FName("Enemy")) && SecondActor->ActorHasTag(FName("Enemy"));// 判断两个Actor是否都是敌人
 	const bool bFriends = bBothArePlayers || bBothAreEnemies;// 如果两个都是玩家，或者两个都是敌人，就认为他们是“朋友”
 	return !bFriends;// 返回是否是敌人（即不是朋友）
+}
+
+// 应用伤害效果，根据传入的参数构建并施加 GameplayEffect，返回上下文句柄
+FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const FDamageEffectParams& DamageEffectParams)
+{
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 Aura GameplayTags，用于引用统一的标签
+	const AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();// 获取施法者的 AvatarActor（技能来源实体）
+	
+	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();// 创建一个效果上下文，用来存放施法者、命中信息等
+	EffectContextHandle.AddSourceObject(SourceAvatarActor);// 把施法者对象加入上下文，便于后续追溯伤害来源
+	// 构建一个 GameplayEffect 规格（Spec），包含效果类、技能等级和上下文
+	const FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(
+		DamageEffectParams.DamageGameplayEffectClass,     // 使用的伤害效果类
+		DamageEffectParams.AbilityLevel, // 技能等级
+		EffectContextHandle // 上下文
+		);
+
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,DamageEffectParams.DamageType,DamageEffectParams.BaseDamage);// 设置伤害数值，绑定到具体的伤害类型（如火焰、冰霜）
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,GameplayTags.Debuff_Chance,DamageEffectParams.DebuffChance);// 设置 Debuff 触发概率
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,GameplayTags.Debuff_Damage,DamageEffectParams.DebuffDamage);// 设置 Debuff 每次伤害
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,GameplayTags.Debuff_Duration,DamageEffectParams.DebuffDuration);// 设置 Debuff 持续时间
+	UAbilitySystemBlueprintLibrary::AssignTagSetByCallerMagnitude(SpecHandle,GameplayTags.Debuff_Frequency,DamageEffectParams.DebuffFrequency);// 设置 Debuff 触发频率
+	
+	DamageEffectParams.TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);// 将效果规格应用到目标的能力系统组件上（即目标受到效果影响）
+	return EffectContextHandle;// 返回效果上下文句柄
 }
 
 
