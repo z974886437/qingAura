@@ -61,6 +61,11 @@ public:
 	FGameplayTag Debuff_Stun;//减益眩晕
 	FGameplayTag Debuff_Arcane;//减益奥术
 	FGameplayTag Debuff_Physical;//物理减益
+
+	FGameplayTag Debuff_Chance;//减益更新
+	FGameplayTag Debuff_Damage;//减益伤害
+	FGameplayTag Debuff_Frequency;//减益频率
+	FGameplayTag Debuff_Duration;//减益期间
 	
 	FGameplayTag Abilities_None;//技能_无
 

@@ -24,10 +24,22 @@ protected:
 	TSubclassOf<UGameplayEffect> DamageEffectClass;//伤害效果类
 
 	UPROPERTY(EditDefaultsOnly,Category = "Damage")
-	FGameplayTag DamageType;
+	FGameplayTag DamageType;//伤害类型
 
 	UPROPERTY(EditDefaultsOnly,Category = "Damage")
-	FScalableFloat Damage;
+	FScalableFloat Damage;//伤害
+
+	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	float DebuffChance = 20.f;//Debuff更新
+
+	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	float DebuffDamage = 5.f;//Debuff伤害
+
+	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	float DebuffFrequency = 1.f;//Debuff频率
+
+	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	float DebuffDuration = 5.f;//Debuff期间
 
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;//从数组中获取随机标记的蒙太奇
