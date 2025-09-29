@@ -1,7 +1,7 @@
 #include "AuraAbilityTypes.h"
 
 //实现网络序列化
-bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, class UPackageMap* Map, bool& bOutSuccess)
+bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bool& bOutSuccess)
 {
 	uint32 RepBits = 0;// 用一个 32 位无符号整数作为“位掩码”，每一位代表一个要不要同步的属性
 	if (Ar.IsSaving())// 判断当前是否在进行保存（序列化时保存阶段）
@@ -42,9 +42,29 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, class UPackageMap* M
 		{
 			RepBits |= 1 << 8;// 如果是暴击，就把第 8 位设为 1
 		}
+		if (bIsSuccessfulDebuff)
+		{
+			RepBits |= 1 << 9;// 如果是成功的减益，就把第 9 位设为 1
+		}
+		if (DebuffDamage > 0.f)
+		{
+			RepBits |= 1 << 10;
+		}
+		if (DebuffDuration > 0.f)
+		{
+			RepBits |= 1 << 11;
+		}
+		if (DebuffFrequency > 0.f)
+		{
+			RepBits |= 1 << 12;
+		}
+		if (DamageType.IsValid())
+		{
+			RepBits |= 1 << 13;
+		}
 	}
 	
-	Ar.SerializeBits(&RepBits, 9);// 先读取/写入 9 位二进制数据到 RepBits（对应之前保存的9个标志位）这里 9 表示最多用到 0~8 位（也就是你定义的9个属性）
+	Ar.SerializeBits(&RepBits, 13);// 先读取/写入 9 位二进制数据到 RepBits（对应之前保存的9个标志位）这里 9 表示最多用到 0~8 位（也就是你定义的9个属性）
 
 	if (RepBits & (1 << 0))
 	{
@@ -93,6 +113,33 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, class UPackageMap* M
 	if (RepBits & (1 << 8))
 	{
 		Ar << bIsCriticalHit; // 如果第8位是1，就序列化是否是暴击
+	}
+	if (RepBits & (1 << 9))
+	{
+		Ar << bIsSuccessfulDebuff; // 如果第8位是1，就序列化是否是暴击
+	}
+	if (RepBits & (1 << 10))
+	{
+		Ar << DebuffDamage; // 如果第8位是1，就序列化是否是暴击
+	}
+	if (RepBits & (1 << 11))
+	{
+		Ar << DebuffDuration; // 如果第8位是1，就序列化是否是暴击
+	}
+	if (RepBits & (1 << 12))
+	{
+		Ar << DebuffFrequency; // 如果第8位是1，就序列化是否是暴击
+	}
+	if (RepBits & (1 << 13))
+	{
+		if (Ar.IsLoading())
+		{
+			if (!DamageType.IsValid())
+			{
+				DamageType = TSharedPtr<FGameplayTag>(new FGameplayTag());// 如果正在加载（反序列化）并且 HitResult 还没创建，就新建一个
+			}
+		}
+		DamageType->NetSerialize(Ar, Map, bOutSuccess); // 调用 HitResult 自带的 NetSerialize 进行网络序列化/反序列化
 	}
 
 	if (Ar.IsLoading())

@@ -54,20 +54,30 @@ public:
 
 	bool IsCriticalHit() const { return bIsCriticalHit; }// 判断是否是一次暴击命中
 	bool IsBlockedHit() const { return bIsBlockedHit; }// 判断是否是一次被格挡的命中
+	bool IsSuccessfulDebuff() const { return bIsSuccessfulDebuff; } //是成功的减益
+	float GetDebuffDamage() const { return DebuffDamage; }//获得减益伤害
+	float GetDebuffDuration() const { return DebuffDuration; }//获得减益持续时间
+	float GetDebuffFrequency() const { return DebuffFrequency; }//获得减益频率
+	TSharedPtr<FGameplayTag> GetDamageType() const { return DamageType;}//获取伤害类型
 
 	void SetIsCriticalHit(bool bInIsCriticalHit) { bIsCriticalHit = bInIsCriticalHit; }// 设置当前命中是否为暴击
 	void SetIsBlockedHit(bool bInIsBlockedHit ) { bIsBlockedHit = bInIsBlockedHit;}// 设置当前命中是否被格挡
+	void SetIsSuccessfulDebuff(bool bInIsDebuff) { bIsSuccessfulDebuff = bInIsDebuff;}//设置成功减益
+	void SetDebuffDamage(float InDamage) { DebuffDamage = InDamage;}//设置减益伤害
+	void SetDebuffDuration(float InDuration) { DebuffDuration = InDuration; }//设置减益持续时间
+	void SetDebuffFrequency(float InFrequency) { DebuffFrequency = InFrequency; }//设置减益频率
+	
 	
 	/* returns the actual struct used for serialization, subclasses must override this! 返回用于序列化的实际结构体，子类必须覆盖它！*/
 	virtual UScriptStruct* GetScriptStruct() const
 	{
-		return StaticStruct();
+		return FGameplayEffectContext::StaticStruct();
 	}
 
 	/** 创建此上下文的副本，用于复制以供以后修改 */
-	virtual FAuraGameplayEffectContext* Duplicate() const
+	virtual FGameplayEffectContext* Duplicate() const
 	{
-		FAuraGameplayEffectContext* NewContext = new FAuraGameplayEffectContext();
+		FGameplayEffectContext* NewContext = new FGameplayEffectContext();
 		*NewContext = *this;
 		if (GetHitResult())
 		{
@@ -83,11 +93,24 @@ public:
 protected:
 
 	UPROPERTY()
-	bool bIsBlockedHit = false;
+	bool bIsBlockedHit = false;//被阻挡命中
 	
 	UPROPERTY()
-	bool bIsCriticalHit = false;
-	
+	bool bIsCriticalHit = false;//是暴击
+
+	UPROPERTY()
+	bool bIsSuccessfulDebuff = false;//是成功的减益
+
+	UPROPERTY()
+	float DebuffDamage = 0.f;//减益伤害
+
+	UPROPERTY()
+	float DebuffDuration = 0.f;//减益持续时间
+
+	UPROPERTY()
+	float DebuffFrequency = 0.f;//减益频率
+
+	TSharedPtr<FGameplayTag> DamageType;//伤害类型
 };
 
 template<>

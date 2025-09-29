@@ -164,6 +164,60 @@ bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle&
 	return false; // 如果转换失败或 Context 为空，则默认未阻挡
 }
 
+bool UAuraAbilitySystemLibrary::IsSuccessfulDebuff(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->IsSuccessfulDebuff(); // 调用自定义方法，返回本次命中是否被阻挡
+	}
+	return false; // 如果转换失败或 Context 为空，则默认未阻挡
+}
+
+float UAuraAbilitySystemLibrary::GetDebuffDamage(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDebuffDamage(); // 调用自定义方法，返回本次命中是否被阻挡
+	}
+	return 0.f; // 如果转换失败或 Context 为空，则默认未阻挡
+}
+
+float UAuraAbilitySystemLibrary::GetDebuffDuration(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDebuffDuration(); // 调用自定义方法，返回本次命中是否被阻挡
+	}
+	return 0.f; // 如果转换失败或 Context 为空，则默认未阻挡
+}
+
+float UAuraAbilitySystemLibrary::GetDebuffFrequency(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDebuffFrequency(); // 调用自定义方法，返回本次命中是否被阻挡
+	}
+	return 0.f; // 如果转换失败或 Context 为空，则默认未阻挡
+}
+
+// 获取伤害类型的函数，根据传入的 GameplayEffectContextHandle 获取相应的 DamageType
+FGameplayTag UAuraAbilitySystemLibrary::GetDamageType(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		if (AuraEffectContext->GetDamageType().IsValid())// 如果获取到的 DamageType 是有效的（IsValid()）
+		{
+			return *AuraEffectContext->GetDamageType();// 返回有效的 DamageType 对应的 FGameplayTag
+		}
+	}
+	return FGameplayTag();// 如果转换失败或者 DamageType 无效，则返回一个默认的空 FGameplayTag（表示未定义的伤害类型）
+}
+
 bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
@@ -204,9 +258,9 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 	FCollisionQueryParams SphereParams;// 创建球体查询参数对象
 	SphereParams.AddIgnoredActors(ActorsToIgnore);// 忽略指定的 Actor，避免检测到自己或无关对象
 
-	TArray<FOverlapResult> Overlaps;// 用于存储球体检测结果（可能重叠的对象）
 	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))// 获取当前世界对象，保证查询在正确的世界中执行
 	{
+		TArray<FOverlapResult> Overlaps;// 用于存储球体检测结果（可能重叠的对象）
 		// 在 SphereOrigin 位置做一个半径为 Radius 的球体检测
 		// 查询所有动态物体（角色、敌人、NPC等），结果存到 Overlaps
 		World->OverlapMultiByObjectType(Overlaps,// 输出：重叠结果数组
