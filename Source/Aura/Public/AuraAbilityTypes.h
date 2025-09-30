@@ -66,6 +66,7 @@ public:
 	void SetDebuffDamage(float InDamage) { DebuffDamage = InDamage;}//设置减益伤害
 	void SetDebuffDuration(float InDuration) { DebuffDuration = InDuration; }//设置减益持续时间
 	void SetDebuffFrequency(float InFrequency) { DebuffFrequency = InFrequency; }//设置减益频率
+	void SetDamageType(TSharedPtr<FGameplayTag> InDamageType) { DamageType = InDamageType; }
 	
 	
 	/* returns the actual struct used for serialization, subclasses must override this! 返回用于序列化的实际结构体，子类必须覆盖它！*/

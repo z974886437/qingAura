@@ -266,6 +266,9 @@ public:
 	
 
 private:
+	void HandleIncomingDamage(const FEffectProperties& Props);//处理传入的损坏
+	void HandleIncomingXP(const FEffectProperties& Props);//处理传入的 XP
+	void Debuff(const FEffectProperties& Props);
 	void SetEffectProperties(const  FGameplayEffectModCallbackData& Data,FEffectProperties& Props) const;//设置效果属性
 	void ShowFloatingText(const FEffectProperties& Props,float Damage,bool bBlockedHit,bool bCriticalHit) const;//显示浮动文本
 	void SendXPEvent(const FEffectProperties& Props);//发送 XP 事件

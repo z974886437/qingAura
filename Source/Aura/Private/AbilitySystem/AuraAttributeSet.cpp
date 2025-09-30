@@ -100,11 +100,6 @@ void UAuraAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, 
 
 void UAuraAttributeSet::SetEffectProperties(const FGameplayEffectModCallbackData& Data, FEffectProperties& Props) const
 {
-		// if (Data.EvaluatedData.Attribute == GetHealthAttribute())//判断是哪种属性被修改 
-	// {
-	// 	UE_LOG(LogTemp, Warning, TEXT("Health from GetHealth():%f"),GetHealth());
-	// 	UE_LOG(LogTemp, Warning, TEXT("Magnitude:%f"),Data.EvaluatedData.Magnitude);
-	// }
 	//获取本次 GameplayEffect 的上下文信息（FGameplayEffectContextHandle），包括 谁施放了这个效果、命中谁、是否暴击、命中位置、投射物等信息
 	// Source = couset of the effect,Target = target of the effect (owner of this AS)
 	// 来源 = 效果的原因，目标等于目标的效果（该属性的所有者设置正确，目标是收到影响的事物）
@@ -158,73 +153,94 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const  FGameplayEffectModCallb
 	}
 	if (Data.EvaluatedData.Attribute == GetIncomingDamageAttribute())// 判断当前变化的属性是不是 IncomingDamage（即角色受到的伤害数值）
 	{
-		const float LocalIncomingDamage = GetIncomingDamage();// 取出当前累计的伤害值（之前可能被多次叠加）
-		SetIncomingDamage(0.f);  // 把 IncomingDamage 重置为 0（避免重复结算）
-		if (LocalIncomingDamage > 0.f)// 如果本次伤害值大于 0，才处理
-		{
-			const float NewHealth = GetHealth() - LocalIncomingDamage;// 计算新的生命值 = 旧生命值 - 伤害
-			SetHealth(FMath::Clamp(NewHealth,0.f,GetMaxHealth()));// 用 Clamp 限制血量范围 [0, MaxHealth]，防止出现负数或超过最大值
-
-			const bool bFatal = NewHealth <= 0.f;// 判断角色是否死亡（血量小于等于 0）
-			if (bFatal)// 如果伤害是致命的（比如血量 <= 0）
-			{
-				ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor); // 尝试把目标角色转换成实现了 ICombatInterface 的对象
-				if (CombatInterface)// 如果转换成功（目标确实实现了战斗接口）
-				{
-					CombatInterface->Die();// 调用接口里的 Die() 函数 → 触发目标的死亡逻辑
-				}
-				SendXPEvent(Props);
-			}
-			else
-			{
-				FGameplayTagContainer TagContainer;// 定义一个 GameplayTag 容器，用来装要触发的技能标签
-				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）
-				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);// 让目标的 AbilitySystemComponent（ASC）尝试根据这个标签激活对应的技能
-			}
-			
-			const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);// 1. 从上下文读取是否格挡
-			const bool bCriticalHit = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);// 2. 从上下文读取是否暴击
-			ShowFloatingText(Props,LocalIncomingDamage,bBlock,bCriticalHit);//显示浮动文本
-		}
+		HandleIncomingDamage(Props);
 	}
 	if (Data.EvaluatedData.Attribute == GetIncomingXPAttribute())
 	{
-		const float LocalIncomingXP = GetIncomingXP();// 取出临时存放的经验值
-		SetIncomingXP(0.f);// 把 IncomingXP 清零，避免经验值重复计算
-		//UE_LOG(LogAura,Log,TEXT("Incoming XP:%f"),LocalIncomingXP);
+		HandleIncomingXP(Props);
+	}
+}
 
-		//TODO:See if we should level up 判断是否应该升级
+void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
+{
+	const float LocalIncomingDamage = GetIncomingDamage();// 取出当前累计的伤害值（之前可能被多次叠加）
+	SetIncomingDamage(0.f);  // 把 IncomingDamage 重置为 0（避免重复结算）
+	if (LocalIncomingDamage > 0.f)// 如果本次伤害值大于 0，才处理
+	{
+		const float NewHealth = GetHealth() - LocalIncomingDamage;// 计算新的生命值 = 旧生命值 - 伤害
+		SetHealth(FMath::Clamp(NewHealth,0.f,GetMaxHealth()));// 用 Clamp 限制血量范围 [0, MaxHealth]，防止出现负数或超过最大值
 
-		//Source Character is the owner, since GA_ListenForEvents applies GE_EventBasedEffect,adding to InComingXP
-		//源字符是所有者，因为GA_ListenForEvents应用GE_EventBasedEffect，添加到 InComingXP
-		if (Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())// 确认角色实现了 PlayerInterface 才能调用接口
+		const bool bFatal = NewHealth <= 0.f;// 判断角色是否死亡（血量小于等于 0）
+		if (bFatal)// 如果伤害是致命的（比如血量 <= 0）
 		{
-			const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);// 获取角色当前等级（通过 CombatInterface）
-			const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);// 获取角色当前经验值（通过 PlayerInterface）
-			
-			const int32 NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter,CurrentXP + LocalIncomingXP);// 计算加上这次获得的经验后的新等级
-			const int32 NumLevelUps = NewLevel - CurrentLevel;// 计算实际升级了多少级（新等级 - 旧等级）
-			if (NumLevelUps > 0)// 如果确实升级了（等级差 > 0）
+			ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor); // 尝试把目标角色转换成实现了 ICombatInterface 的对象
+			if (CombatInterface)// 如果转换成功（目标确实实现了战斗接口）
 			{
-				// TODO: 目前只取当前等级的奖励，通常应该按每一级循环发放奖励
-				const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter,CurrentLevel);
-				const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter,CurrentLevel);
-
-				IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter,NumLevelUps);// 给角色增加等级
-				IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter,AttributePointsReward);// 增加属性点奖励
-				IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter,SpellPointsReward);// 增加技能点奖励
-
-				// 升级时满血满蓝
-				bTopOffHealth = true;
-				bTopOffMana = true;
-				
-				IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);// 调用角色的升级事件（比如播放特效、UI提示）
+				CombatInterface->Die();// 调用接口里的 Die() 函数 → 触发目标的死亡逻辑
 			}
+			SendXPEvent(Props);
+		}
+		else
+		{
+			FGameplayTagContainer TagContainer;// 定义一个 GameplayTag 容器，用来装要触发的技能标签
+			TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）
+			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);// 让目标的 AbilitySystemComponent（ASC）尝试根据这个标签激活对应的技能
+		}
 			
-			IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 调用接口，把经验加到 SourceCharacter（通常是玩家自己）身上
+		const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);// 1. 从上下文读取是否格挡
+		const bool bCriticalHit = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);// 2. 从上下文读取是否暴击
+		ShowFloatingText(Props,LocalIncomingDamage,bBlock,bCriticalHit);//显示浮动文本
+		if (UAuraAbilitySystemLibrary::IsSuccessfulDebuff(Props.EffectContextHandle))
+		{
+			Debuff(Props);
 		}
 	}
 }
+
+void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
+{
+	
+}
+
+void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
+{
+	const float LocalIncomingXP = GetIncomingXP();// 取出临时存放的经验值
+	SetIncomingXP(0.f);// 把 IncomingXP 清零，避免经验值重复计算
+	//UE_LOG(LogAura,Log,TEXT("Incoming XP:%f"),LocalIncomingXP);
+
+	//TODO:See if we should level up 判断是否应该升级
+
+	//Source Character is the owner, since GA_ListenForEvents applies GE_EventBasedEffect,adding to InComingXP
+	//源字符是所有者，因为GA_ListenForEvents应用GE_EventBasedEffect，添加到 InComingXP
+	if (Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())// 确认角色实现了 PlayerInterface 才能调用接口
+	{
+		const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);// 获取角色当前等级（通过 CombatInterface）
+		const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);// 获取角色当前经验值（通过 PlayerInterface）
+			
+		const int32 NewLevel = IPlayerInterface::Execute_FindLevelForXP(Props.SourceCharacter,CurrentXP + LocalIncomingXP);// 计算加上这次获得的经验后的新等级
+		const int32 NumLevelUps = NewLevel - CurrentLevel;// 计算实际升级了多少级（新等级 - 旧等级）
+		if (NumLevelUps > 0)// 如果确实升级了（等级差 > 0）
+		{
+			// TODO: 目前只取当前等级的奖励，通常应该按每一级循环发放奖励
+			const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter,CurrentLevel);
+			const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter,CurrentLevel);
+
+			IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter,NumLevelUps);// 给角色增加等级
+			IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter,AttributePointsReward);// 增加属性点奖励
+			IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter,SpellPointsReward);// 增加技能点奖励
+
+			// 升级时满血满蓝
+			bTopOffHealth = true;
+			bTopOffMana = true;
+				
+			IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);// 调用角色的升级事件（比如播放特效、UI提示）
+		}
+			
+		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 调用接口，把经验加到 SourceCharacter（通常是玩家自己）身上
+	}
+}
+
+
 
 void UAuraAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)// 当属性值发生改变时会调用这个回调函数
 {
@@ -377,3 +393,5 @@ void UAuraAttributeSet::OnRep_PhysicalResistance(const FGameplayAttributeData& O
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UAuraAttributeSet,PhysicalResistance,OldPhysicalResistance);//用于实现 最大法力属性的网络同步 + 通知响应
 }
+
+

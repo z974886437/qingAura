@@ -247,6 +247,56 @@ void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& E
 	}
 }
 
+void UAuraAbilitySystemLibrary::SetIsSuccessfulDebuff(FGameplayEffectContextHandle& EffectContextHandle,
+	bool bInSuccessfulDebuff)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetIsSuccessfulDebuff(bInSuccessfulDebuff); // 设置成功减益
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDebuffDamage(FGameplayEffectContextHandle& EffectContextHandle, float InDamage)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetDebuffDamage(InDamage); // 设置成功减益
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDebuffDuration(FGameplayEffectContextHandle& EffectContextHandle, float InDuration)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetDebuffDuration(InDuration); // 设置成功减益
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetDebuffFrequency(FGameplayEffectContextHandle& EffectContextHandle, float InFrequency)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetDebuffFrequency(InFrequency); // 设置成功减益
+	}
+}
+
+// 设置伤害类型，将伤害类型（InDamageType）应用到效果上下文（EffectContextHandle）中
+void UAuraAbilitySystemLibrary::SetDamageType(FGameplayEffectContextHandle& EffectContextHandle,const FGameplayTag& InDamageType)
+{
+	// 从通用的 EffectContextHandle 中获取自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		// 使用传入的 FGameplayTag 参数 InDamageType 创建一个 TSharedPtr<FGameplayTag> 智能指针
+		const TSharedPtr<FGameplayTag> DamageType = MakeShared<FGameplayTag>(InDamageType);
+		// 将创建的 DamageType 设置到 AuraEffectContext 中，应用新的伤害类型
+		AuraEffectContext->SetDamageType(DamageType); // 设置成功减益
+	}
+}
+
 //在半径内获取现场玩家
 void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContextObject,// 世界上下文，一般用来获取 UWorld
 	TArray<AActor*>& OutOverlappingActors, // 输出参数：存放范围内的玩家

@@ -77,7 +77,8 @@ UExecCalc_Damage::UExecCalc_Damage()// 构造函数：当 GEC（执行计算类�
 }
 
 //确定减益效果
-void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FGameplayEffectSpec& Spec, FAggregatorEvaluateParameters EvaluationParameters, const TMap<FGameplayTag,FGameplayEffectAttributeCaptureDefinition>& InTagsToDefs) const
+void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectCustomExecutionParameters& ExecutionParams, const FGameplayEffectSpec& Spec,
+	FAggregatorEvaluateParameters EvaluationParameters, const TMap<FGameplayTag,FGameplayEffectAttributeCaptureDefinition>& InTagsToDefs) const
 {
 	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 Aura 游戏标签（DamageTypes 和 Debuff 相关标签）
 	
@@ -105,8 +106,18 @@ void UExecCalc_Damage::DetermineDebuff(const FGameplayEffectCustomExecutionParam
 			const bool bDebuff = FMath::RandRange(1,100) < EffectiveDebuffChance; // 随机数决定是否成功施加减益效果
 			if (bDebuff)// 如果减益成功
 			{
-				//TODO: What do we do?
-				
+				FGameplayEffectContextHandle ContextHandle = Spec.GetContext();
+
+				UAuraAbilitySystemLibrary::SetIsSuccessfulDebuff(ContextHandle,true);
+				UAuraAbilitySystemLibrary::SetDamageType(ContextHandle,DamageType);
+
+				const float DebuffDamage = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Damage,false,-1.f);
+				const float DebuffDuration = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Duration,false,-1.f);
+				const float DebuffFrequency = Spec.GetSetByCallerMagnitude(GameplayTags.Debuff_Frequency,false,-1.f);
+
+				UAuraAbilitySystemLibrary::SetDebuffDamage(ContextHandle,DebuffDamage);
+				UAuraAbilitySystemLibrary::SetDebuffDuration(ContextHandle,DebuffDuration);
+				UAuraAbilitySystemLibrary::SetDebuffFrequency(ContextHandle,DebuffFrequency);
 			}
 		}
 	}
