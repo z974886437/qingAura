@@ -12,6 +12,7 @@
 #include "Interaction/CombatInterface.h"
 #include "Interaction/PlayerInterface.h"
 #include "Player/AuraPlayerController.h"
+#include "GameplayEffectComponents/TargetTagsGameplayEffectComponent.h"
 
 UAuraAttributeSet::UAuraAttributeSet()
 {
@@ -143,6 +144,11 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const  FGameplayEffectModCallb
 	FEffectProperties Props;//效果属性
 	SetEffectProperties(Data,Props);//设置效果属性
 
+	// 检查 TargetCharacter 是否实现了 UCombatInterface 接口
+	// 如果实现了 UCombatInterface 接口，调用 Execute_IsDead 检查目标角色是否死亡
+	// 如果角色已死亡，直接返回，不再执行后续代码
+	if (Props.TargetCharacter->Implements<UCombatInterface>() && ICombatInterface::Execute_IsDead(Props.TargetCharacter)) return;
+	
 	if (Data.EvaluatedData.Attribute == GetHealthAttribute())//判断本次被执行的属性修改是否是“血量属性（Health）”
 	{
 		SetHealth(FMath::Clamp(GetHealth(),0.f,GetMaxHealth()));//当前血量限制在 0 到最大生命值之间，然后设置为该值
@@ -199,7 +205,56 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 
 void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 {
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 获取全局的 Aura 游戏标签，可能用于标识特定的伤害类型和效果
+	FGameplayEffectContextHandle EffectContext = Props.SourceASC->MakeEffectContext();// 创建一个新的效果上下文
+	EffectContext.AddSourceObject(Props.SourceAvatarActor);// 将源角色对象添加到效果上下文中
+
+	// 获取伤害类型、减益伤害、减益持续时间和频率
+	const FGameplayTag DamageType = UAuraAbilitySystemLibrary::GetDamageType(Props.EffectContextHandle);
+	const float DebuffDamage = UAuraAbilitySystemLibrary::GetDebuffDamage(Props.EffectContextHandle);
+	const float DebuffDuration = UAuraAbilitySystemLibrary::GetDebuffDuration(Props.EffectContextHandle);
+	const float DebuffFrequency = UAuraAbilitySystemLibrary::GetDebuffFrequency(Props.EffectContextHandle);
+
+	FString DebuffName = FString::Printf(TEXT("DynamicDebuff_%s"),*DamageType.ToString());// 使用伤害类型来创建减益效果的名称
+	UGameplayEffect* Effect = NewObject<UGameplayEffect>(GetTransientPackage(),FName(DebuffName));// 创建一个新的游戏效果对象
+
+	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;// 设置效果的持续时间策略
+
+	// 设置效果的周期和持续时间
+	Effect->Period = DebuffFrequency;
+	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
+
+	//Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.DamageTypesToDebuff[DamageType]);// 添加与减益效果相关的标签
+	FInheritedTagContainer TagContainer = FInheritedTagContainer();// 创建一个空的 FInheritedTagContainer 对象，用于存储标签信息
+	UTargetTagsGameplayEffectComponent& Component = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();// 获取或添加一个 UTargetTagsGameplayEffectComponent 组件
+	TagContainer.Added.AddTag(GameplayTags.DamageTypesToDebuff[DamageType]);// 将 DamageType 对应的标签添加到 TagContainer 的 "Added" 标签集中
+	Component.SetAndApplyTargetTagChanges(TagContainer);// 将 TagContainer 中的标签信息应用到目标标签组件
+
+	// 设置效果的堆叠方式
+	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;
+	Effect->StackLimitCount = 1;
 	
+	// 在效果的修饰符数组中添加一个新的修饰符
+	const int32 Index = Effect->Modifiers.Num();
+	Effect->Modifiers.Add(FGameplayModifierInfo());
+	FGameplayModifierInfo& ModifierInfo = Effect->Modifiers[Index];
+
+	// 配置修饰符的值和作用类型
+	ModifierInfo.ModifierMagnitude = FScalableFloat(DebuffDamage);
+	ModifierInfo.ModifierOp = EGameplayModOp::Additive;
+	ModifierInfo.Attribute = UAuraAttributeSet::GetIncomingDamageAttribute();
+
+	// 创建一个效果规范并设置上下文
+	if (FGameplayEffectSpec* MutableSpec = new FGameplayEffectSpec(Effect,EffectContext,1.f))
+	{
+		FAuraGameplayEffectContext* AuraContext = static_cast<FAuraGameplayEffectContext*>(MutableSpec->GetContext().Get());// 强制转换为 Aura 特定的效果上下文
+
+		// 将伤害类型设置到上下文中
+		TSharedPtr<FGameplayTag> DebuffDamageType = MakeShareable(new FGameplayTag(DamageType));
+		AuraContext->SetDamageType(DebuffDamageType);
+
+		Props.TargetASC->ApplyGameplayEffectSpecToSelf(*MutableSpec);// 应用效果到目标的 Ability System Component
+	}
 }
 
 void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
