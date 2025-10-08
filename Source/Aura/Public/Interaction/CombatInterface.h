@@ -60,7 +60,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	UAnimMontage* GetHitReactMontage();//被击中反应蒙太奇
 
-	virtual void Die() = 0;//死亡
+	virtual void Die(const FVector& DeathImpulse) = 0;//死亡
 
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	bool IsDead() const;//死亡

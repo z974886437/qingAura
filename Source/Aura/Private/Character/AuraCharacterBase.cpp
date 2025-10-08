@@ -46,15 +46,15 @@ UAnimMontage* AAuraCharacterBase::GetHitReactMontage_Implementation()
 	return HitReactMontage;//命中反应montage
 }
 
-void AAuraCharacterBase::Die()
+void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 {
 	// 把武器（Weapon）从它当前挂载的组件上分离
 	// 使用 FDetachmentTransformRules 来决定分离后的位移/旋转/缩放规则
 	Weapon->DetachFromComponent(FDetachmentTransformRules(EDetachmentRule::KeepWorld,true));
-	MulticastHandleDeath();//多播句柄死亡
+	MulticastHandleDeath(DeathImpulse);//多播句柄死亡
 }
 
-void AAuraCharacterBase::MulticastHandleDeath_Implementation()
+void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
 	// 在角色当前位置和朝向播放死亡音效，使用全局工具类 UGameplayStatics
 	UGameplayStatics::PlaySoundAtLocation(this,DeathSound,GetActorLocation(),GetActorRotation());
@@ -62,11 +62,13 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 	Weapon->SetSimulatePhysics(true);// 开启物理模拟 → 武器不再由动画/代码控制位置，而是交给物理引擎计算
 	Weapon->SetEnableGravity(true);// 启用重力 → 武器会像真实物体一样掉到地上
 	Weapon->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);// 开启碰撞（仅物理碰撞，不用于射线检测）→ 避免武器穿过地面
+	Weapon->AddImpulse(DeathImpulse * 0.1f, NAME_None, true);
 
 	GetMesh()->SetSimulatePhysics(true);// 让角色的骨骼网格（SkeletalMesh）进入物理模拟 → 开启布娃娃效果
 	GetMesh()->SetEnableGravity(true);// 开启重力，让骨骼网格受重力作用（倒地摔落）
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);// 设置碰撞只用于物理 → 角色 ragdoll 会跟地面/物体碰撞，但不再响应射线检测
 	GetMesh()->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Block);// 设置和“世界静态物体”（地面、墙壁）碰撞响应为 Block → 避免 ragdoll 穿透地面
+	GetMesh()->AddImpulse(DeathImpulse, NAME_None, true);
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);// 禁用角色的胶囊体碰撞 → 避免和 ragdoll 骨骼产生双重碰撞
 	Dissolve();//溶解

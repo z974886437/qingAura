@@ -182,9 +182,10 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor); // 尝试把目标角色转换成实现了 ICombatInterface 的对象
 			if (CombatInterface)// 如果转换成功（目标确实实现了战斗接口）
 			{
-				CombatInterface->Die();// 调用接口里的 Die() 函数 → 触发目标的死亡逻辑
+				FVector Impulse = UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle);// 获取致命冲击力（角色死亡时的冲击效果）
+				CombatInterface->Die(UAuraAbilitySystemLibrary::GetDeathImpulse(Props.EffectContextHandle));// 调用战斗接口的 Die 函数，处理死亡逻辑
 			}
-			SendXPEvent(Props);
+			SendXPEvent(Props);// 触发经验值事件，可能是奖励经验等相关逻辑
 		}
 		else
 		{
