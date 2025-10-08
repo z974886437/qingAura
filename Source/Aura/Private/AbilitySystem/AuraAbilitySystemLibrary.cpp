@@ -218,6 +218,16 @@ FGameplayTag UAuraAbilitySystemLibrary::GetDamageType(const FGameplayEffectConte
 	return FGameplayTag();// 如果转换失败或者 DamageType 无效，则返回一个默认的空 FGameplayTag（表示未定义的伤害类型）
 }
 
+FVector UAuraAbilitySystemLibrary::GetDeathImpulse(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 尝试将 EffectContextHandle 转换为自定义的 FAuraGameplayEffectContext 类型
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetDeathImpulse(); // 如果转换成功，获取死亡冲击力（Impulse）
+	}
+	return FVector::ZeroVector;// 如果转换失败，返回零向量（表示没有有效的冲击力）
+}
+
 bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
@@ -297,6 +307,16 @@ void UAuraAbilitySystemLibrary::SetDamageType(FGameplayEffectContextHandle& Effe
 	}
 }
 
+void UAuraAbilitySystemLibrary::SetDeathImpulse(FGameplayEffectContextHandle& EffectContextHandle,
+	const FVector& InImpulse)
+{
+	// 尝试将 EffectContextHandle 转换为自定义的 FAuraGameplayEffectContext 类型
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetDeathImpulse(InImpulse); // 如果转换成功，设置死亡冲击力（Impulse）
+	}
+}
+
 //在半径内获取现场玩家
 void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContextObject,// 世界上下文，一般用来获取 UWorld
 	TArray<AActor*>& OutOverlappingActors, // 输出参数：存放范围内的玩家
@@ -350,6 +370,8 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 	
 	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();// 创建一个效果上下文，用来存放施法者、命中信息等
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);// 把施法者对象加入上下文，便于后续追溯伤害来源
+	SetDeathImpulse(EffectContextHandle, DamageEffectParams.DeathImpulse);// 设置死亡冲击力（Death Impulse）到效果上下文
+	
 	// 构建一个 GameplayEffect 规格（Spec），包含效果类、技能等级和上下文
 	const FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(
 		DamageEffectParams.DamageGameplayEffectClass,     // 使用的伤害效果类

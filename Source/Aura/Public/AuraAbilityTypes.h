@@ -46,6 +46,9 @@ struct FDamageEffectParams
 
 	UPROPERTY()
 	float DeathImpulseMagnitude = 0.f;//死亡冲量级
+
+	UPROPERTY()
+	FVector DeathImpulse = FVector::ZeroVector;//死亡冲动
 };
 
 USTRUCT(BlueprintType)
@@ -62,6 +65,7 @@ public:
 	float GetDebuffDuration() const { return DebuffDuration; }//获得减益持续时间
 	float GetDebuffFrequency() const { return DebuffFrequency; }//获得减益频率
 	TSharedPtr<FGameplayTag> GetDamageType() const { return DamageType;}//获取伤害类型
+	FVector GetDeathImpulse() const { return DeathImpulse; }//获取死亡冲击
 
 	void SetIsCriticalHit(bool bInIsCriticalHit) { bIsCriticalHit = bInIsCriticalHit; }// 设置当前命中是否为暴击
 	void SetIsBlockedHit(bool bInIsBlockedHit ) { bIsBlockedHit = bInIsBlockedHit;}// 设置当前命中是否被格挡
@@ -70,6 +74,7 @@ public:
 	void SetDebuffDuration(float InDuration) { DebuffDuration = InDuration; }//设置减益持续时间
 	void SetDebuffFrequency(float InFrequency) { DebuffFrequency = InFrequency; }//设置减益频率
 	void SetDamageType(TSharedPtr<FGameplayTag> InDamageType) { DamageType = InDamageType; }
+	void SetDeathImpulse(const FVector& InImpulse) { DeathImpulse = InImpulse; }//设置死亡冲击
 	
 	
 	/* returns the actual struct used for serialization, subclasses must override this! 返回用于序列化的实际结构体，子类必须覆盖它！*/
@@ -115,6 +120,9 @@ protected:
 	float DebuffFrequency = 0.f;//减益频率
 
 	TSharedPtr<FGameplayTag> DamageType;//伤害类型
+
+	UPROPERTY()
+	FVector DeathImpulse = FVector::ZeroVector;//死亡冲击
 };
 
 template<>
