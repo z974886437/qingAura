@@ -35,6 +35,7 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	Params.DebuffDamage = DebuffDamage;// 设置 Debuff 每次触发的伤害
 	Params.DebuffDuration = DebuffDuration;// 设置 Debuff 持续时间
 	Params.DebuffFrequency = DebuffFrequency;// 设置 Debuff 触发频率（如每秒几次）
+	Params.DeathImpulseMagnitude = DeathImpulseMagnitude;//设置死亡冲量级
 	return Params;// 返回最终填充好的参数
 }
 

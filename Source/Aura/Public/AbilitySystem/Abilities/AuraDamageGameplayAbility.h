@@ -44,6 +44,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly,Category = "Damage")
 	float DebuffDuration = 5.f;//Debuff期间
 
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	float DeathImpulseMagnitude = 60.f;//死亡冲量级
+
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;//从数组中获取随机标记的蒙太奇
 };
