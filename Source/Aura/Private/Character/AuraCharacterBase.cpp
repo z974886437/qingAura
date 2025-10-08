@@ -6,16 +6,23 @@
 #include "AbilitySystemComponent.h"
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "WorldPartition/Cook/WorldPartitionCookPackage.h"
 
-// Sets default values
+// Sets default values主要用于初始化一些角色的组件，设置碰撞属性，并附加相关功能
 AAuraCharacterBase::AAuraCharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;// 设置角色每帧都调用 Tick() 函数。如果不需要频繁更新，可以关闭以提升性能。
+
+	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get(); // 获取全局的游戏标签（GameplayTags），以便为后续操作引用
+	
+	BurnDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("BurnDebuffComponent");// 创建一个烧伤（Burn） debuff 组件，并将其附加到角色根组件上。
+	BurnDebuffComponent->SetupAttachment(GetRootComponent());
+	BurnDebuffComponent->DebuffTag = GameplayTags.Debuff_Burn;// 设置 debuff 标签为烧伤类型
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);//让胶囊体碰撞体对相机通道忽略碰撞（防止相机被角色身体挡住）
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);//关闭角色胶囊碰撞体的重叠事件
@@ -63,7 +70,8 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation()
 	
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);// 禁用角色的胶囊体碰撞 → 避免和 ragdoll 骨骼产生双重碰撞
 	Dissolve();//溶解
-	bDead = true;
+	bDead = true; // 设置死亡标志
+	BurnDebuffComponent->Deactivate();// 禁用燃烧 debuff
 }
 
 // Called when the game starts or when spawned
@@ -143,6 +151,11 @@ ECharacterClass AAuraCharacterBase::GetCharacterClass_Implementation()
 	return CharacterClass;
 }
 
+FOnASCRegistered AAuraCharacterBase::GetOnASCRegisteredDelegate()
+{
+	return OnAscRegistered;
+}
+
 void AAuraCharacterBase::InitAbilityActorInfo()
 {
 }
@@ -169,11 +182,12 @@ void AAuraCharacterBase::InitializeDefaultAttributes() const
 
 void AAuraCharacterBase::AddCharacterAbilities()
 {
+	// 获取并检查角色的能力系统组件（AbilitySystemComponent），确保它是 UAuraAbilitySystemComponent 类型
 	UAuraAbilitySystemComponent* AuraASC = CastChecked<UAuraAbilitySystemComponent>(AbilitySystemComponent);
 	if (!HasAuthority()) return;//如果当前对象不是服务端（Authority），就直接返回，不执行后续逻辑。
 
-	AuraASC->AddCharacterAbilities(StartupAbilities);
-	AuraASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);
+	AuraASC->AddCharacterAbilities(StartupAbilities); // 添加角色的启动能力（StartupAbilities），这通常是角色一开始就拥有的主动技能
+	AuraASC->AddCharacterPassiveAbilities(StartupPassiveAbilities);// 添加角色的启动被动能力（StartupPassiveAbilities），这些能力是角色从一开始就拥有的被动效果
 }
 
 void AAuraCharacterBase::Dissolve()

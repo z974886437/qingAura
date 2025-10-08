@@ -163,6 +163,7 @@ void AAuraEnemy::InitAbilityActorInfo()
 	{
 		InitializeDefaultAttributes();//初始化默认属性
 	}
+	OnAscRegistered.Broadcast(AbilitySystemComponent);// 广播能力系统组件注册完成事件
 }
 
 void AAuraEnemy::InitializeDefaultAttributes() const

@@ -9,7 +9,7 @@
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "AuraCharacterBase.generated.h"
 
-
+class UDebuffNiagaraComponent;
 class UNiagaraSystem;
 class UGameplayAbility;
 class UAbilitySystemComponent;
@@ -40,8 +40,10 @@ public:
 	virtual int32 GetMinionCount_Implementation() override;//获取仆从数量
 	virtual void IncrementMinionCount_Implementation(int32 Amount) override;//增加仆从数量
 	virtual ECharacterClass GetCharacterClass_Implementation() override;//获取角色类
+	virtual FOnASCRegistered GetOnASCRegisteredDelegate() override;//加入 ASC 注册代表
 	
     /* end Combat Interface*/
+	FOnASCRegistered OnAscRegistered;//在ASC注册上
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
 	virtual void MulticastHandleDeath();//多播句柄死亡
@@ -60,10 +62,10 @@ protected:
 	FName WeaponTipSocketName;//武器尖端插座名称
 
 	UPROPERTY(EditAnywhere,Category = "Combat")
-	FName LeftHandSocketName;
+	FName LeftHandSocketName;//左侧插座名称
 
 	UPROPERTY(EditAnywhere,Category = "Combat")
-	FName RightHandSocketName;
+	FName RightHandSocketName;//右侧插座名称
 
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	FName TailSocketName;//尾部插座名称
@@ -122,6 +124,9 @@ protected:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Character Class Defaults")
 	ECharacterClass CharacterClass = ECharacterClass::Warrior;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UDebuffNiagaraComponent> BurnDebuffComponent;//燃烧减益组件
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")
