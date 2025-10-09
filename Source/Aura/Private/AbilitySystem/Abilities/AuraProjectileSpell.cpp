@@ -54,7 +54,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn// 冲突处理方式：总是生成，即使和其他物体重叠
 		);
 	
-	Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();
+	Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();// 设置投射物的伤害效果参数
 	
 	Projectile->FinishSpawning(SpawnTransform);// 完成生成，开始在世界中生效
 }

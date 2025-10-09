@@ -409,4 +409,47 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 	return EffectContextHandle;// 返回效果上下文句柄
 }
 
+TArray<FRotator> UAuraAbilitySystemLibrary::EvenlySpacedRotators(const FVector& Forward, const FVector& Axis,float Spread,int32 NumRotators)
+{
+	TArray<FRotator> Rotators;// 定义一个数组来存储最终的旋转角度（FRotator）
+	
+	const FVector LeftOfSpread = Forward.RotateAngleAxis(-Spread / 2.f,Axis); // 根据扩散角度（Spread）和给定的旋转轴（Axis）计算投射物的起始方向
+	if (NumRotators > 1) // 如果投射物数量大于 1，则计算每个投射物之间的旋转角度
+	{
+		const float DeltaSpread = Spread / (NumRotators - 1);// 计算每个投射物之间的扩散角度
+		for (int32 i = 0; i < NumRotators;i++)// 遍历每个投射物
+		{
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i,FVector::UpVector);// 根据扩散角度旋转，确定每个投射物的发射方向
+			Rotators.Add(Direction.Rotation());// 将方向向量转换为旋转角度并加入到 Rotators 数组中
+		}
+	}
+	else
+	{
+		Rotators.Add(Forward.Rotation()); // 如果只有一个投射物，直接返回前进方向的旋转角度
+	}
+	return Rotators;// 返回所有计算得到的旋转角度
+}
+
+// 函数：计算指定扩散角度和数量的均匀分布向量
+TArray<FVector> UAuraAbilitySystemLibrary::EvenlyRotatedVectors(const FVector& Forward, const FVector& Axis,float Spread,int32 NumVectors)
+{
+	TArray<FVector> Vectors;// 存储计算得到的均匀分布的向量
+	
+	const FVector LeftOfSpread = Forward.RotateAngleAxis(-Spread / 2.f,Axis);// 计算扩散角度的左侧起始方向（相对给定的 Forward 方向旋转一定角度）
+	if (NumVectors > 1)// 如果投射物数量大于1，则进行均匀分布
+	{
+		const float DeltaSpread = Spread / (NumVectors - 1);// 计算每个投射物之间的扩散角度
+		for (int32 i = 0; i < NumVectors;i++)// 遍历每个投射物
+		{
+			const FVector Direction = LeftOfSpread.RotateAngleAxis(DeltaSpread * i,FVector::UpVector);// 根据扩散角度旋转，确定每个投射物的发射方向
+			Vectors.Add(Direction);// 将计算出的方向添加到向量列表中
+		}
+	}
+	else
+	{
+		Vectors.Add(Forward);// 如果只有一个投射物，直接返回原始的 Forward 方向
+	}
+	return Vectors;// 返回计算得到的均匀分布向量列表
+}
+
 
