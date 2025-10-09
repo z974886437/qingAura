@@ -77,9 +77,20 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		{
 			const FVector DeathImpulse = GetActorForwardVector() * DamageEffectParams.DeathImpulseMagnitude;// 计算死亡冲击力，将角色的前方向量与死亡冲击力大小相乘
 			DamageEffectParams.DeathImpulse = DeathImpulse;// 将计算出的冲击力赋值给 DamageEffectParams 的 DeathImpulse 属性
+			
+			const bool bKnockback = FMath::RandRange(1,100) < DamageEffectParams.KnockbackChance;// 随机判断是否触发击退效果
+			if (bKnockback)
+			{
+				FRotator Rotation = GetActorRotation(); // 计算击退方向和冲击力
+				Rotation.Pitch = 45.f;// 将俯仰角设置为 45 度
+				
+				const FVector KnockbackDirection = Rotation.Vector();// 获取击退方向的单位向量
+				const FVector KnockbackForce = KnockbackDirection * DamageEffectParams.KnockbackForceMagnitude;// 计算击退力
+				DamageEffectParams.KnockbackForce = KnockbackForce;// 将计算出的击退力赋值给 DamageEffectParams
+			}
 			// 设置目标的 AbilitySystemComponent，并应用伤害效果
 			DamageEffectParams.TargetAbilitySystemComponent = TargetASC;
-			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);
+			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);// 应用伤害效果，传入 DamageEffectParams
 		}
 		
 		Destroy();// 销毁当前Actor（投射物）

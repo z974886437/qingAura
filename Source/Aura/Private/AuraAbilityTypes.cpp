@@ -66,9 +66,13 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 14;
 		}
+		if (!KnockbackForce.IsZero())
+		{
+			RepBits |= 1 << 15;
+		}
 	}
 	
-	Ar.SerializeBits(&RepBits, 14);// 先读取/写入 9 位二进制数据到 RepBits（对应之前保存的9个标志位）这里 9 表示最多用到 0~8 位（也就是你定义的9个属性）
+	Ar.SerializeBits(&RepBits, 15);// 先读取/写入 9 位二进制数据到 RepBits（对应之前保存的9个标志位）这里 9 表示最多用到 0~8 位（也就是你定义的9个属性）
 
 	if (RepBits & (1 << 0))
 	{
@@ -148,6 +152,10 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	if (RepBits & (1 << 14))
 	{
 		DeathImpulse.NetSerialize(Ar, Map, bOutSuccess);
+	}
+	if (RepBits & (1 << 15))
+	{
+		KnockbackForce.NetSerialize(Ar, Map, bOutSuccess);
 	}
 
 	if (Ar.IsLoading())

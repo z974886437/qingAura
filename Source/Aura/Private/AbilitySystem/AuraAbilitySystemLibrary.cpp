@@ -228,6 +228,16 @@ FVector UAuraAbilitySystemLibrary::GetDeathImpulse(const FGameplayEffectContextH
 	return FVector::ZeroVector;// 如果转换失败，返回零向量（表示没有有效的冲击力）
 }
 
+FVector UAuraAbilitySystemLibrary::GetKnockbackForce(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 尝试将 EffectContextHandle 转换为自定义的 FAuraGameplayEffectContext 类型
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetKnockbackForce(); // 如果转换成功，获取死亡冲击力（Impulse）
+	}
+	return FVector::ZeroVector;// 如果转换失败，返回零向量（表示没有有效的冲击力）
+}
+
 bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
@@ -317,6 +327,15 @@ void UAuraAbilitySystemLibrary::SetDeathImpulse(FGameplayEffectContextHandle& Ef
 	}
 }
 
+void UAuraAbilitySystemLibrary::SetKnockbackForce(FGameplayEffectContextHandle& EffectContextHandle, const FVector& InForce)
+{
+	// 尝试将 EffectContextHandle 转换为自定义的 FAuraGameplayEffectContext 类型
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetKnockbackForce(InForce); // 如果转换成功，设置死亡冲击力（Impulse）
+	}
+}
+
 //在半径内获取现场玩家
 void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContextObject,// 世界上下文，一般用来获取 UWorld
 	TArray<AActor*>& OutOverlappingActors, // 输出参数：存放范围内的玩家
@@ -371,6 +390,7 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 	FGameplayEffectContextHandle EffectContextHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeEffectContext();// 创建一个效果上下文，用来存放施法者、命中信息等
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);// 把施法者对象加入上下文，便于后续追溯伤害来源
 	SetDeathImpulse(EffectContextHandle, DamageEffectParams.DeathImpulse);// 设置死亡冲击力（Death Impulse）到效果上下文
+	SetKnockbackForce(EffectContextHandle,DamageEffectParams.KnockbackForce);// 设置击退力（KnockbackForce）到效果上下文
 	
 	// 构建一个 GameplayEffect 规格（Spec），包含效果类、技能等级和上下文
 	const FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(

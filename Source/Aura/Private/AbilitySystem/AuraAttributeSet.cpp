@@ -192,6 +192,12 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			FGameplayTagContainer TagContainer;// 定义一个 GameplayTag 容器，用来装要触发的技能标签
 			TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）
 			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);// 让目标的 AbilitySystemComponent（ASC）尝试根据这个标签激活对应的技能
+
+			const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
+			if (!KnockbackForce.IsNearlyZero(1.f))
+			{
+				Props.TargetCharacter->LaunchCharacter(KnockbackForce,true,true);
+			}
 		}
 			
 		const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);// 1. 从上下文读取是否格挡

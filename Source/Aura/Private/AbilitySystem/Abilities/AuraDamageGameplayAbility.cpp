@@ -36,9 +36,19 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	Params.DebuffDuration = DebuffDuration;// 设置 Debuff 持续时间
 	Params.DebuffFrequency = DebuffFrequency;// 设置 Debuff 触发频率（如每秒几次）
 	Params.DeathImpulseMagnitude = DeathImpulseMagnitude;//设置死亡冲量级
+	Params.KnockbackForceMagnitude = KnockbackForceMagnitude;// 设置击退力的大小
+	Params.KnockbackChance = KnockbackChance;// 设置击退几率
+	if (IsValid(TargetActor))// 判断目标 Actor 是否有效
+	{
+		FRotator Rotation = (TargetActor->GetActorLocation() - GetAvatarActorFromActorInfo()->GetActorLocation()).Rotation();// 计算目标与施法者之间的旋转
+		Rotation.Pitch = 45.f;// 将 Pitch 值设为 45 度
+		const FVector ToTarget = Rotation.Vector();// 获取指向目标的方向向量
+		Params.DeathImpulse = ToTarget * DeathImpulseMagnitude;// 设置死亡冲量，基于方向向量和冲量大小
+		Params.KnockbackForce = ToTarget * KnockbackForceMagnitude;// 设置击退力，基于方向向量和击退力大小
+	}
 	return Params;// 返回最终填充好的参数
 }
-
+ 
 FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const
 {
 	if (TaggedMontages.Num() > 0)// 如果数组中至少有一个元素
