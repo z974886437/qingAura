@@ -17,5 +17,15 @@ class AURA_API UAuraFireBolt : public UAuraProjectileSpell
 public:
 	virtual FString GetDescription(int32 Level) override;//获取描述
 	virtual FString GetNextLevelDescription(int32 Level) override;//获取下一级描述
-	
+
+	UFUNCTION(BlueprintCallable)
+	void SpawnProjectiles(const FVector& ProjectileTargetLocation,const FGameplayTag& SocketTag,bool bOverridePitch,float PitchOverride,AActor* HomingTarget);//生成射弹
+
+protected:
+
+	UPROPERTY(EditDefaultsOnly,Category = "FireBolt")
+	float ProjectileSpread = 90.f;//射弹扩散
+
+	UPROPERTY(EditDefaultsOnly,Category = "FireBolt")
+	int32 MaxNumProjectiles = 5;//射弹扩散
 };

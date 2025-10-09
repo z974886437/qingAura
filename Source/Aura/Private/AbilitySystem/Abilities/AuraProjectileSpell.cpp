@@ -38,7 +38,7 @@ void UAuraProjectileSpell::SpawnProjectile(const FVector& ProjectileTargetLocati
 	FRotator Rotation = (ProjectileTargetLocation - SocketLocation).Rotation();
 	if (bOverridePitch)// 如果启用 Pitch 覆盖，就强制把俯仰角设置为指定值 这样可以忽略目标的高度差，用固定角度发射投射物（例如箭矢抛物线）
 	{
-		Rotation.Pitch = PitchOverride;
+		Rotation.Pitch = PitchOverride;// 这样可以忽略目标的高度差，用固定角度发射投射物（例如箭矢抛物线）
 	}
 		
 	FTransform SpawnTransform;// 用于描述生成位置、旋转、缩放的变换数据
