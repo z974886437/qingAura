@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"//增强输入组件
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
+#include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
@@ -46,17 +47,18 @@ void AAuraPlayerController::ShowDamageNumber_Implementation(float DamageAmount,A
 
 void AAuraPlayerController::AutoRun()
 {
-	if (!bAutoRunning) return;
-	if (APawn* ControlledPawn = GetPawn())
+	if (!bAutoRunning) return; // 如果没有开启自动奔跑，直接返回
+	if (APawn* ControlledPawn = GetPawn())// 获取玩家控制的 Pawn（角色）
 	{
-		//功能：找到离 Pawn 最近的样条曲线（Spline）上的点。ControlledPawn->GetActorLocation()获取 Pawn 当前世界坐标。ESplineCoordinateSpace::World让返回值也使用世界坐标系。
+		// 功能：找到离 Pawn 最近的样条曲线（Spline）上的点
+		// ControlledPawn->GetActorLocation() 获取 Pawn 当前世界坐标
+		// ESplineCoordinateSpace::World 表示返回值的坐标是世界坐标系
 		const FVector LocationOnSpline = Spline->FindLocationClosestToWorldLocation(ControlledPawn->GetActorLocation(),ESplineCoordinateSpace::World);
-		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline,ESplineCoordinateSpace::World);
-		ControlledPawn->AddMovementInput(Direction);
-
-		//到目的地的巨离
-		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();
-		if (DistanceToDestination <= AutoRunAcceptanceRadius)
+		const FVector Direction = Spline->FindDirectionClosestToWorldLocation(LocationOnSpline,ESplineCoordinateSpace::World);// 找到该位置最近的样条曲线的方向
+		ControlledPawn->AddMovementInput(Direction); // 将角色向样条曲线的方向添加移动输入
+		
+		const float DistanceToDestination = (LocationOnSpline - CachedDestination).Length();// 计算当前位置与目的地之间的距离
+		if (DistanceToDestination <= AutoRunAcceptanceRadius)// 如果距离目的地的距离小于或等于自动奔跑的接受半径，则停止自动奔跑
 		{
 			bAutoRunning = false;
 		}
@@ -69,60 +71,15 @@ void AAuraPlayerController::CursorTrace()
 	GetHitResultUnderCursor(ECC_Visibility,false,CursorHit);//用于进行鼠标位置下的光线检测
 	if (!CursorHit.bBlockingHit) return;//没有命中任何阻挡物体，那么就直接退出当前函数
 
+	// 将上一命中的物体和当前命中的物体保存到变量中
 	LastActor = ThisActor;
 	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
 
-	if (LastActor != ThisActor)
+	if (LastActor != ThisActor) // 如果上一个命中的物体和当前命中的物体不同，则进行高亮切换
 	{
-		if (LastActor) LastActor->UnHighlightActor();
-		if (ThisActor) ThisActor->HighlightActor();
+		if (LastActor) LastActor->UnHighlightActor(); // 如果上一个物体存在，取消高亮
+		if (ThisActor) ThisActor->HighlightActor();// 如果当前物体存在，进行高亮
 	}
-	/*
-	*Line trace from cursor. There are several scenarios: (光标的线条轨迹。有几种情况)
-	* A.LastActor is null && ThisActor is null (LastActor为空 与 ThisActor为空)
-	*   -Do nothing(不执行任何操作)
-	* B.LastActor is null && ThisActor is volid (LastActor为空 与 ThisActor为有效)
-	*   - Highlight ThisActor (高亮这名演员)
-	* C.LastActor is volid && ThisActor is null (LastActor有效 与 ThisActor为空)
-	*   - UnHighlight LastActor (取消高亮最后演员)
-	* D.Both actors are volid,but LastActor != ThisActor(如果两个演员都有效，但是最后一个演员不等于这个演员)
-	*   - UnHighlight LastActor,and Highlight ThisActor(取消高亮最后演员和高亮这个演员)
-	* E.Both actors are volid,and are the same actor (如果两个演员都有效并且是同一个演员)
-	*   -Do nothing(不执行任何操作)
-	*/
-	// if (LastActor == nullptr)
-	// {
-	// 	if (ThisActor != nullptr)
-	// 	{
-	// 		//Case B(LastActor为空 与 ThisActor为有效)
-	// 		ThisActor->HighlightActor();
-	// 	}
-	// 	else
-	// 	{
-	// 		// Case A - both are null,do nothing(不执行任何操作)
-	// 	}
-	// }
-	// else // LastActor is volid
-	// {
-	// 	if (ThisActor == nullptr)
-	// 	{
-	// 		// Case C(LastActor有效 与 ThisActor为空)
-	// 		LastActor->UnHighlightActor();
-	// 	}
-	// 	else // both actor are volid 
-	// 	{
-	// 		if(LastActor != ThisActor)
-	// 		{
-	// 			//Case D(如果两个演员都有效，但是最后一个演员不等于这个演员)
-	// 			LastActor->UnHighlightActor();
-	// 			ThisActor->HighlightActor();
-	// 		}
-	// 		else
-	// 		{
-	// 			// Case E - do nothing(不执行任何操作)
-	// 		}
-	// 	}
-	// }
 }
 
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
@@ -131,7 +88,7 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))//检查当前输入是否是鼠标左键（LMB），只精确匹配，不会匹配父级 Tag。
 	{
 		bTargeting = ThisActor  ? true : false;// 如果鼠标下有目标 Actor，就进入锁定目标模式；否则关闭锁定
-		bAutoRunning = false;
+		bAutoRunning = false;// 关闭自动奔跑
 	}
 }
 
@@ -170,6 +127,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					bAutoRunning = true; // 7. 开启自动寻路标志位，让角色开始沿路径移动
 				}
 			}
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ClickNiagaraSystem,CachedDestination);// 在目标位置（CachedDestination）生成一个 Niagara 特效系统
 		}
 		// 7. 重置跟随时间，关闭锁定目标模式
 		FollowTime = 0.f;
