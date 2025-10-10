@@ -5,6 +5,7 @@
 
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "Actor/AuraProjectile.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // 返回火球术技能的描述字符串（根据等级显示不同效果）
@@ -118,8 +119,9 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 
 	const FVector Forward = Rotation.Vector();// 获取发射物的前进方向向量（从旋转角度获取方向，通常用于表示物体朝向的方向）
 
+	const int32 EffectiveNumProjectiles = FMath::Min(NumProjectiles,GetAbilityLevel());// 计算有效的投射物数量，并根据技能等级进行调整
 	// 使用给定的旋转方向、扩散角度以及投射物数量计算出多个旋转角度
-	TArray<FRotator> Rotations = UAuraAbilitySystemLibrary::EvenlySpacedRotators(Forward,FVector::UpVector,ProjectileSpread,NumProjectiles);
+	TArray<FRotator> Rotations = UAuraAbilitySystemLibrary::EvenlySpacedRotators(Forward,FVector::UpVector,ProjectileSpread,EffectiveNumProjectiles);
 	
 	for (const FRotator& Rot : Rotations)// 遍历计算出来的每个旋转角度，为每个角度生成一个投射物
 	{
@@ -137,6 +139,20 @@ void UAuraFireBolt::SpawnProjectiles(const FVector& ProjectileTargetLocation, co
 			);
 	
 		Projectile->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();// 设置投射物的伤害效果参数
+
+		if (HomingTarget && HomingTarget->Implements<UCombatInterface>())// 如果有跟踪目标，则设置投射物的跟踪目标组件
+		{
+			Projectile->ProjectileMovement->HomingTargetComponent = HomingTarget->GetRootComponent();
+		}
+		else
+		{
+			// 如果没有跟踪目标，创建一个新的场景组件，将目标位置设置为投射物目标位置
+			Projectile->HomingTargetSceneComponent = NewObject<USceneComponent>(USceneComponent::StaticClass());
+			Projectile->HomingTargetSceneComponent->SetWorldLocation(ProjectileTargetLocation);
+			Projectile->ProjectileMovement->HomingTargetComponent = Projectile->HomingTargetSceneComponent;
+		}
+		Projectile->ProjectileMovement->HomingAccelerationMagnitude = FMath::FRandRange(HomingAccelerationMin,HomingAccelerationMax);// 设置跟踪目标的加速度范围，随机选择一个值
+		Projectile->ProjectileMovement->bIsHomingProjectile = bLaunchHomingProjectiles;// 设置投射物为跟踪型投射物
 	
 		Projectile->FinishSpawning(SpawnTransform);// 完成生成，开始在世界中生效
 	}

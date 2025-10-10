@@ -27,6 +27,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, meta = (ExposeOnSpawn = true))
 	FDamageEffectParams DamageEffectParams;//伤害效果规格手柄
 
+	UPROPERTY()
+	TObjectPtr<USceneComponent> HomingTargetSceneComponent;//归位目标场景组件
+
 protected:
 	virtual void BeginPlay() override;
 	void OnHit();

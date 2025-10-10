@@ -28,4 +28,13 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly,Category = "FireBolt")
 	int32 MaxNumProjectiles = 5;//射弹扩散
+
+	UPROPERTY(EditDefaultsOnly,Category = "FireBolt")
+	float HomingAccelerationMin = 1600.f;//归位加速度最小值
+
+	UPROPERTY(EditDefaultsOnly,Category = "FireBolt")
+	float HomingAccelerationMax = 3200.f;//归位加速度最大值
+
+	UPROPERTY(EditDefaultsOnly,Category = "FireBolt")
+	bool bLaunchHomingProjectiles = true;//b 发射寻的射弹
 };
