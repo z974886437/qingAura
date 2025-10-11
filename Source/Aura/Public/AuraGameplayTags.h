@@ -102,6 +102,12 @@ public:
 	TMap<FGameplayTag,FGameplayTag> DamageTypesToDebuff;//减益伤害类型
 
 	FGameplayTag Effects_HitReact;//击中反应
+
+	FGameplayTag Player_Block_InputPressed;//玩家_阻止_输入按下
+	FGameplayTag Player_Block_InputHeld;//玩家_阻止_输入保持
+	FGameplayTag Player_Block_InputReleased;//玩家_阻止_输入释放
+	FGameplayTag Player_Block_CursorTrace;//玩家_阻止_光标跟踪
+	
 private:
 	static FAuraGameplayTags GameplayTags;//游戏标签
 

@@ -65,8 +65,22 @@ void AAuraPlayerController::AutoRun()
 	}
 }
 
+//空光标轨迹
 void AAuraPlayerController::CursorTrace()
 {
+	// 如果玩家当前拥有“阻止鼠标检测”的 GameplayTag（例如正在施法或特殊状态中）
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_CursorTrace))
+	{
+		if (LastActor) LastActor->UnHighlightActor(); // 如果上一个物体存在，取消高亮
+		if (ThisActor) ThisActor->UnHighlightActor();// 如果当前高亮的物体存在 → 取消高亮
+
+		// 清空引用，防止逻辑残留
+		LastActor = nullptr;
+		ThisActor = nullptr;
+		
+		return;// 提前返回，不执行后续鼠标检测
+	}
+	
 	//FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
 	GetHitResultUnderCursor(ECC_Visibility,false,CursorHit);//用于进行鼠标位置下的光线检测
 	if (!CursorHit.bBlockingHit) return;//没有命中任何阻挡物体，那么就直接退出当前函数
@@ -82,8 +96,15 @@ void AAuraPlayerController::CursorTrace()
 	}
 }
 
+//能力输入标签按下
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 {
+	// 如果玩家当前有阻止“输入按下”的状态（例如技能引导中、被眩晕等），就直接返回
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+	{
+		return;
+	}
+	
 	//GEngine->AddOnScreenDebugMessage(1,3.f,FColor::Red,*InputTag.ToString());
 	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))//检查当前输入是否是鼠标左键（LMB），只精确匹配，不会匹配父级 Tag。
 	{
@@ -93,8 +114,15 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);// 如果角色有能力系统组件（ASC） 就把这个输入事件转发给 ASC，让 GAS 处理技能激活逻辑
 }
 
+//能力输入标签释放
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 {
+	// 如果玩家当前有阻止“输入释放”的状态（例如技能引导中、被眩晕等），就直接返回
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputReleased))
+	{
+		return;
+	}
+	
 	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))// 如果当前输入标签不是 "鼠标左键"（InputTag_LMB）
 	{
 		if (GetASC()) // 如果有能力系统组件，就转发这个输入（表示按住这个标签对应的技能）
@@ -128,16 +156,28 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					bAutoRunning = true; // 7. 开启自动寻路标志位，让角色开始沿路径移动
 				}
 			}
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ClickNiagaraSystem,CachedDestination);// 在目标位置（CachedDestination）生成一个 Niagara 特效系统
+			// 如果玩家当前没有阻止“输入按下”的状态（例如技能引导中、被眩晕等）
+			if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+			{
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ClickNiagaraSystem,CachedDestination);// 在目标位置（CachedDestination）生成一个 Niagara 特效系统
+			}
+			
 		}
 		// 7. 重置跟随时间，关闭锁定目标模式
 		FollowTime = 0.f;
 		bTargeting = false;
 	}
 }
-  
+
+//能力输入标签持续按住
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 {
+	// 如果玩家当前有阻止“输入按住”的状态（例如技能引导中、被眩晕等），就直接返回
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputHeld))
+	{
+		return;
+	}
+	
 	if (!InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))// 如果当前输入标签不是 "鼠标左键"（InputTag_LMB）
 	{
 		if (GetASC()) // 如果有能力系统组件，就转发这个输入（表示按住这个标签对应的技能）
@@ -185,25 +225,31 @@ UAuraAbilitySystemComponent* AAuraPlayerController::GetASC()
 
 void AAuraPlayerController::BeginPlay()
 {
-	Super::BeginPlay();
+	Super::BeginPlay();// 调用父类 BeginPlay，确保引擎层的初始化逻辑正常执行
 	
 	check(AuraContext);// 如果蓝图里没设定，会在这里直接崩溃，提示开发者修正
 
+	// 获取本地玩家的增强输入子系统，用于添加输入映射
+	// Enhanced Input 系统依附在 LocalPlayer 上，而不是 PlayerController
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());//增强输入系统
-	if (Subsystem)
+	
+	if (Subsystem)// 如果子系统有效，则将我们的输入映射上下文添加进去
 	{
-		Subsystem->AddMappingContext(AuraContext,0);//AuraContext 添加到当前玩家的输入系统中，并设定优先级为 0（最高优先级）
+		// 将 AuraContext（即输入配置）添加到当前玩家，优先级设为 0（数字越小优先级越高）
+		// 这样可以确保我们的输入优先响应，比如 Move、Look、CastSpell 等
+		Subsystem->AddMappingContext(AuraContext,0);
 	}
 
 	bShowMouseCursor = true;//让鼠标在游戏中可见
 	DefaultMouseCursor = EMouseCursor::Default;//设置鼠标的样式，这里使用默认样式（箭头）
-
-	//让你的游戏进入“游戏和UI混合输入模式”，并且不锁定鼠标到游戏窗口内
+	
+	// 设置输入模式为“游戏与UI混合模式”
+	// 这样既能操作角色（游戏输入），又能点击UI按钮（UI输入）
 	FInputModeGameAndUI InputModeData;
-	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	
+	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);// 不锁定鼠标在窗口内（方便自由移动鼠标进行点击、选中目标等）
 	InputModeData.SetHideCursorDuringCapture(false);//就算鼠标捕获到窗口，也不要隐藏它
 	SetInputMode(InputModeData);//设置输入模式为InputModeData
-
 }
 
 void AAuraPlayerController::SetupInputComponent()
@@ -230,21 +276,27 @@ void AAuraPlayerController::SetupInputComponent()
 
 void AAuraPlayerController::Move(const struct FInputActionValue& InputActionValue)
 {
+	// 如果角色身上有阻止输入的GameplayTag（例如施法、硬直等状态），则不允许移动
+	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+	{
+		return;
+	}
+	
 	//从 FInputActionValue 中获取一个二维向量 (FVector2D)，并将其存储在 InputAxisVector 变量中
-	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();
+	const FVector2D InputAxisVector = InputActionValue.Get<FVector2D>();// 从输入值中取出二维方向（X=左右，Y=前后）
 
 	//创建旋转
-	const FRotator Rotation = GetControlRotation();
-	const FRotator YawRotation(0.f,Rotation.Yaw,0.f);
+	const FRotator Rotation = GetControlRotation();// 获取当前控制器的朝向，用于计算角色移动方向
+	const FRotator YawRotation(0.f,Rotation.Yaw,0.f);// 只保留水平旋转（Yaw），忽略俯仰(Pitch)和翻滚(Roll)，保证移动方向不会倾斜
 
 	//创建向前向量 即你的旋转向量
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);// 从旋转矩阵中获取“前方”方向向量（即世界坐标中控制器面对的前方）
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);// 获取“右侧”方向向量，用于处理横向移动（A/D键）
 
-	if (APawn* ControlledPawn = GetPawn<APawn>())
+	if (APawn* ControlledPawn = GetPawn<APawn>())// 获取当前控制的 Pawn（通常是玩家角色）
 	{
-		ControlledPawn->AddMovementInput(ForwardDirection,InputAxisVector.Y);//前进后退
-		ControlledPawn->AddMovementInput(RightDirection,InputAxisVector.X);//左右移动
+		ControlledPawn->AddMovementInput(ForwardDirection,InputAxisVector.Y);// 让角色朝控制器的前方移动（W/S），InputAxisVector.Y 代表输入强度（-1~1）
+		ControlledPawn->AddMovementInput(RightDirection,InputAxisVector.X);// 让角色朝控制器的右方移动（A/D），InputAxisVector.X 代表输入强度（-1~1）
 	}
 }
 
