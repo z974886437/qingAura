@@ -3,6 +3,8 @@
 
 #include "AbilitySystem/Abilities/AuraBeamSpell.h"
 
+#include "GameFramework/Character.h"
+
 void UAuraBeamSpell::StoreMouseDataInfo(const FHitResult& HitResult)
 {
 	if (HitResult.bBlockingHit)// 判断鼠标检测结果是否命中了可阻挡的对象（例如地面、角色、障碍物）
@@ -23,7 +25,7 @@ void UAuraBeamSpell::StoreMouseDataInfo(const FHitResult& HitResult)
 	}
 }
 
-void UAuraBeamSpell::StoreOwnerPlayerController()
+void UAuraBeamSpell::StoreOwnerVariables()
 {
 	// 判断当前技能是否有有效的激活信息（CurrentActorInfo）
 	// CurrentActorInfo 是 GAS 提供的结构体，包含了技能施放者的各种引用信息（Pawn、Controller、ASC等）
@@ -32,5 +34,6 @@ void UAuraBeamSpell::StoreOwnerPlayerController()
 		// 从 CurrentActorInfo 中取出 PlayerController（是一个 TWeakObjectPtr）
 		// 使用 Get() 获取其原始指针并保存到 OwnerPlayerController
 		OwnerPlayerController = CurrentActorInfo->PlayerController.Get();
+		OwnerCharacter = Cast<ACharacter>(CurrentActorInfo->AvatarActor);
 	}
 }

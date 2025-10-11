@@ -18,7 +18,7 @@ public:
 	void StoreMouseDataInfo(const FHitResult& HitResult);//存储鼠标数据信息
 
 	UFUNCTION(BLueprintCallable)
-	void StoreOwnerPlayerController();//存储玩家控制器
+	void StoreOwnerVariables();//存储变量
 protected:
 
 	UPROPERTY(BlueprintReadWrite,Category = "Beam")
@@ -29,4 +29,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite,Category = "Beam")
 	TObjectPtr<APlayerController> OwnerPlayerController;//所有者玩家控制器
+
+	UPROPERTY(BlueprintReadWrite,Category = "Beam")
+	TObjectPtr<ACharacter> OwnerCharacter;//拥有角色
 };
