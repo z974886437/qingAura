@@ -46,14 +46,33 @@ void AAuraProjectile::BeginPlay()
 void AAuraProjectile::OnHit()
 {
 	// 播放碰撞时的音效（ImpactSound）并设置音效的位置为当前投射物的位置
-	UGameplayStatics::PlaySoundAtLocation(this,ImpactSound,GetActorLocation(),FRotator::ZeroRotator);
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ImpactEffect,GetActorLocation());// 在碰撞位置生成特效（ImpactEffect）
-	if (LoopingSoundComponent) LoopingSoundComponent->Stop();// 如果存在循环音效组件，则停止该循环音效
+	UGameplayStatics::PlaySoundAtLocation(
+		this,// 上下文对象，用于确定播放世界
+		ImpactSound,// 命中音效资源（USoundBase*）
+		GetActorLocation(),// 播放位置：投射物当前位置
+		FRotator::ZeroRotator// 不需要旋转（声音无方向）
+		);
+	// 在碰撞位置生成特效（ImpactEffect）
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		this,// 上下文对象
+		ImpactEffect,// 特效系统（UNiagaraSystem*）
+		GetActorLocation()// 生成位置
+		);
+	if (LoopingSoundComponent)// 如果投射物有循环播放的飞行音效（例如火球呼啸声）
+	{
+		LoopingSoundComponent->Stop();// 如果存在循环音效组件，则停止该循环音效
+		LoopingSoundComponent->DestroyComponent();// 销毁该音效组件，释放资源
+	}
 	bHit = true;// 标记投射物已经命中
 }
 
 void AAuraProjectile::Destroyed()
 {
+	if (LoopingSoundComponent)// 如果投射物有循环播放的飞行音效（例如火球呼啸声）
+	{
+		LoopingSoundComponent->Stop();// 如果存在循环音效组件，则停止该循环音效
+		LoopingSoundComponent->DestroyComponent();// 销毁该音效组件，释放资源
+	}
 	// 如果没有命中任何目标 且 当前不是服务器（说明是客户端自己看到的销毁）
 	// 这样做是为了客户端本地立即播放击中特效，减少网络延迟带来的体验落差
 	if (!bHit && !HasAuthority()) OnHit();

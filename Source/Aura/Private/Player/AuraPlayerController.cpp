@@ -90,6 +90,7 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 		bTargeting = ThisActor  ? true : false;// 如果鼠标下有目标 Actor，就进入锁定目标模式；否则关闭锁定
 		bAutoRunning = false;// 关闭自动奔跑
 	}
+	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);// 如果角色有能力系统组件（ASC） 就把这个输入事件转发给 ASC，让 GAS 处理技能激活逻辑
 }
 
 void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)

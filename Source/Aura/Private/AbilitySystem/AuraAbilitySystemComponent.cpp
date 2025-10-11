@@ -52,6 +52,27 @@ void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSub
 	}
 }
 
+void UAuraAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
+{
+	if (!InputTag.IsValid()) return;// 如果输入标签无效，直接返回（防御性编程）
+
+	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())// 遍历所有可激活的技能（这些技能是通过 GiveAbility 给角色的）
+	{
+		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))// 判断当前技能是否拥有完全匹配的输入标签（用于匹配玩家输入）
+		{
+			AbilitySpecInputPressed(AbilitySpec);// 标记该技能的“输入已按下”状态（比如用于判断是否持续按住）
+			if (AbilitySpec.IsActive())// 如果技能激活
+			{
+				InvokeReplicatedEvent(
+					EAbilityGenericReplicatedEvent::InputPressed,// 表示“输入按下”事件类型
+					AbilitySpec.Handle, // 当前技能的唯一句柄，用于标识是哪一个技能
+					AbilitySpec.ActivationInfo.GetActivationPredictionKey()// 预测键，用于客户端预测和服务器验证同步
+					);
+			}
+		}
+	}
+}
+
 void UAuraAbilitySystemComponent::AbilityInputTagHeld(const FGameplayTag& InputTag)
 {
 	if (!InputTag.IsValid()) return;// 如果输入标签无效，直接返回（防御性编程）
@@ -75,9 +96,13 @@ void UAuraAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& In
 
 	for (FGameplayAbilitySpec& AbilitySpec : GetActivatableAbilities())// 遍历所有可激活的技能（这些技能是通过 GiveAbility 给角色的）
 	{
-		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag))// 判断当前技能是否拥有完全匹配的输入标签（用于匹配玩家输入）
+		if (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag) && AbilitySpec.IsActive())// 判断当前技能是否拥有完全匹配的输入标签（用于匹配玩家输入）
 		{
 			AbilitySpecInputReleased(AbilitySpec);// 标记该技能的“输入已被释放”状态（比如用于判断是否持续按住）
+			// 通知服务器和客户端同步这个“输入释放”事件
+			// 通过网络复制系统触发 EAbilityGenericReplicatedEvent::InputReleased 事件
+			// 参数：技能句柄 + 激活预测键（用于客户端预测系统）
+			InvokeReplicatedEvent(EAbilityGenericReplicatedEvent::InputReleased,AbilitySpec.Handle,AbilitySpec.ActivationInfo.GetActivationPredictionKey());
 		}
 	}
 }

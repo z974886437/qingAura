@@ -32,6 +32,7 @@ public:
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);//添加角色被动能力
 	bool bStartupAbilitiesGiven = false;//给定的启动能力
 
+	void AbilityInputTagPressed(const FGameplayTag& InputTag);//技能输入标签按下
 	void AbilityInputTagHeld(const FGameplayTag& InputTag);//持续能力输入标签
 	void AbilityInputTagReleased(const FGameplayTag& InputTag);//释放能力输入标签
 	void ForEachAbility(const FForEachAbility& Delegate);//对于每个能力
