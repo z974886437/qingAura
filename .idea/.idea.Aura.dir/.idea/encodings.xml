@@ -7,6 +7,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AI/AuraAIController.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AI/BTService_FindNearestPlayer.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AI/BTTask_Attack.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/Abilities/AuraBeamSpell.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/Abilities/AuraDamageGameplayAbility.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/Abilities/AuraFireBolt.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/Abilities/AuraGameplayAbility.cpp" charset="UTF-8" />
@@ -52,6 +53,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AI/AuraAIController.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AI/BTService_FindNearestPlayer.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AI/BTTask_Attack.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/Abilities/AuraBeamSpell.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/Abilities/AuraDamageGameplayAbility.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/Abilities/AuraFireBolt.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/Abilities/AuraGameplayAbility.h" charset="UTF-8" />
