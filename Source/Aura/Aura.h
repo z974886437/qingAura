@@ -9,3 +9,4 @@
 
 // 定义一个名为 ECC_Projectile 的宏，代表 GameTraceChannel1（自定义碰撞通道1）
 #define ECC_Projectile ECollisionChannel::ECC_GameTraceChannel1
+#define ECC_Target ECollisionChannel::ECC_GameTraceChannel2

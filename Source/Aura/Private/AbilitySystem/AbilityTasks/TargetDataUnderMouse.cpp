@@ -4,6 +4,7 @@
 #include "AbilitySystem/AbilityTasks/TargetDataUnderMouse.h"
 
 #include "AbilitySystemComponent.h"
+#include "Aura/Aura.h"
 
 
 UTargetDataUnderMouse* UTargetDataUnderMouse::CreateTargetDataUnderMouse(UGameplayAbility* OwningAbility)
@@ -47,7 +48,7 @@ void UTargetDataUnderMouse::SendMouseCursorData()
 	
 	APlayerController* PC = Ability->GetCurrentActorInfo()->PlayerController.Get();// 从当前技能(Ability)的 ActorInfo 获取 PlayerController 指针
 	FHitResult CursorHit;// 定义一个命中结果变量，用来保存鼠标光标射线检测到的结果
-	PC->GetHitResultUnderCursor(ECC_Visibility,false,CursorHit);// 从鼠标光标位置向世界发射一条射线，检测是否击中可见对象
+	PC->GetHitResultUnderCursor(ECC_Target,false,CursorHit);// 从鼠标光标位置向世界发射一条射线，检测是否击中可见对象
 
 	FGameplayAbilityTargetDataHandle DataHandle;// 定义一个技能目标数据句柄，用于管理目标数据集合
 	// 创建一个新的 FGameplayAbilityTargetData_SingleTargetHit 实例，用于存储单个目标的命中数据
