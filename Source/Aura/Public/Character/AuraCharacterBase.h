@@ -41,6 +41,7 @@ public:
 	virtual void IncrementMinionCount_Implementation(int32 Amount) override;//增加仆从数量
 	virtual ECharacterClass GetCharacterClass_Implementation() override;//获取角色类
 	virtual FOnASCRegistered GetOnASCRegisteredDelegate() override;//加入 ASC 注册代表
+	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;//获取武器
 	
     /* end Combat Interface*/
 	FOnASCRegistered OnAscRegistered;//在ASC注册上

@@ -89,5 +89,8 @@ public:
 	virtual FOnASCRegistered GetOnASCRegisteredDelegate() = 0;//加入 ASC 注册代表
 
 	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
-	void SetInShockLoop(bool bInLoop);
+	void SetInShockLoop(bool bInLoop);//设置在冲击环中
+
+	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
+	USkeletalMeshComponent* GetWeapon();//获取武器
 };
