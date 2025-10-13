@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Abilities/AuraBeamSpell.h"
 
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -73,4 +74,38 @@ void UAuraBeamSpell::TraceFirstTarget(const FVector& BeamTargetLocation)
 			}
 		}
 	}
+}
+
+// 功能：在“光束法术（BeamSpell）”中，基于第一个目标（MouseHitActor），寻找周围最近的额外目标，并存入输出数组
+void UAuraBeamSpell::StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTargets)
+{
+	TArray<AActor*> ActorsToIgnore;// 创建一个“忽略列表”，防止射线或范围检测时命中自己或主要目标
+	ActorsToIgnore.Add(GetAvatarActorFromActorInfo());// 忽略施法者（自己）
+	ActorsToIgnore.Add(MouseHitActor);// 忽略第一个命中的目标（主目标）
+	
+	TArray<AActor*> OverlappingActors;// 用于存放范围内检测到的所有其他可攻击玩家
+
+	// 调用自定义工具函数，在指定半径范围内搜索“活着的玩家”
+	UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(
+		GetAvatarActorFromActorInfo(),// 搜索时的施法者（用于区分敌友或队伍）
+		OverlappingActors,// 输出找到的活着的玩家
+		ActorsToIgnore,// 搜索时忽略的对象
+		850.f,// 搜索半径（850单位）
+		MouseHitActor->GetActorLocation() // 以第一个目标为中心进行范围检测
+		);
+
+	//int32 NumAdditionalTargets = FMath::Min(GetAbilityLevel() - 1,MaxNumShockTargets);
+	// 指定要寻找的额外目标数量
+	// 原逻辑：最多为“技能等级 - 1”，并受 MaxNumShockTargets 限制
+	// int32 NumAdditionalTargets = FMath::Min(GetAbilityLevel() - 1, MaxNumShockTargets);
+	// 临时改为固定 5 个目标，方便测试
+	int32 NumAdditionalTargets = 5;
+
+	// 从范围内的存活玩家中，筛选出距离主目标最近的若干个，作为最终的附加目标
+	UAuraAbilitySystemLibrary::GetClosestTargets(
+		NumAdditionalTargets,// 需要的目标数量
+		OverlappingActors,// 所有可选目标
+		OutAdditionalTargets,// 输出数组，保存最近目标
+		MouseHitActor->GetActorLocation()// 距离计算中心（第一个命中的目标）
+		);
 }

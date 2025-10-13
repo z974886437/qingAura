@@ -373,6 +373,40 @@ void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldC
 	}
 }
 
+// 功能：从给定的 Actor 数组中，找出距离指定位置（Origin）最近的若干目标（最多 MaxTargets 个）
+void UAuraAbilitySystemLibrary::GetClosestTargets(int32 MaxTargets, const TArray<AActor*>& Actors,TArray<AActor*>& OutClosestTargets, const FVector& Origin)
+{
+	if (Actors.Num() <= MaxTargets)// 如果目标数量少于或等于需要的最大数量，则直接全部返回
+	{
+		OutClosestTargets = Actors;// 直接复制
+		return;// 提前结束，无需计算距离
+	}
+
+	TArray<AActor*> ActorsToCheck = Actors;// 拷贝一份可修改的待筛选列表
+	int32 NumTargetsFound = 0;// 记录已找到的目标数量
+
+	while (NumTargetsFound < MaxTargets)// 循环直到找到足够数量的目标
+	{
+		if (ActorsToCheck.Num() == 0) break;
+		double ClosestDistance = TNumericLimits<double>::Max();// 初始化当前最近距离为“无限大”
+		AActor* ClosestActor;// 用于记录当前最近的 Actor 指针
+		
+		for (AActor* PotentialTarget : ActorsToCheck)// 遍历所有待检查的 Actor
+		{
+			const double Distance = (PotentialTarget->GetActorLocation() - Origin).Length();// 计算当前 Actor 与指定位置之间的欧几里得距离
+			
+			if (Distance < ClosestDistance)// 如果该 Actor 距离比当前记录的最近距离更近，则更新记录
+			{
+				ClosestDistance = Distance;
+				ClosestActor = PotentialTarget;
+			}
+		}
+		ActorsToCheck.Remove(ClosestActor);// 从待检查列表中移除刚找到的最近目标
+		OutClosestTargets.AddUnique(ClosestActor);// 将该最近目标添加到输出列表（AddUnique防止重复）
+		++NumTargetsFound;// 计数器 +1
+	}
+}
+
 bool UAuraAbilitySystemLibrary::IsNotFriend(AActor* FirstActor, AActor* SecondActor)
 {
 	const bool bBothArePlayers = FirstActor->ActorHasTag(FName("Player")) && SecondActor->ActorHasTag(FName("Player"));// 判断两个Actor是否都是玩家
