@@ -21,10 +21,16 @@ public:
 	void StoreOwnerVariables();//存储变量
 
 	UFUNCTION(BlueprintCallable)
-	void TraceFirstTarget(const FVector& BeamTargetLocation);
+	void TraceFirstTarget(const FVector& BeamTargetLocation);//跟踪第一个目标
 
 	UFUNCTION(BlueprintCallable)
 	void StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTargets);//存储其他目标
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PrimaryTargetDied(AActor* DeadActor);//主要目标死亡
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void AdditionalTargetDied(AActor* DeadActor);//其他目标死亡
 protected:
 
 	UPROPERTY(BlueprintReadWrite,Category = "Beam")

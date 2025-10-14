@@ -74,6 +74,13 @@ void UAuraBeamSpell::TraceFirstTarget(const FVector& BeamTargetLocation)
 			}
 		}
 	}
+	if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(MouseHitActor))// 如果鼠标指向的 Actor 实现了战斗接口（即可以作为战斗目标）
+	{
+		if (!CombatInterface->GetOnDeathDelegate().IsAlreadyBound(this,&UAuraBeamSpell::PrimaryTargetDied))// 如果该目标的死亡委托中，还没有绑定本技能的“PrimaryTargetDied”函数
+		{
+			CombatInterface->GetOnDeathDelegate().AddDynamic(this,&UAuraBeamSpell::PrimaryTargetDied);// 动态绑定目标死亡事件，当目标死亡时自动调用“PrimaryTargetDied”
+		}
+	}
 }
 
 // 功能：在“光束法术（BeamSpell）”中，基于第一个目标（MouseHitActor），寻找周围最近的额外目标，并存入输出数组
@@ -94,12 +101,12 @@ void UAuraBeamSpell::StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTarget
 		MouseHitActor->GetActorLocation() // 以第一个目标为中心进行范围检测
 		);
 
-	//int32 NumAdditionalTargets = FMath::Min(GetAbilityLevel() - 1,MaxNumShockTargets);
+	int32 NumAdditionalTargets = FMath::Min(GetAbilityLevel() - 1,MaxNumShockTargets);
 	// 指定要寻找的额外目标数量
 	// 原逻辑：最多为“技能等级 - 1”，并受 MaxNumShockTargets 限制
 	// int32 NumAdditionalTargets = FMath::Min(GetAbilityLevel() - 1, MaxNumShockTargets);
 	// 临时改为固定 5 个目标，方便测试
-	int32 NumAdditionalTargets = 5;
+	//int32 NumAdditionalTargets = 5;
 
 	// 从范围内的存活玩家中，筛选出距离主目标最近的若干个，作为最终的附加目标
 	UAuraAbilitySystemLibrary::GetClosestTargets(
@@ -108,4 +115,15 @@ void UAuraBeamSpell::StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTarget
 		OutAdditionalTargets,// 输出数组，保存最近目标
 		MouseHitActor->GetActorLocation()// 距离计算中心（第一个命中的目标）
 		);
+
+	for (AActor* Target : OutAdditionalTargets)
+	{
+		if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(Target))
+		{
+			if (!CombatInterface->GetOnDeathDelegate().IsAlreadyBound(this,&UAuraBeamSpell::AdditionalTargetDied))// 如果该目标的死亡委托中，还没有绑定本技能的“AdditionalTargetDied”函数
+			{
+				CombatInterface->GetOnDeathDelegate().AddDynamic(this,&UAuraBeamSpell::PrimaryTargetDied);// 动态绑定目标死亡事件，当目标死亡时自动调用“PrimaryTargetDied”
+			}
+		}
+	}
 }

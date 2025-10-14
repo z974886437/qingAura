@@ -31,6 +31,7 @@ public:
 	/* Combat Interface */
     virtual UAnimMontage* GetHitReactMontage_Implementation() override;//Get Hit React 蒙太奇实现
     virtual void Die(const FVector& DeathImpulse) override;//死
+	virtual FOnDeathSignature& GetOnDeathDelegate() override;//死亡时委托
     virtual FVector GetCombatSocketLocation_Implementation(const FGameplayTag& MontageTag) override;//获取战斗插槽位置
     virtual bool IsDead_Implementation() const override;//死亡
     virtual AActor* GetAvatar_Implementation()  override;//获取Avatar
@@ -45,6 +46,7 @@ public:
 	
     /* end Combat Interface*/
 	FOnASCRegistered OnAscRegistered;//在ASC注册上
+	FOnDeathSignature OnDeathDelegate;//死亡时委托
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
 	virtual void MulticastHandleDeath(const FVector& DeathImpulse);//多播句柄死亡

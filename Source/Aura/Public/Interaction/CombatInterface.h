@@ -13,6 +13,7 @@ class UNiagaraSystem;
 class UAnimMontage;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCRegistered, UAbilitySystemComponent*)//ASC 注册的 F
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature,AActor*,DeadActor);//死亡签名上的 F
 
 USTRUCT(BlueprintType)
 struct FTaggedMontage
@@ -61,6 +62,7 @@ public:
 	UAnimMontage* GetHitReactMontage();//被击中反应蒙太奇
 
 	virtual void Die(const FVector& DeathImpulse) = 0;//死亡
+	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;//获取死亡代表
 
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	bool IsDead() const;//死亡

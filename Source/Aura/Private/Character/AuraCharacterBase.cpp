@@ -54,6 +54,11 @@ void AAuraCharacterBase::Die(const FVector& DeathImpulse)
 	MulticastHandleDeath(DeathImpulse);//多播句柄死亡
 }
 
+FOnDeathSignature& AAuraCharacterBase::GetOnDeathDelegate()
+{
+	return OnDeathDelegate;
+}
+
 void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& DeathImpulse)
 {
 	// 在角色当前位置和朝向播放死亡音效，使用全局工具类 UGameplayStatics
@@ -74,6 +79,7 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 	Dissolve();//溶解
 	bDead = true; // 设置死亡标志
 	BurnDebuffComponent->Deactivate();// 禁用燃烧 debuff
+	OnDeathDelegate.Broadcast(this);
 }
 
 // Called when the game starts or when spawned
