@@ -23,6 +23,9 @@ public:
 	UFUNCTION(BlueprintPure)
 	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor = nullptr) const;//从 classdefaults 创建伤害效果参数
 
+	UFUNCTION(BlueprintPure)
+	float GetDamageAtLevel() const;//在关卡时受到伤害
+
 protected:
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly)
 	TSubclassOf<UGameplayEffect> DamageEffectClass;//伤害效果类

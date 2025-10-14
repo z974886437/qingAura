@@ -48,7 +48,12 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	}
 	return Params;// 返回最终填充好的参数
 }
- 
+
+float UAuraDamageGameplayAbility::GetDamageAtLevel() const
+{
+	return Damage.GetValueAtLevel(GetAbilityLevel());
+}
+
 FTaggedMontage UAuraDamageGameplayAbility::GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const
 {
 	if (TaggedMontages.Num() > 0)// 如果数组中至少有一个元素
