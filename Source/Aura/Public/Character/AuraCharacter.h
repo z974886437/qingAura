@@ -48,6 +48,7 @@ public:
 	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
 
 	virtual void OnRep_Stunned() override;//代表震惊
+	virtual void OnRep_Burned() override;//代表燃烧
 
 private:
 

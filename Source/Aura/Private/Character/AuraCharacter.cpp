@@ -11,6 +11,7 @@
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "NiagaraComponent.h"
+#include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/HUD/AuraHUD.h"
@@ -188,12 +189,26 @@ void AAuraCharacter::OnRep_Stunned()
 			// 给 AbilitySystemComponent 添加这些阻断输入的标签
 			// 表示玩家当前无法进行输入操作
 			AuraASC->AddLooseGameplayTags(BlockedTags);
+			StunDebuffComponent->Activate();//激活
 		}
 		else
 		{
 			// 如果眩晕状态解除，则移除这些标签，恢复玩家控制
 			AuraASC->RemoveLooseGameplayTags(BlockedTags);
+			StunDebuffComponent->Deactivate();//停用
 		}
+	}
+}
+
+void AAuraCharacter::OnRep_Burned()
+{
+	if (bIsBurned)
+	{
+		BurnDebuffComponent->Activate();//激活
+	}
+	else
+	{
+		BurnDebuffComponent->Deactivate();//停用
 	}
 }
 

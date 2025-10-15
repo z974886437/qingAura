@@ -36,6 +36,7 @@ AAuraProjectile::AAuraProjectile()
 void AAuraProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	SetReplicateMovement(true);//设置复制运动
 	SetLifeSpan(LifeSpan);// 设置Actor的寿命，单位是秒，到时间后Actor会自动调用 Destroy()
 	Sphere->OnComponentBeginOverlap.AddDynamic(this,&AAuraProjectile::OnSphereOverlap);//球体碰撞组件（Sphere）的 重叠开始事件 绑定到 AAuraProjectile::OnSphereOverlap 函数
 
@@ -84,13 +85,7 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	// ---------- 安全防御性检查 ----------
-	if (!DamageEffectParams.SourceAbilitySystemComponent)
-	{
-		// 如果 Source 未设置，直接返回并打印警告日志（帮助调试）
-		UE_LOG(LogTemp, Warning, TEXT("Projectile missing SourceAbilitySystemComponent!"));
-		return;
-	}
-	
+	if (DamageEffectParams.SourceAbilitySystemComponent == nullptr) return;
 	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();// 获取施法者的 AvatarActor（通常是角色对象）
 
 	if (SourceAvatarActor == OtherActor) return;// 检查伤害效果是否有效，或者施加者是否是自己，如果是自己，直接返回（避免伤害自己）

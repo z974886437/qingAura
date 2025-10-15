@@ -88,7 +88,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	ECharacterClass GetCharacterClass();
 
-	virtual FOnASCRegistered GetOnASCRegisteredDelegate() = 0;//加入 ASC 注册代表
+	virtual FOnASCRegistered& GetOnASCRegisteredDelegate() = 0;//加入 ASC 注册代表
 
 	UFUNCTION(BlueprintImplementableEvent,BlueprintCallable)
 	void SetInShockLoop(bool bInLoop);//设置在冲击环中

@@ -26,6 +26,10 @@ AAuraCharacterBase::AAuraCharacterBase()
 	BurnDebuffComponent->SetupAttachment(GetRootComponent());
 	BurnDebuffComponent->DebuffTag = GameplayTags.Debuff_Burn;// 设置 debuff 标签为烧伤类型
 
+	StunDebuffComponent = CreateDefaultSubobject<UDebuffNiagaraComponent>("StunDebuffComponent");// 创建一个眩晕（Stun） debuff 组件，并将其附加到角色根组件上。
+	StunDebuffComponent->SetupAttachment(GetRootComponent());
+	StunDebuffComponent->DebuffTag = GameplayTags.Debuff_Stun;// 设置 debuff 标签为眩晕类型
+
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);//让胶囊体碰撞体对相机通道忽略碰撞（防止相机被角色身体挡住）
 	GetCapsuleComponent()->SetGenerateOverlapEvents(false);//关闭角色胶囊碰撞体的重叠事件
 	GetMesh()->SetCollisionResponseToChannel(ECC_Camera,ECR_Ignore);// 让角色网格体（骨骼模型）对相机通道忽略碰撞（避免近距离相机穿模或挡视线）
@@ -43,6 +47,7 @@ void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);// 先调用父类的注册逻辑，确保继承的可复制变量也会被正确处理
 
 	DOREPLIFETIME(AAuraCharacterBase,bIsStunned);// 告诉 Unreal：bIsStunned 这个变量需要被网络复制（从服务器同步到客户端）
+	DOREPLIFETIME(AAuraCharacterBase,bIsBurned);// 告诉 Unreal：bIsBurned 这个变量需要被网络复制（从服务器同步到客户端）
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
@@ -88,6 +93,7 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 	Dissolve();//溶解
 	bDead = true; // 设置死亡标志
 	BurnDebuffComponent->Deactivate();// 禁用燃烧 debuff
+	StunDebuffComponent->Deactivate();// 禁用眩晕 debuff
 	OnDeathDelegate.Broadcast(this);
 }
 
@@ -100,6 +106,10 @@ void AAuraCharacterBase::StunTagChanged(const FGameplayTag CallbackTag, int32 Ne
 void AAuraCharacterBase::OnRep_Stunned()
 {
 	
+}
+
+void AAuraCharacterBase::OnRep_Burned()
+{
 }
 
 // Called when the game starts or when spawned
@@ -179,7 +189,7 @@ ECharacterClass AAuraCharacterBase::GetCharacterClass_Implementation()
 	return CharacterClass;
 }
 
-FOnASCRegistered AAuraCharacterBase::GetOnASCRegisteredDelegate()
+FOnASCRegistered& AAuraCharacterBase::GetOnASCRegisteredDelegate()
 {
 	return OnAscRegistered;
 }

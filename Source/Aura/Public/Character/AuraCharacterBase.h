@@ -42,7 +42,7 @@ public:
 	virtual int32 GetMinionCount_Implementation() override;//获取仆从数量
 	virtual void IncrementMinionCount_Implementation(int32 Amount) override;//增加仆从数量
 	virtual ECharacterClass GetCharacterClass_Implementation() override;//获取角色类
-	virtual FOnASCRegistered GetOnASCRegisteredDelegate() override;//加入 ASC 注册代表
+	virtual FOnASCRegistered& GetOnASCRegisteredDelegate() override;//加入 ASC 注册代表
 	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;//获取武器
 	
     /* end Combat Interface*/
@@ -58,8 +58,14 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRep_Stunned,BlueprintReadOnly)
 	bool bIsStunned = false;//被眩晕
 
+	UPROPERTY(ReplicatedUsing=OnRep_Burned,BlueprintReadOnly)
+	bool bIsBurned = false;//被烧毁
+
 	UFUNCTION()
 	virtual void OnRep_Stunned();//代表震惊
+
+	UFUNCTION()
+	virtual void OnRep_Burned();//代表烧毁
 
 protected:
 	// Called when the game starts or when spawned
@@ -142,6 +148,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UDebuffNiagaraComponent> BurnDebuffComponent;//燃烧减益组件
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UDebuffNiagaraComponent> StunDebuffComponent;//眩晕减益组件
 private:
 
 	UPROPERTY(EditAnywhere,Category = "Abilities")
