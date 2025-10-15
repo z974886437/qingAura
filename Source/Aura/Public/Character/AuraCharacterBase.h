@@ -25,6 +25,7 @@ class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInte
 public:
 	// Sets default values for this character's properties
 	AAuraCharacterBase();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;//获得终生复制的道具
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;//接口函数的重写声明，用于告诉 GAS 如何获取角色或 Actor 上的 AbilitySystemComponent
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
 
@@ -53,7 +54,13 @@ public:
 
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	TArray<FTaggedMontage> AttackMontages;//攻击蒙太奇
-	
+
+	UPROPERTY(ReplicatedUsing=OnRep_Stunned,BlueprintReadOnly)
+	bool bIsStunned = false;//被眩晕
+
+	UFUNCTION()
+	virtual void OnRep_Stunned();//代表震惊
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -74,6 +81,11 @@ protected:
 	FName TailSocketName;//尾部插座名称
 
 	bool bDead = false;//b死亡
+
+	virtual void StunTagChanged(const FGameplayTag CallbackTag,int32 NewCount);//眩晕标签已更改
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
+	float BaseWalkSpeed = 600.f;//基本步行速度
 	
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。
 	UPROPERTY()
@@ -141,3 +153,4 @@ private:
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;//命中反应montage
 };
+

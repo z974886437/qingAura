@@ -15,6 +15,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+
 AAuraEnemy::AAuraEnemy()
 {
 	//设置当前角色的网格（GetMesh()）在 ECC_Visibility 通道上的碰撞响应为 Block（阻挡）
@@ -35,6 +36,8 @@ AAuraEnemy::AAuraEnemy()
 
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");// 创建默认的 Widget 组件（用来显示血条 UI）
 	HealthBar->SetupAttachment(GetRootComponent());// 将血条 UI 挂到角色的根组件上（跟着角色移动）
+
+	BaseWalkSpeed = 250.f;
 }
 
 void AAuraEnemy::PossessedBy(AController* NewController)
@@ -158,6 +161,11 @@ void AAuraEnemy::InitAbilityActorInfo()
 	//初始化 AbilitySystemComponent，让它知道谁是“实际拥有者”和“执行者”
 	AbilitySystemComponent->InitAbilityActorInfo(this,this);
 	Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent)->AbilityActorInfoSet();
+	// 注册“眩晕”标签（Debuff_Stun）的监听事件，当该标签被添加或移除时触发回调函数 StunTagChanged
+	AbilitySystemComponent->RegisterGameplayTagEvent(
+		FAuraGameplayTags::Get().Debuff_Stun, // 要监听的标签：这里是自定义的“眩晕”标签
+		EGameplayTagEventType::NewOrRemoved// 监听事件类型：当标签新增或移除时都会触发
+		).AddUObject(this,&AAuraEnemy::StunTagChanged);// 注册回调函数：当触发时，调用角色类里的 StunTagChanged 函数
 
 	if (HasAuthority())
 	{
@@ -171,4 +179,16 @@ void AAuraEnemy::InitializeDefaultAttributes() const
 	// 调用自定义的工具函数，用来初始化角色的默认属性
 	UAuraAbilitySystemLibrary::InitializeDefaultAttributes(this,CharacterClass,Level,AbilitySystemComponent);
 }
+
+void AAuraEnemy::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	Super::StunTagChanged(CallbackTag, NewCount);
+	
+	if (AuraAIController && AuraAIController->GetBlackboardComponent())// 检查 AI 控制器和黑板组件是否有效（防止空指针崩溃）
+	{
+		AuraAIController->GetBlackboardComponent()->SetValueAsBool(FName("Stunned"),bIsStunned);// 把黑板变量 "Stunned" 设置为 bIsStunned（true 表示被眩晕，false 表示恢复正常）
+	}
+}
+
+
 

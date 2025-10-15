@@ -46,9 +46,6 @@ public:
 	bool bHitReacting = false;//B命中反应
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
-	float BaseWalkSpeed = 250.f;
-
-	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
 	float LifeSpan = 5.f;//寿命
 
 	UPROPERTY(BlueprintReadWrite,Category = "Combat")
@@ -57,6 +54,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void InitAbilityActorInfo() override;//初始化能力Actor信息
 	virtual void InitializeDefaultAttributes() const override;////初始化默认属性
+	virtual void StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount) override;//眩晕标签已更改
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Character Class Defaults")
 	int32 Level = 1;

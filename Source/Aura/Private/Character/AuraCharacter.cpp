@@ -4,6 +4,7 @@
 #include "Character/AuraCharacter.h"
 
 #include "AbilitySystemComponent.h"
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/Data/LevelUpInfo.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -169,6 +170,33 @@ int32 AAuraCharacter::GetPlayerLevel_Implementation()
 	return AuraPlayerState->GetPlayerLevel();
 }
 
+void AAuraCharacter::OnRep_Stunned()
+{
+	// 将角色的 AbilitySystemComponent 强制转换为自定义的 UAuraAbilitySystemComponent
+	// 方便使用扩展函数（例如自定义的 Tag 管理、事件绑定等）
+	if (UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))
+	{
+		const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get();// 创建一个标签容器，用来存放“被眩晕时应屏蔽的玩家输入标签”
+		FGameplayTagContainer BlockedTags;// 创建一个标签容器，用来存放“被眩晕时应屏蔽的玩家输入标签”
+		BlockedTags.AddTag(GameplayTags.Player_Block_CursorTrace);// 禁止鼠标检测（例如选中目标）
+		BlockedTags.AddTag(GameplayTags.Player_Block_InputHeld);// 禁止持续按键输入
+		BlockedTags.AddTag(GameplayTags.Player_Block_InputPressed);// 禁止按下输入事件
+		BlockedTags.AddTag(GameplayTags.Player_Block_InputReleased);// 禁止松开输入事件
+
+		if (bIsStunned)// 如果角色当前是“眩晕状态”（bIsStunned = true）
+		{
+			// 给 AbilitySystemComponent 添加这些阻断输入的标签
+			// 表示玩家当前无法进行输入操作
+			AuraASC->AddLooseGameplayTags(BlockedTags);
+		}
+		else
+		{
+			// 如果眩晕状态解除，则移除这些标签，恢复玩家控制
+			AuraASC->RemoveLooseGameplayTags(BlockedTags);
+		}
+	}
+}
+
 void AAuraCharacter::InitAbilityActorInfo() 
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
@@ -181,6 +209,11 @@ void AAuraCharacter::InitAbilityActorInfo()
 	AbilitySystemComponent = AuraPlayerState->GetAbilitySystemComponent();//设置Auar角色能力系统组件
 	AttributeSet = AuraPlayerState->GetAttributeSet();//设置属性集
 	OnAscRegistered.Broadcast(AbilitySystemComponent); // 广播能力系统组件注册完成事件
+	// 注册“眩晕”标签（Debuff_Stun）的监听事件，当该标签被添加或移除时触发回调函数 StunTagChanged
+	AbilitySystemComponent->RegisterGameplayTagEvent(
+		FAuraGameplayTags::Get().Debuff_Stun, // 要监听的标签：这里是自定义的“眩晕”标签
+		EGameplayTagEventType::NewOrRemoved// 监听事件类型：当标签新增或移除时都会触发
+		).AddUObject(this,&AAuraCharacter::StunTagChanged);// 注册回调函数：当触发时，调用角色类里的 StunTagChanged 函数
 
 	// 如果角色有控制器，并且控制器有 HUD，则初始化 UI Overlay，把必要数据传给 HUD
 	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))

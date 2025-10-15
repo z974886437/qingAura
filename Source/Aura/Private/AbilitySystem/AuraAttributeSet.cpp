@@ -167,6 +167,7 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const  FGameplayEffectModCallb
 	}
 }
 
+// 处理传入伤害的主要函数（由效果系统调用，完成血量扣减、死亡、受击、浮动字等逻辑）
 void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 {
 	const float LocalIncomingDamage = GetIncomingDamage();// 取出当前累计的伤害值（之前可能被多次叠加）
@@ -187,25 +188,27 @@ void UAuraAttributeSet::HandleIncomingDamage(const FEffectProperties& Props)
 			}
 			SendXPEvent(Props);// 触发经验值事件，可能是奖励经验等相关逻辑
 		}
-		else
+		else// 如果角色未死亡
 		{
 			FGameplayTagContainer TagContainer;// 定义一个 GameplayTag 容器，用来装要触发的技能标签
 			TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);// 往容器里添加一个“受击反应”标签（Effects.HitReact）
 			Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);// 让目标的 AbilitySystemComponent（ASC）尝试根据这个标签激活对应的技能
 
-			const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);
-			if (!KnockbackForce.IsNearlyZero(1.f))
+			const FVector& KnockbackForce = UAuraAbilitySystemLibrary::GetKnockbackForce(Props.EffectContextHandle);// 从上下文中获取击退力（KnockbackForce）
+			
+			if (!KnockbackForce.IsNearlyZero(1.f))// 如果击退力不为零，则让角色被击退（LaunchCharacter）
 			{
-				Props.TargetCharacter->LaunchCharacter(KnockbackForce,true,true);
+				Props.TargetCharacter->LaunchCharacter(KnockbackForce,true,true);// 启用 XY 和 Z 方向的击退效果
 			}
 		}
 			
 		const bool bBlock = UAuraAbilitySystemLibrary::IsBlockedHit(Props.EffectContextHandle);// 1. 从上下文读取是否格挡
 		const bool bCriticalHit = UAuraAbilitySystemLibrary::IsCriticalHit(Props.EffectContextHandle);// 2. 从上下文读取是否暴击
-		ShowFloatingText(Props,LocalIncomingDamage,bBlock,bCriticalHit);//显示浮动文本
-		if (UAuraAbilitySystemLibrary::IsSuccessfulDebuff(Props.EffectContextHandle))
+		ShowFloatingText(Props,LocalIncomingDamage,bBlock,bCriticalHit);// 显示浮动伤害文本（包括伤害值、暴击、格挡等状态）
+		
+		if (UAuraAbilitySystemLibrary::IsSuccessfulDebuff(Props.EffectContextHandle))// 如果此次效果触发了成功的 Debuff（减速、中毒等）
 		{
-			Debuff(Props);
+			Debuff(Props);// 应用 Debuff 效果
 		}
 	}
 }
@@ -231,11 +234,22 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	Effect->Period = DebuffFrequency;
 	Effect->DurationMagnitude = FScalableFloat(DebuffDuration);
 
-	//Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.DamageTypesToDebuff[DamageType]);// 添加与减益效果相关的标签
+	//Effect->InheritableOwnedTagsContainer.AddTag(GameplayTags.DamageTypesToDebuff[DamageType]);// 方法已废弃下面是最新的使用方式
+	// 添加与减益效果相关的标签
 	FInheritedTagContainer TagContainer = FInheritedTagContainer();// 创建一个空的 FInheritedTagContainer 对象，用于存储标签信息
 	UTargetTagsGameplayEffectComponent& Component = Effect->FindOrAddComponent<UTargetTagsGameplayEffectComponent>();// 获取或添加一个 UTargetTagsGameplayEffectComponent 组件
-	TagContainer.Added.AddTag(GameplayTags.DamageTypesToDebuff[DamageType]);// 将 DamageType 对应的标签添加到 TagContainer 的 "Added" 标签集中
-	Component.SetAndApplyTargetTagChanges(TagContainer);// 将 TagContainer 中的标签信息应用到目标标签组件
+	
+	const FGameplayTag DebuffTag = GameplayTags.DamageTypesToDebuff[DamageType];// 从自定义的 GameplayTags 映射表中，根据 DamageType（伤害类型）找到对应的 Debuff（减益效果）标签
+	TagContainer.Added.AddTag(DebuffTag);// 将找到的 Debuff 标签加入“待添加标签”列表中
+	
+	if(DebuffTag.MatchesTagExact(GameplayTags.Debuff_Stun))// 如果这个 Debuff 是“眩晕（Stun）”类型的标签
+	{
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_CursorTrace);// 眩晕时禁止鼠标光标检测（防止选取或交互）
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputHeld);// 禁止长按输入（防止持续释放技能等）
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputPressed);// 禁止按下输入（防止新技能触发）
+		TagContainer.Added.AddTag(GameplayTags.Player_Block_InputReleased);// 禁止松开输入（防止技能释放结束触发）
+	}
+	Component.SetAndApplyTargetTagChanges(TagContainer);// 将这些新增的目标标签应用到目标上，使其立刻生效（例如角色被眩晕后输入被封锁）
 
 	// 设置效果的堆叠方式
 	Effect->StackingType = EGameplayEffectStackingType::AggregateBySource;

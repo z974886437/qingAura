@@ -83,6 +83,14 @@ void AAuraProjectile::Destroyed()
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	// ---------- 安全防御性检查 ----------
+	if (!DamageEffectParams.SourceAbilitySystemComponent)
+	{
+		// 如果 Source 未设置，直接返回并打印警告日志（帮助调试）
+		UE_LOG(LogTemp, Warning, TEXT("Projectile missing SourceAbilitySystemComponent!"));
+		return;
+	}
+	
 	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();// 获取施法者的 AvatarActor（通常是角色对象）
 
 	if (SourceAvatarActor == OtherActor) return;// 检查伤害效果是否有效，或者施加者是否是自己，如果是自己，直接返回（避免伤害自己）

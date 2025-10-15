@@ -10,7 +10,9 @@
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "WorldPartition/Cook/WorldPartitionCookPackage.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
+
 
 // Sets default values主要用于初始化一些角色的组件，设置碰撞属性，并附加相关功能
 AAuraCharacterBase::AAuraCharacterBase()
@@ -34,6 +36,13 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon->SetupAttachment(GetMesh(),FName("WeaponHandSocket"));//将武器组件附加到角色骨骼网格WeaponHandSocket上
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);//关闭武器碰撞检测
 
+}
+
+void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);// 先调用父类的注册逻辑，确保继承的可复制变量也会被正确处理
+
+	DOREPLIFETIME(AAuraCharacterBase,bIsStunned);// 告诉 Unreal：bIsStunned 这个变量需要被网络复制（从服务器同步到客户端）
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
@@ -80,6 +89,17 @@ void AAuraCharacterBase::MulticastHandleDeath_Implementation(const FVector& Deat
 	bDead = true; // 设置死亡标志
 	BurnDebuffComponent->Deactivate();// 禁用燃烧 debuff
 	OnDeathDelegate.Broadcast(this);
+}
+
+void AAuraCharacterBase::StunTagChanged(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	bIsStunned = NewCount > 0;// 当 NewCount > 0 时，说明角色正在受击 → bHitReacting = true，否则 = false
+	GetCharacterMovement()->MaxWalkSpeed = bIsStunned ? 0.f : BaseWalkSpeed;// 如果正在受击 → 移动速度设为 0，禁止走动；否则恢复到基础移动速度
+}
+
+void AAuraCharacterBase::OnRep_Stunned()
+{
+	
 }
 
 // Called when the game starts or when spawned
