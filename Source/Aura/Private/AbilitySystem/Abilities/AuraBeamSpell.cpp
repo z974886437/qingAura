@@ -7,6 +7,96 @@
 #include "GameFramework/Character.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+FString UAuraBeamSpell::GetDescription(int32 Level)
+{
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);// 根据技能等级获取火焰伤害数值
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+	if (Level == 1)// 如果是等级 1，显示单发火球描述
+	{
+		return FString::Printf(TEXT(
+			/* Title 标题*/
+			"<Title>闪电链</>\n\n"
+
+			// Level
+			"<Small>等级: </><Level>%d</>\n"
+			//ManaCost
+			"<Small>法力消耗: </><ManaCost>%.1f</>\n"
+			//Cooldown
+			"<Small>冷却： </><Cooldown>%.1f</>\n\n"
+
+			//Number of FireBolts
+			"<Default>发射 1 个闪电链, 技能效果: </>"
+			//Damage
+			"<Damage>%d</><Default> 闪电伤害，有几率眩晕 </>"),
+
+			//Values
+			Level,// 替换 %d 为等级
+			ManaCost,
+			Cooldown,
+			ScaledDamage// 替换 %d 为伤害数值
+			);
+	}
+	else// 如果是等级 > 1，显示多发火球描述
+	{
+		return FString::Printf(TEXT(
+			/* Title 标题*/
+			"<Title>闪电链</>\n\n"
+
+			// Level
+			"<Small>等级: </><Level>%d</>\n"
+			//ManaCost
+			"<Small>法力消耗: </><ManaCost>%.1f</>\n"
+			//Cooldown
+			"<Small>冷却： </><Cooldown>%.1f</>\n\n"
+
+			//Number of FireBolts
+			"<Default>发射 %d 个闪电链, 技能效果: </>"
+
+			//Damage
+			"<Damage>%d</><Default> 闪电伤害，有几率眩晕 </>"),
+
+			//Values
+			Level,// 替换 %d 为等级
+			ManaCost,
+			Cooldown,
+			FMath::Min(Level,MaxNumShockTargets),
+			ScaledDamage// 替换 %d 为伤害数值
+			);
+	}
+}
+
+FString UAuraBeamSpell::GetNextLevelDescription(int32 Level)
+{
+	const int32 ScaledDamage = Damage.GetValueAtLevel(Level);// 根据技能等级获取火焰伤害数值
+	const float ManaCost = FMath::Abs(GetManaCost(Level));
+	const float Cooldown = GetCooldown(Level);
+	return FString::Printf(TEXT(
+			/* Title 标题*/
+			"<Title>下一级</>\n\n"
+
+			// Level
+			"<Small>等级: </><Level>%d</>\n"
+			//ManaCost
+			"<Small>法力消耗: </><ManaCost>%.1f</>\n"
+			//Cooldown
+			"<Small>冷却： </><Cooldown>%.1f</>\n\n"
+
+			//Number of FireBolts
+			"<Default>发射 %d 个闪电链, 技能效果: </>"
+
+			//Damage
+			"<Damage>%d</><Default> 闪电伤害，有几率眩晕 </>"),
+
+			//Values
+			Level,// 替换 %d 为等级
+			ManaCost,
+			Cooldown,
+			FMath::Min(Level,MaxNumShockTargets),
+			ScaledDamage// 替换 %d 为伤害数值
+			);
+}
+
 void UAuraBeamSpell::StoreMouseDataInfo(const FHitResult& HitResult)
 {
 	if (HitResult.bBlockingHit)// 判断鼠标检测结果是否命中了可阻挡的对象（例如地面、角色、障碍物）
@@ -122,8 +212,9 @@ void UAuraBeamSpell::StoreAdditionalTargets(TArray<AActor*>& OutAdditionalTarget
 		{
 			if (!CombatInterface->GetOnDeathDelegate().IsAlreadyBound(this,&UAuraBeamSpell::AdditionalTargetDied))// 如果该目标的死亡委托中，还没有绑定本技能的“AdditionalTargetDied”函数
 			{
-				CombatInterface->GetOnDeathDelegate().AddDynamic(this,&UAuraBeamSpell::PrimaryTargetDied);// 动态绑定目标死亡事件，当目标死亡时自动调用“PrimaryTargetDied”
+				CombatInterface->GetOnDeathDelegate().AddDynamic(this,&UAuraBeamSpell::AdditionalTargetDied);// 动态绑定目标死亡事件，当目标死亡时自动调用“PrimaryTargetDied”
 			}
 		}
 	}
+	
 }

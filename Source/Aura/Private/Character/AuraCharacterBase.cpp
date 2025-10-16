@@ -48,6 +48,7 @@ void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME(AAuraCharacterBase,bIsStunned);// 告诉 Unreal：bIsStunned 这个变量需要被网络复制（从服务器同步到客户端）
 	DOREPLIFETIME(AAuraCharacterBase,bIsBurned);// 告诉 Unreal：bIsBurned 这个变量需要被网络复制（从服务器同步到客户端）
+	DOREPLIFETIME(AAuraCharacterBase,bIsBeingShocked);// 告诉 Unreal：bIsBurned 这个变量需要被网络复制（从服务器同步到客户端）
 }
 
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
@@ -197,6 +198,16 @@ FOnASCRegistered& AAuraCharacterBase::GetOnASCRegisteredDelegate()
 USkeletalMeshComponent* AAuraCharacterBase::GetWeapon_Implementation()
 {
 	return Weapon;
+}
+
+void AAuraCharacterBase::SetIsBeingShocked_Implementation(bool bInShock)
+{
+	bIsBeingShocked = bInShock;
+}
+
+bool AAuraCharacterBase::IsBeingShocked_Implementation() const
+{
+	return bIsBeingShocked;
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()

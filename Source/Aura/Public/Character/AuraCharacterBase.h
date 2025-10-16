@@ -44,6 +44,8 @@ public:
 	virtual ECharacterClass GetCharacterClass_Implementation() override;//获取角色类
 	virtual FOnASCRegistered& GetOnASCRegisteredDelegate() override;//加入 ASC 注册代表
 	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;//获取武器
+	virtual void SetIsBeingShocked_Implementation(bool bInShock) override;//设定正在震惊
+	virtual bool IsBeingShocked_Implementation() const override;//正在震惊
 	
     /* end Combat Interface*/
 	FOnASCRegistered OnAscRegistered;//在ASC注册上
@@ -60,6 +62,9 @@ public:
 
 	UPROPERTY(ReplicatedUsing=OnRep_Burned,BlueprintReadOnly)
 	bool bIsBurned = false;//被烧毁
+
+	UPROPERTY(Replicated,BlueprintReadOnly)
+	bool bIsBeingShocked = false;//在冲击环中
 
 	UFUNCTION()
 	virtual void OnRep_Stunned();//代表震惊
