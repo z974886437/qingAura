@@ -86,6 +86,10 @@ public:
 	FGameplayTag Abilities_Fire_FireBolt;//技能_火_火弩箭
 	FGameplayTag Abilities_Lightning_Electrocute;//技能_闪电_触电
 
+	FGameplayTag Abilities_Passive_HaloOfProtection;//能力_被动_保护光环
+	FGameplayTag Abilities_Passive_LifeSiphon;//能力_被动_生命虹吸
+	FGameplayTag Abilities_Passive_ManaSiphon;//能力_被动_法力虹吸
+
 	FGameplayTag Cooldown_Fire_FireBolt;//冷却_火_火弩箭
 	
 	FGameplayTag CombatSocket_Weapon;//战斗插座_武器
