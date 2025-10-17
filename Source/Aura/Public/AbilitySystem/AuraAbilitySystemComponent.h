@@ -11,6 +11,7 @@ DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);
 DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityStatusChanged,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*StatusTag*/,int32 /*AbilityLevel*/);
 DECLARE_MULTICAST_DELEGATE_FourParams(FAbilityEquipped,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*Status*/,const FGameplayTag& /*Slot*/,const FGameplayTag& /*PrevSlot*/);//装备能力
+DECLARE_MULTICAST_DELEGATE_OneParam(FDeactivatePassiveAbility,const FGameplayTag& /*AbilityTag*/);//停用被动能力
 
 /**
  * 
@@ -27,6 +28,7 @@ public:
 	FAbilitiesGiven AbilitiesGivenDelegate;//能力赋予委托
 	FAbilityStatusChanged AbilityStatusChanged;//技能状态已更改
 	FAbilityEquipped AbilityEquipped;//装备能力
+	FDeactivatePassiveAbility DeactivatePassiveAbility;//停用被动能力
 
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力。
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);//添加角色被动能力
