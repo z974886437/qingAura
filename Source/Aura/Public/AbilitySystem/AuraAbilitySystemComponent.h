@@ -60,6 +60,7 @@ public:
 	UFUNCTION(Server,Reliable)
 	void ServerEquipAbility(const FGameplayTag& AbilityTag,const FGameplayTag& Slot);//服务器装备能力
 
+	UFUNCTION(Client,Reliable)
 	void ClientEquipAbility(const FGameplayTag& AbilityTag,const FGameplayTag& Status, const FGameplayTag& Slot,const FGameplayTag& PreviousSlot);//客户端装备能力
 
 	bool GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag,FString& OutDescription,FString& OutNextLevelDescription);//按能力标签获取描述

@@ -281,6 +281,7 @@ void UAuraAttributeSet::Debuff(const FEffectProperties& Props)
 	}
 }
 
+//处理传入的 XP
 void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 {
 	const float LocalIncomingXP = GetIncomingXP();// 取出临时存放的经验值
@@ -291,7 +292,9 @@ void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 
 	//Source Character is the owner, since GA_ListenForEvents applies GE_EventBasedEffect,adding to InComingXP
 	//源字符是所有者，因为GA_ListenForEvents应用GE_EventBasedEffect，添加到 InComingXP
-	if (Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())// 确认角色实现了 PlayerInterface 才能调用接口
+
+	// 如果角色同时实现了 PlayerInterface 和 CombatInterface 才能进行经验计算
+	if (Props.SourceCharacter->Implements<UPlayerInterface>() && Props.SourceCharacter->Implements<UCombatInterface>())
 	{
 		const int32 CurrentLevel = ICombatInterface::Execute_GetPlayerLevel(Props.SourceCharacter);// 获取角色当前等级（通过 CombatInterface）
 		const int32 CurrentXP = IPlayerInterface::Execute_GetXP(Props.SourceCharacter);// 获取角色当前经验值（通过 PlayerInterface）
@@ -300,13 +303,20 @@ void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 		const int32 NumLevelUps = NewLevel - CurrentLevel;// 计算实际升级了多少级（新等级 - 旧等级）
 		if (NumLevelUps > 0)// 如果确实升级了（等级差 > 0）
 		{
-			// TODO: 目前只取当前等级的奖励，通常应该按每一级循环发放奖励
-			const int32 AttributePointsReward = IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter,CurrentLevel);
-			const int32 SpellPointsReward = IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter,CurrentLevel);
-
 			IPlayerInterface::Execute_AddToPlayerLevel(Props.SourceCharacter,NumLevelUps);// 给角色增加等级
-			IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter,AttributePointsReward);// 增加属性点奖励
-			IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter,SpellPointsReward);// 增加技能点奖励
+
+			// 初始化累计奖励点（用于处理多级升级）
+			int32 AttributePointsReward = 0;
+			int32 SpellPointsReward = 0;
+
+			for (int32 i = 0; i < NumLevelUps;i++)// 循环每一级，累加该等级应获得的属性点和技能点
+			{
+				SpellPointsReward += IPlayerInterface::Execute_GetSpellPointsReward(Props.SourceCharacter,CurrentLevel + i);// 获取当前等级+i时应获得的技能点奖励
+				AttributePointsReward += IPlayerInterface::Execute_GetAttributePointsReward(Props.SourceCharacter,CurrentLevel + i);// 获取当前等级+i时应获得的属性点奖励
+			}
+
+			IPlayerInterface::Execute_AddToAttributePoints(Props.SourceCharacter,AttributePointsReward);// 将累计的属性点奖励加到玩家身上
+			IPlayerInterface::Execute_AddToSpellPoints(Props.SourceCharacter,SpellPointsReward);// 将累计的技能点奖励加到玩家身上
 
 			// 升级时满血满蓝
 			bTopOffHealth = true;
@@ -315,7 +325,7 @@ void UAuraAttributeSet::HandleIncomingXP(const FEffectProperties& Props)
 			IPlayerInterface::Execute_LevelUp(Props.SourceCharacter);// 调用角色的升级事件（比如播放特效、UI提示）
 		}
 			
-		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 调用接口，把经验加到 SourceCharacter（通常是玩家自己）身上
+		IPlayerInterface::Execute_AddToXP(Props.SourceCharacter,LocalIncomingXP);// 最后再把本次经验正式加到玩家经验总量中
 	}
 }
 
