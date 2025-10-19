@@ -142,7 +142,7 @@ void USpellMenuWidgetController::EquipButtonPressed()
 	const FGameplayTag SelectedStatus = GetAuraASC()->GetStatusFromAbilityTag(SelectedAbility.Ability);// 获取当前选中技能的状态（比如已解锁、已装备、冷却中等）
 	if (SelectedStatus.MatchesTagExact(FAuraGameplayTags::Get().Abilities_Status_Equipped))// 如果技能状态是“已装备”
 	{
-		SelectedSlot = GetAuraASC()->GetInputTagFromAbilityTag(SelectedAbility.Ability);// 获取该技能已经装备的输入标签（比如 Q/E/R 键），并保存到 SelectedSlot
+		SelectedSlot = GetAuraASC()->GetSlotFromAbilityTag(SelectedAbility.Ability);// 获取该技能已经装备的输入标签（比如 Q/E/R 键），并保存到 SelectedSlot
 	}
 }
 

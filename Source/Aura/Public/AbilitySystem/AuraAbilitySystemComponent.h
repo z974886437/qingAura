@@ -43,7 +43,13 @@ public:
 	static FGameplayTag GetInputTagFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取输入标签
 	static FGameplayTag GetStatusFromSpec(const FGameplayAbilitySpec& AbilitySpec);//从规范中获取状态
 	FGameplayTag GetStatusFromAbilityTag(const FGameplayTag& AbilityTag);//从技能标签获取状态
-	FGameplayTag GetInputTagFromAbilityTag(const FGameplayTag& AbilityTag);//从技能标签获取输入标签
+	FGameplayTag GetSlotFromAbilityTag(const FGameplayTag& AbilityTag);//从能力标签中获取槽位
+	bool SlotIsEmpty(const FGameplayTag& Slot);//插槽为空
+	static bool AbilityHasSlot(const FGameplayAbilitySpec& Spec,const FGameplayTag& Slot);//能力有槽位
+	static bool AbilityHasAnySlot(const FGameplayAbilitySpec& Spec);//能力有任意槽位
+	FGameplayAbilitySpec* GetSpecWithSlot(const FGameplayTag& Slot);//获取带有插槽的规格
+	bool IsPassiveAbility(const FGameplayAbilitySpec& Spec) const;//是被动能力
+	static void AssignSlotToAbility(FGameplayAbilitySpec& Spec,const FGameplayTag& Slot);//为能力分配槽位
 
 	FGameplayAbilitySpec* GetSpecFromAbilityTag(const FGameplayTag& AbilityTag);//从能力标签获取规格
 	
@@ -65,7 +71,7 @@ public:
 
 	bool GetDescriptionsByAbilityTag(const FGameplayTag& AbilityTag,FString& OutDescription,FString& OutNextLevelDescription);//按能力标签获取描述
 
-	void ClearSlot(FGameplayAbilitySpec* Spec);//清除插槽
+	static void ClearSlot(FGameplayAbilitySpec* Spec);//清除插槽
 	void ClearAbilitiesOfSlot(const FGameplayTag& Slot);//插槽的清除能力
 	static bool AbilityHasSlot(FGameplayAbilitySpec* Spec,const FGameplayTag& Slot);//能力有槽位
 protected:
