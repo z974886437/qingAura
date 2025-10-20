@@ -252,6 +252,11 @@ void UAuraAbilitySystemComponent::AssignSlotToAbility(FGameplayAbilitySpec& Spec
 	Spec.DynamicAbilityTags.AddTag(Slot);	// 在技能的动态标签中添加一个新的插槽标签（表示它被分配到了某个输入或位置）
 }
 
+void UAuraAbilitySystemComponent::MulticastActivatePassiveEffect_Implementation(const FGameplayTag& AbilityTag,bool bActivate)
+{
+	ActivatePassiveEffect.Broadcast(AbilityTag,bActivate);
+}
+
 FGameplayAbilitySpec* UAuraAbilitySystemComponent::GetSpecFromAbilityTag(const FGameplayTag& AbilityTag)// 根据技能标签查找对应的 AbilitySpec，返回指针，如果没找到返回 nullptr
 {
 	FScopedAbilityListLock ActiveScopeLoc(*this);// 加锁，防止在遍历技能列表时发生并发修改（如添加/移除技能）
@@ -373,7 +378,8 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 
 					if (IsPassiveAbility(*SpecWithSlot))// 如果旧技能是被动技能，则先停用它（广播停用事件）
 					{
-						DeactivatePassiveAbility.Broadcast(GetAbilityTagFromSpec(*SpecWithSlot));
+						MulticastActivatePassiveEffect(GetAbilityTagFromSpec(*SpecWithSlot),false);//组播激活被动效应
+						DeactivatePassiveAbility.Broadcast(GetAbilityTagFromSpec(*SpecWithSlot));//停用被动能力
 					}
 
 					ClearSlot(SpecWithSlot);// 清除旧技能的插槽绑定
@@ -385,6 +391,7 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 				if (IsPassiveAbility(*AbilitySpec))// 若该技能是被动技能，则尝试立即激活
 				{
 					TryActivateAbility(AbilitySpec->Handle);//尝试立即激活
+					MulticastActivatePassiveEffect(AbilityTag,true);//组播激活被动效应
 				}
 			}
 			AssignSlotToAbility(*AbilitySpec,Slot);// 正式将该技能分配到新的插槽上（添加动态标签）

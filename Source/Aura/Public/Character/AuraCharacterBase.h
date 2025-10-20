@@ -5,16 +5,17 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
-#include "Interaction/CombatInterface.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
+#include "Interaction/CombatInterface.h"
 #include "AuraCharacterBase.generated.h"
 
+class UPassiveNiagaraComponent;
 class UDebuffNiagaraComponent;
 class UNiagaraSystem;
-class UGameplayAbility;
 class UAbilitySystemComponent;
 class UAttributeSet;
 class UGameplayEffect;
+class UGameplayAbility;
 class UAnimMontage;
 
 UCLASS(Abstract)
@@ -25,6 +26,7 @@ class AURA_API AAuraCharacterBase : public ACharacter, public IAbilitySystemInte
 public:
 	// Sets default values for this character's properties
 	AAuraCharacterBase();
+	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;//获得终生复制的道具
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;//接口函数的重写声明，用于告诉 GAS 如何获取角色或 Actor 上的 AbilitySystemComponent
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
@@ -108,13 +110,13 @@ protected:
 
 	virtual void InitAbilityActorInfo();//初始化能力Actor信息
 
-	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attirbutes")
+	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultPrimaryAttributes;//默认主要属性
 
-	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attirbutes")
+	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultSecondaryAttributes;//默认次要属性
 
-	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attirbutes")
+	UPROPERTY(BlueprintReadOnly,EditAnywhere,Category = "Attributes")
 	TSubclassOf<UGameplayEffect> DefaultVitalAttributes;//默认重要要属性
 
 	void ApplyEffectToSelf(TSubclassOf<UGameplayEffect> GameplayEffectClass,float Level) const;//应用效果到自身
@@ -166,5 +168,17 @@ private:
 	
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	TObjectPtr<UAnimMontage> HitReactMontage;//命中反应montage
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPassiveNiagaraComponent> HaloOfProtectionNiagaraComponent;//保护光环组件
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPassiveNiagaraComponent> LifeSiphonNiagaraComponent;//生命虹吸尼亚加拉组件
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UPassiveNiagaraComponent> ManaSiphonNiagaraComponent;//法力虹吸尼亚加拉组件
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USceneComponent> EffectAttachComponent;//效果附加组件
 };
 

@@ -7,6 +7,7 @@
 #include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
+#include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 #include "Aura/Aura.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,7 +19,7 @@
 AAuraCharacterBase::AAuraCharacterBase()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;// 设置角色每帧都调用 Tick() 函数。如果不需要频繁更新，可以关闭以提升性能。
+	PrimaryActorTick.bCanEverTick = true;// 设置角色每帧都调用 Tick() 函数。如果不需要频繁更新，可以关闭以提升性能。
 
 	const FAuraGameplayTags& GameplayTags = FAuraGameplayTags::Get(); // 获取全局的游戏标签（GameplayTags），以便为后续操作引用
 	
@@ -40,6 +41,21 @@ AAuraCharacterBase::AAuraCharacterBase()
 	Weapon->SetupAttachment(GetMesh(),FName("WeaponHandSocket"));//将武器组件附加到角色骨骼网格WeaponHandSocket上
 	Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision);//关闭武器碰撞检测
 
+	EffectAttachComponent = CreateDefaultSubobject<USceneComponent>("EffectAttachPoint");// 创建一个场景组件，用来作为所有特效的挂点（方便统一移动和旋转）
+	EffectAttachComponent->SetupAttachment(GetRootComponent());// 把挂点组件附加到角色（或物体）的根组件上
+	HaloOfProtectionNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("HaloOfProtectionComponent");// 创建被动特效组件：保护光环（Halo Of Protection）
+	HaloOfProtectionNiagaraComponent->SetupAttachment(EffectAttachComponent);// 把保护光环特效附加到挂点组件上
+	LifeSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("LifeSiphonNiagaraComponent");// 创建被动特效组件：生命吸取（Life Siphon）
+	LifeSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);// 把生命吸取特效附加到挂点组件上
+	ManaSiphonNiagaraComponent = CreateDefaultSubobject<UPassiveNiagaraComponent>("ManaSiphonNiagaraComponent");// 创建被动特效组件：法力吸取（Mana Siphon）
+	ManaSiphonNiagaraComponent->SetupAttachment(EffectAttachComponent);// 把法力吸取特效附加到挂点组件上
+}
+
+// 每帧调用一次，用于执行持续更新逻辑（例如动画、特效、状态检测等）
+void AAuraCharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	EffectAttachComponent->SetWorldRotation(FRotator::ZeroRotator);// 每帧将特效挂点（EffectAttachComponent）的世界旋转重置为零角度（即无旋转）
 }
 
 void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

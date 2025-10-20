@@ -6,12 +6,14 @@
 #include "AbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer& /* Asset Tags */);
-DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);
-DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer& /* Asset Tags */);//效果资产标签
+DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);//赋予的能力
+DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);//代表每种能力
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityStatusChanged,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*StatusTag*/,int32 /*AbilityLevel*/);
 DECLARE_MULTICAST_DELEGATE_FourParams(FAbilityEquipped,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*Status*/,const FGameplayTag& /*Slot*/,const FGameplayTag& /*PrevSlot*/);//装备能力
 DECLARE_MULTICAST_DELEGATE_OneParam(FDeactivatePassiveAbility,const FGameplayTag& /*AbilityTag*/);//停用被动能力
+DECLARE_MULTICAST_DELEGATE_TwoParams(FActivatePassiveEffect,const FGameplayTag& /*AbilityTag*/,bool /*bActivate*/);//激活被动效果
+
 
 /**
  * 
@@ -29,6 +31,7 @@ public:
 	FAbilityStatusChanged AbilityStatusChanged;//技能状态已更改
 	FAbilityEquipped AbilityEquipped;//装备能力
 	FDeactivatePassiveAbility DeactivatePassiveAbility;//停用被动能力
+	FActivatePassiveEffect ActivatePassiveEffect;//激活被动效果
 
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力。
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);//添加角色被动能力
@@ -50,6 +53,9 @@ public:
 	FGameplayAbilitySpec* GetSpecWithSlot(const FGameplayTag& Slot);//获取带有插槽的规格
 	bool IsPassiveAbility(const FGameplayAbilitySpec& Spec) const;//是被动能力
 	static void AssignSlotToAbility(FGameplayAbilitySpec& Spec,const FGameplayTag& Slot);//为能力分配槽位
+
+	UFUNCTION(NetMulticast,Unreliable)
+	void MulticastActivatePassiveEffect(const FGameplayTag& AbilityTag,bool bActivate);//组播激活被动效应
 
 	FGameplayAbilitySpec* GetSpecFromAbilityTag(const FGameplayTag& AbilityTag);//从能力标签获取规格
 	
