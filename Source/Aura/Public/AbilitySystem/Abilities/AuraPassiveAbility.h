@@ -16,5 +16,5 @@ class AURA_API UAuraPassiveAbility : public UAuraGameplayAbility
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;//激活能力
 
-	void ReceiveDeactivate(const FGameplayTag& AbilityTag);
+	void ReceiveDeactivate(const FGameplayTag& AbilityTag);//接收停用
 };
