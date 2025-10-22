@@ -85,6 +85,7 @@ public:
 	
 	FGameplayTag Abilities_Fire_FireBolt;//技能_火_火弩箭
 	FGameplayTag Abilities_Lightning_Electrocute;//技能_闪电_触电
+	FGameplayTag Abilities_Arcane_ArcaneShards;//技能_奥术_奥术碎片
 
 	FGameplayTag Abilities_Passive_HaloOfProtection;//能力_被动_保护光环
 	FGameplayTag Abilities_Passive_LifeSiphon;//能力_被动_生命虹吸
