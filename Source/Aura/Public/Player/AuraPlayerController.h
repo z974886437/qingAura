@@ -34,10 +34,12 @@ public:
 	void ShowDamageNumber(float DamageAmount,ACharacter* TargetCharacter,bool bBlockedHit,bool bCriticalHit);//显示伤害数字
 
 	UFUNCTION(BlueprintCallable)
-	void ShowMagicCircle();//展示魔法阵
+	void ShowMagicCircle(UMaterialInterface* DecalMaterial = nullptr);//展示魔法阵
 
 	UFUNCTION(BlueprintCallable)
 	void HideMagicCircle();//隐藏魔法阵
+
+	
 	
 protected:
 	virtual void BeginPlay() override;

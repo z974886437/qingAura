@@ -12,6 +12,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Actor/MagicCircle.h"
+#include "Components/DecalComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"//交互/敌人接口
@@ -33,13 +34,17 @@ void AAuraPlayerController::PlayerTick(float DeltaTime)
 	UpdateMagicCircleLocation();//更新魔法阵位置
 }
 
-void AAuraPlayerController::ShowMagicCircle()
+// 在玩家控制器中显示魔法阵（Decal） 
+void AAuraPlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial)
 {
-	if (!IsValid(MagicCircle))
+	if (!IsValid(MagicCircle))// 如果魔法阵对象还没有被生成（为空或无效）
 	{
-		MagicCircle = GetWorld()->SpawnActor<AMagicCircle>(MagicCircleClass);
+		MagicCircle = GetWorld()->SpawnActor<AMagicCircle>(MagicCircleClass);// 在游戏世界中生成一个魔法阵 Actor（使用预设类 MagicCircleClass）
+		if (DecalMaterial)// 如果传入了一个有效的贴花材质（Decal）
+		{
+			MagicCircle->MagicCircleDecal->SetMaterial(0,DecalMaterial);// 将该材质应用到魔法阵的 Decal 组件上（索引0表示主材质槽）
+		}
 	}
-	
 }
 
 void AAuraPlayerController::HideMagicCircle()

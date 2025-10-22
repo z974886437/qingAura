@@ -163,6 +163,24 @@ int32 AAuraCharacter::GetSpellPoints_Implementation() const
 	return AuraPlayerState->GetSpellPoints();
 }
 
+void AAuraCharacter::ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial)
+{
+	// 如果角色有控制器，并且控制器有 HUD，则初始化 UI Overlay，把必要数据传给 HUD
+	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
+	{
+		AuraPlayerController->ShowMagicCircle(DecalMaterial);
+	}
+}
+
+void AAuraCharacter::HideMagicCircle_Implementation()
+{
+	// 如果角色有控制器，并且控制器有 HUD，则初始化 UI Overlay，把必要数据传给 HUD
+	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
+	{
+		AuraPlayerController->HideMagicCircle();
+	}
+}
+
 int32 AAuraCharacter::GetPlayerLevel_Implementation()
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
