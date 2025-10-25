@@ -248,6 +248,46 @@ bool UAuraAbilitySystemLibrary::IsCriticalHit(const FGameplayEffectContextHandle
 	return false; // 如果转换失败或 Context 为空，则默认未阻挡
 }
 
+bool UAuraAbilitySystemLibrary::IsRadialDamage(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->IsRadialDamage(); 
+	}
+	return false; 
+}
+
+float UAuraAbilitySystemLibrary::GetRadialDamageInnerRadius(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetRadialDamageInnerRadius(); 
+	}
+	return 0.f; 
+}
+
+float UAuraAbilitySystemLibrary::GetRadialDamageOuterRadius(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetRadialDamageOuterRadius(); 
+	}
+	return 0.f; 
+}
+
+FVector UAuraAbilitySystemLibrary::GetRadialDamageOrigin(const FGameplayEffectContextHandle& EffectContextHandle)
+{
+	// 尝试将 EffectContextHandle 转换为自定义的 FAuraGameplayEffectContext 类型
+	if (const FAuraGameplayEffectContext* AuraEffectContext = static_cast<const FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		return AuraEffectContext->GetRadialDamageOrigin(); 
+	}
+	return FVector::ZeroVector;// 如果转换失败，返回零向量（表示没有有效的冲击力）
+}
+
 void UAuraAbilitySystemLibrary::SetIsBlockedHit(FGameplayEffectContextHandle& EffectContextHandle, bool bInIsBlockedHit)
 {
 	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
@@ -333,6 +373,42 @@ void UAuraAbilitySystemLibrary::SetKnockbackForce(FGameplayEffectContextHandle& 
 	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
 	{
 		AuraEffectContext->SetKnockbackForce(InForce); // 如果转换成功，设置死亡冲击力（Impulse）
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetIsRadialDamage(FGameplayEffectContextHandle& EffectContextHandle,bool bInIsRadialDamage)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetIsRadialDamage(bInIsRadialDamage);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetRadialDamageInnerRadius(FGameplayEffectContextHandle& EffectContextHandle,float InInnerRadius)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetRadialDamageInnerRadius(InInnerRadius);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetRadialDamageOuterRadius(FGameplayEffectContextHandle& EffectContextHandle,float InOuterRadius)
+{
+	// 从通用的 Context 中拿到我们自定义的 Aura 版本（FAuraGameplayEffectContext）
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetRadialDamageOuterRadius(InOuterRadius);
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetRadialDamageOrigin(FGameplayEffectContextHandle& EffectContextHandle,const FVector& InOrigin)
+{
+	// 尝试将 EffectContextHandle 转换为自定义的 FAuraGameplayEffectContext 类型
+	if (FAuraGameplayEffectContext* AuraEffectContext = static_cast<FAuraGameplayEffectContext*>(EffectContextHandle.Get()))
+	{
+		AuraEffectContext->SetRadialDamageOrigin(InOrigin);
 	}
 }
 
@@ -425,6 +501,11 @@ FGameplayEffectContextHandle UAuraAbilitySystemLibrary::ApplyDamageEffect(const 
 	EffectContextHandle.AddSourceObject(SourceAvatarActor);// 把施法者对象加入上下文，便于后续追溯伤害来源
 	SetDeathImpulse(EffectContextHandle, DamageEffectParams.DeathImpulse);// 设置死亡冲击力（Death Impulse）到效果上下文
 	SetKnockbackForce(EffectContextHandle,DamageEffectParams.KnockbackForce);// 设置击退力（KnockbackForce）到效果上下文
+
+	SetIsRadialDamage(EffectContextHandle,DamageEffectParams.bIsRadialDamage);// 设置是否为辐射伤害
+	SetRadialDamageInnerRadius(EffectContextHandle,DamageEffectParams.RadialDamageInnerRadius);// 设置辐射伤害的内半径
+	SetRadialDamageOuterRadius(EffectContextHandle,DamageEffectParams.RadialDamageOuterRadius);// 设置辐射伤害的外半径
+	SetRadialDamageOrigin(EffectContextHandle,DamageEffectParams.RadialDamageOrigin);// 设置辐射伤害的源位置
 	
 	// 构建一个 GameplayEffect 规格（Spec），包含效果类、技能等级和上下文
 	const FGameplayEffectSpecHandle SpecHandle = DamageEffectParams.SourceAbilitySystemComponent->MakeOutgoingSpec(

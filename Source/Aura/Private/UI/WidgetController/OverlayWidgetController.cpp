@@ -18,6 +18,7 @@ void UOverlayWidgetController::BroadcastInitialValues()
 	OnMaxManaChanged.Broadcast(GetAuraAS()->GetMaxMana());
 }
 
+//将回调绑定到依赖项
 void UOverlayWidgetController::BindCallbacksToDependencies()
 {
 	GetAuraPS()->OnXPChangedDelegate.AddUObject(this,&UOverlayWidgetController::OnXPChanged);// 把当前控制器的 OnXPChanged 绑定到经验值变化事件 → XP 一更新就能自动调用 UI 更新函数
