@@ -70,9 +70,26 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 		{
 			RepBits |= 1 << 15;
 		}
+		if (bIsRadialDamage)
+		{
+			RepBits |= 1 << 16;// 如果是辐射伤害，设置第16位为1
+
+			if (RadialDamageInnerRadius > 0.f)
+			{
+				RepBits |= 1 << 17;// 如果有内半径，设置第17位为1
+			}
+			if (RadialDamageOuterRadius > 0.f)
+			{
+				RepBits |= 1 << 18;// 如果有外半径，设置第18位为1
+			}
+			if (!RadialDamageOrigin.IsZero())
+			{
+				RepBits |= 1 << 19;// 如果辐射伤害的原点不为零，设置第19位为1
+			}
+		}
 	}
 	
-	Ar.SerializeBits(&RepBits, 15);// 先读取/写入 9 位二进制数据到 RepBits（对应之前保存的9个标志位）这里 9 表示最多用到 0~8 位（也就是你定义的9个属性）
+	Ar.SerializeBits(&RepBits, 19);// 先读取/写入 9 位二进制数据到 RepBits（对应之前保存的9个标志位）这里 9 表示最多用到 0~8 位（也就是你定义的9个属性）
 
 	if (RepBits & (1 << 0))
 	{
@@ -157,13 +174,31 @@ bool FAuraGameplayEffectContext::NetSerialize(FArchive& Ar, UPackageMap* Map, bo
 	{
 		KnockbackForce.NetSerialize(Ar, Map, bOutSuccess);
 	}
+	if (RepBits & (1 << 16))// 如果第16位为1，序列化辐射伤害的相关信息
+	{
+		Ar << bIsRadialDamage;
+		
+		if (RepBits & (1 << 17))
+		{
+			Ar << RadialDamageInnerRadius;
+		}
+		if (RepBits & (1 << 18))
+		{
+			Ar << RadialDamageOuterRadius;
+		}
+		if (RepBits & (1 << 19))
+		{
+			RadialDamageOrigin.NetSerialize(Ar,Map,bOutSuccess);
+		}
+	}
+	
 
-	if (Ar.IsLoading())
+	if (Ar.IsLoading())// 如果正在加载数据（反序列化），进行初始化
 	{
 		AddInstigator(Instigator.Get(), EffectCauser.Get()); // 只是为了初始化 InstigatorAbilitySystemComponent
 	}	
 	
-	bOutSuccess = true;
+	bOutSuccess = true;// 标记序列化成功
 	
-	return true;
+	return true;// 返回成功
 }

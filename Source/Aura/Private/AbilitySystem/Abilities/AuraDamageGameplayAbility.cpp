@@ -46,6 +46,13 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 		Params.DeathImpulse = ToTarget * DeathImpulseMagnitude;// 设置死亡冲量，基于方向向量和冲量大小
 		Params.KnockbackForce = ToTarget * KnockbackForceMagnitude;// 设置击退力，基于方向向量和击退力大小
 	}
+	if (bIsRadialDamage)
+	{
+		Params.bIsRadialDamage = bIsRadialDamage;
+		Params.RadialDamageOrigin = RadialDamageOrigin;
+		Params.RadialDamageInnerRadius = RadialDamageInnerRadius;
+		Params.RadialDamageOuterRadius = RadialDamageOuterRadius;
+	}
 	return Params;// 返回最终填充好的参数
 }
 

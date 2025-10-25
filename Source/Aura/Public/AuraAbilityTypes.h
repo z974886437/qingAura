@@ -58,6 +58,18 @@ struct FDamageEffectParams
 
 	UPROPERTY(BlueprintReadWrite)
 	FVector KnockbackForce = FVector::ZeroVector;//击退力
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsRadialDamage = false;//是径向损伤
+
+	UPROPERTY(BlueprintReadWrite)
+	float RadialDamageInnerRadius = 0.f;//径向损伤内半径
+
+	UPROPERTY(BlueprintReadWrite)
+	float RadialDamageOuterRadius = 0.f;//径向损伤外半径
+
+	UPROPERTY(BlueprintReadWrite)
+	FVector RadialDamageOrigin = FVector::ZeroVector;//径向损伤起源
 };
 
 USTRUCT(BlueprintType)
@@ -76,6 +88,10 @@ public:
 	TSharedPtr<FGameplayTag> GetDamageType() const { return DamageType;}//获取伤害类型
 	FVector GetDeathImpulse() const { return DeathImpulse; }//获取死亡冲击
 	FVector GetKnockbackForce() const { return KnockbackForce; }//获得击退力
+	bool IsRadialDamage() const { return bIsRadialDamage; }//是径向损伤
+	float GetRadialDamageInnerRadius() const { return RadialDamageInnerRadius; };//获取径向损伤内半径
+	float GetRadialDamageOuterRadius() const { return RadialDamageOuterRadius; }//得到径向损伤外半径
+	FVector GetRadialDamageOrigin() const { return RadialDamageOrigin; }//获取径向损伤原点
 
 	void SetIsCriticalHit(bool bInIsCriticalHit) { bIsCriticalHit = bInIsCriticalHit; }// 设置当前命中是否为暴击
 	void SetIsBlockedHit(bool bInIsBlockedHit ) { bIsBlockedHit = bInIsBlockedHit;}// 设置当前命中是否被格挡
@@ -86,6 +102,11 @@ public:
 	void SetDamageType(TSharedPtr<FGameplayTag> InDamageType) { DamageType = InDamageType; }
 	void SetDeathImpulse(const FVector& InImpulse) { DeathImpulse = InImpulse; }//设置死亡冲击
 	void SetKnockbackForce(const FVector& InForce) { KnockbackForce = InForce; }//设置击退力
+	void SetIsRadialDamage(bool bInIsRadialDamage) { bIsRadialDamage = bInIsRadialDamage; }//设定为径向损伤
+	void SetRadialDamageInnerRadius(float InRadialDamageInnerRadius) { RadialDamageInnerRadius = InRadialDamageInnerRadius;}//设置径向损伤内半径
+	void SetRadialDamageOuterRadius(float InRadialDamageOuterRadius) { RadialDamageOuterRadius = InRadialDamageOuterRadius;}//设置径向损伤外半径
+	void SetRadialDamageOrigin(const FVector& InRadialDamageOrigin) { RadialDamageOrigin = InRadialDamageOrigin; }//设置径向损伤原点
+	
 	
 	
 	/* returns the actual struct used for serialization, subclasses must override this! 返回用于序列化的实际结构体，子类必须覆盖它！*/
@@ -137,12 +158,25 @@ protected:
 
 	UPROPERTY()
 	FVector KnockbackForce = FVector::ZeroVector;//击退力
+
+	UPROPERTY()
+	bool bIsRadialDamage = false;//是径向损伤
+
+	UPROPERTY()
+	float RadialDamageInnerRadius = 0.f;//径向损伤内半径
+
+	UPROPERTY()
+	float RadialDamageOuterRadius = 0.f;//径向损伤外半径
+
+	UPROPERTY()
+	FVector RadialDamageOrigin = FVector::ZeroVector;//径向损伤起源
 };
 
+// 特化 TStructOpsTypeTraits 结构体模板，针对 FAuraGameplayEffectContext 类型
 template<>
 struct TStructOpsTypeTraits<FAuraGameplayEffectContext> : public TStructOpsTypeTraitsBase2<FAuraGameplayEffectContext>
 {
-	enum
+	enum// 枚举定义了该结构体的一些特殊行为
 	{
 		WithNetSerializer = true,// 告诉引擎：这个结构体自己实现了 NetSerialize
 		WithCopy = true// 告诉引擎：这个结构体支持复制（可拷贝）
