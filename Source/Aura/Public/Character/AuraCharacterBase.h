@@ -28,6 +28,7 @@ public:
 	AAuraCharacterBase();
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;//获得终生复制的道具
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;//受到伤害
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;//接口函数的重写声明，用于告诉 GAS 如何获取角色或 Actor 上的 AbilitySystemComponent
 	UAttributeSet* GetAttributeSet() const {return AttributeSet;}//用于在外部获取角色或 Actor 上挂载的属性集（AttributeSet），即 GAS 系统中的属性数据容器。
 
@@ -48,10 +49,12 @@ public:
 	virtual USkeletalMeshComponent* GetWeapon_Implementation() override;//获取武器
 	virtual void SetIsBeingShocked_Implementation(bool bInShock) override;//设定正在震惊
 	virtual bool IsBeingShocked_Implementation() const override;//正在震惊
+	virtual FOnDamageSignature& GetOnDamageSignature() override;//得到损坏签名
 	
     /* end Combat Interface*/
 	FOnASCRegistered OnAscRegistered;//在ASC注册上
 	FOnDeathSignature OnDeathDelegate;//死亡时委托
+	FOnDamageSignature OnDamageDelegate;//损害代表
 
 	UFUNCTION(NetMulticast,Reliable)//服务器调用，所有客户端都执行，并且保证消息送达。
 	virtual void MulticastHandleDeath(const FVector& DeathImpulse);//多播句柄死亡

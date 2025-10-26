@@ -67,6 +67,14 @@ void AAuraCharacterBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(AAuraCharacterBase,bIsBeingShocked);// 告诉 Unreal：bIsBurned 这个变量需要被网络复制（从服务器同步到客户端）
 }
 
+// 覆盖基类的 TakeDamage 函数，用于处理角色的伤害计算和事件广播
+float AAuraCharacterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,class AController* EventInstigator, AActor* DamageCauser)
+{
+	const float DamageTaken = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser); // 调用父类的 TakeDamage 方法，获取实际承受的伤害值
+	OnDamageDelegate.Broadcast(DamageTaken); // 广播伤害事件，通知其他系统（如 UI 或技能系统）
+	return DamageTaken;// 返回实际承受的伤害值
+}
+
 UAbilitySystemComponent* AAuraCharacterBase::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
@@ -224,6 +232,11 @@ void AAuraCharacterBase::SetIsBeingShocked_Implementation(bool bInShock)
 bool AAuraCharacterBase::IsBeingShocked_Implementation() const
 {
 	return bIsBeingShocked;
+}
+
+FOnDamageSignature& AAuraCharacterBase::GetOnDamageSignature()
+{
+	return OnDamageDelegate; 
 }
 
 void AAuraCharacterBase::InitAbilityActorInfo()

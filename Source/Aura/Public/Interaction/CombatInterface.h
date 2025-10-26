@@ -14,6 +14,8 @@ class UAnimMontage;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnASCRegistered, UAbilitySystemComponent*)//ASC 注册的 F
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathSignature,AActor*,DeadActor);//死亡签名上的 F
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDamageSignature, float /*DamageAmount*/);//F 损坏签名
+
 
 USTRUCT(BlueprintType)
 struct FTaggedMontage
@@ -63,6 +65,7 @@ public:
 
 	virtual void Die(const FVector& DeathImpulse) = 0;//死亡
 	virtual FOnDeathSignature& GetOnDeathDelegate() = 0;//获取死亡代表
+	virtual FOnDamageSignature& GetOnDamageSignature() = 0;//得到损坏签名
 
 	UFUNCTION(BlueprintNativeEvent,BlueprintCallable)
 	bool IsDead() const;//死亡

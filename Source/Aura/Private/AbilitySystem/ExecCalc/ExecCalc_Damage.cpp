@@ -10,6 +10,7 @@
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Data/CharacterClassInfo.h"
 #include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // 定义一个结构体，用来集中管理“伤害计算”过程中需要捕获的属性
 struct AuraDamageStatics
@@ -161,6 +162,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	}
 
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();// 获取当前正在执行的 GameplayEffectSpec（包含技能等级、标签、SetByCaller 参数等）
+	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();// 从 GameplayEffectSpec 中获取 GameplayEffectContext 的句柄
 
 	const FGameplayTagContainer* SoureTags = Spec.CapturedSourceTags.GetAggregatedTags();// 从 Spec 中获取已经捕获的 Source 和 Target 的 GameplayTags（执行计算时引擎会提供）
 	const FGameplayTagContainer* Targetags = Spec.CapturedTargetTags.GetAggregatedTags();
@@ -190,6 +192,38 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		Resistance = FMath::Clamp(Resistance,0.f,100.f);// 抗性限制在 0-100 范围内，避免出现负数或超过 100% 的情况
 
 		DamageTypeValue *= (100.f - Resistance ) / 100.f;// 按公式计算最终伤害：伤害值 * (1 - 抗性百分比)	
+
+		if (UAuraAbilitySystemLibrary::IsRadialDamage(EffectContextHandle))// 如果EffectContextHandle中包含辐射伤害信息
+		{
+			//1. override TakeDamage in AuraCharacterBase--覆盖 AuraCharacterBase 中的 TakeDamage
+			//2. create delegate OnDamageDelegate, broadcast damage received in TakeDamage--创建委托OnDamageDelegate，广播TakeDamage中收到的伤害
+			//3. Bind lambda to OnDamageDelegate on the Victim here.--在此处将 lambda 绑定到受害者的 OnDamageDelegate。
+			//4. Call UGameplayStatics::ApplyRadialDamageWithFalloff to cause damage (this will result in Take Damage being called
+			//      on the Victim,which will then broadcast OnDamageDelegate)--
+			//   调用 UGameplayStatics::ApplyRadialDamageWithFalloff 来造成伤害（这将导致对受害者调用 Take Damage，然后广播 OnDamageDelegate）
+			//5. In Lambda, set DamageTypeValue to the damage received from the broadcast--在Lambda中，将DamageTypeValue设置为从广播中收到的损坏
+			
+			if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(TargetAvatar))// 将目标角色转换为 ICombatInterface 类型
+			{
+				CombatInterface->GetOnDamageSignature().AddLambda([&](float DamageAmount) // 将 lambda 绑定到 OnDamageSignature 委托
+				{
+					DamageTypeValue = DamageAmount; // Lambda 内部，将收到的伤害值赋给 DamageTypeValue
+				});
+			}
+			UGameplayStatics::ApplyRadialDamageWithFalloff( // 调用 UGameplayStatics::ApplyRadialDamageWithFalloff 造成辐射伤害
+				TargetAvatar,// 目标角色
+				DamageTypeValue,// 伤害值（从委托广播中得到）
+				0.f,// 最小伤害（此处为0）
+				UAuraAbilitySystemLibrary::GetRadialDamageOrigin(EffectContextHandle), // 辐射伤害的起始位置
+				UAuraAbilitySystemLibrary::GetRadialDamageInnerRadius(EffectContextHandle),// 辐射伤害的内半径
+				UAuraAbilitySystemLibrary::GetRadialDamageOuterRadius(EffectContextHandle),// 辐射伤害的外半径
+				1.f,// 伤害衰减比例
+				UDamageType::StaticClass(),// 伤害类型（默认伤害类型）
+				TArray<AActor*>(),// 没有指定伤害目标（可传入受影响的其他角色）
+				SourceAvatar,// 伤害来源（通常为攻击者）
+				nullptr // 不使用额外参数
+				);
+		}
 		
 		Damage += DamageTypeValue; // 把该类型的伤害值累加到总伤害中
 	}
@@ -200,8 +234,7 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().BlockChanceDef,EvaluationParameters,TargetBlockChance);
 	TargetBlockChance = FMath::Max<float>(TargetBlockChance,0.f);// 防止格挡率为负数，最小限制为 0
 	const bool bBlocked = FMath::RandRange(1,100) < TargetBlockChance;// 随机生成 1~100 的整数，判断是否小于格挡几率（TargetBlockChance），如果是则触发格挡
-
-	FGameplayEffectContextHandle EffectContextHandle = Spec.GetContext();// 从 GameplayEffectSpec 中获取 GameplayEffectContext 的句柄
+	
 	
 	// 3. 设置格挡状态到上下文如果 bBlocked = true，就在 Context 里写入“格挡命中”标记 后续任何地方都能通过 EffectContextHandle 查询这次攻击是否格挡
 	UAuraAbilitySystemLibrary::SetIsBlockedHit(EffectContextHandle,bBlocked);
