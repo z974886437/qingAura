@@ -21,7 +21,7 @@ void UAuraDamageGameplayAbility::CauseDamage(AActor* TargetActor)
 }
 
 // 从技能类的默认值生成伤害效果参数，返回 FDamageEffectParams 结构体
-FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor) const
+FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor,FVector InRadialDamageOrigin) const
 {
 	FDamageEffectParams Params;// 定义一个伤害效果参数结构体
 	Params.WorldContextObject = GetAvatarActorFromActorInfo();// 设置上下文对象，这里是技能的施法者（AvatarActor）
@@ -49,7 +49,7 @@ FDamageEffectParams UAuraDamageGameplayAbility::MakeDamageEffectParamsFromClassD
 	if (bIsRadialDamage)
 	{
 		Params.bIsRadialDamage = bIsRadialDamage;
-		Params.RadialDamageOrigin = RadialDamageOrigin;
+		Params.RadialDamageOrigin = InRadialDamageOrigin;
 		Params.RadialDamageInnerRadius = RadialDamageInnerRadius;
 		Params.RadialDamageOuterRadius = RadialDamageOuterRadius;
 	}

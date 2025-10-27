@@ -21,7 +21,7 @@ public:
 	void CauseDamage(AActor* TargetActor);//造成损害
 
 	UFUNCTION(BlueprintPure)
-	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor = nullptr) const;//从 classdefaults 创建伤害效果参数
+	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor = nullptr,FVector InRadialDamageOrigin = FVector::ZeroVector) const;//从 classdefaults 创建伤害效果参数
 
 	UFUNCTION(BlueprintPure)
 	float GetDamageAtLevel() const;//在关卡时受到伤害
@@ -60,14 +60,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	bool bIsRadialDamage = false;//是径向损伤
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Damage")
 	float RadialDamageInnerRadius = 0.f;//径向损伤内半径
 
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
+	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category = "Damage")
 	float RadialDamageOuterRadius = 0.f;//径向损伤外半径
-
-	UPROPERTY(EditDefaultsOnly, Category = "Damage")
-	FVector RadialDamageOrigin = FVector::ZeroVector;//径向损伤起源
 
 	UFUNCTION(BlueprintPure)
 	FTaggedMontage GetRandomTaggedMontageFromArray(const TArray<FTaggedMontage>& TaggedMontages) const;//从数组中获取随机标记的蒙太奇

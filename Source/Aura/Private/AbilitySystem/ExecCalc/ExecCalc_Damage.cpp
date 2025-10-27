@@ -185,6 +185,10 @@ void UExecCalc_Damage::Execute_Implementation(const FGameplayEffectCustomExecuti
 		const FGameplayEffectAttributeCaptureDefinition CaptureDef = TagsToCaptureDefs[ResistanceTag]; // 根据抗性标签找到对应的捕获定义（告诉引擎抓取谁的什么属性）
 
 		float DamageTypeValue = Spec.GetSetByCallerMagnitude(Pair.Key,false);// 从技能规格（Spec）里读取该伤害类型的数值，比如火球术可能带有 FireDamage=50
+		if (DamageTypeValue <= 0)// 如果伤害类型值小于等于 0，跳过当前循环
+		{
+			continue;
+		}
 
 		float Resistance = 0.f;
 		// 尝试从目标角色的属性集中抓取对应的抗性数值（例如 FireResistance = 30）
