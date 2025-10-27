@@ -12,6 +12,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Actor/MagicCircle.h"
+#include "Aura/Aura.h"
 #include "Components/DecalComponent.h"
 #include "Components/SplineComponent.h"
 #include "Input/AuraInputComponent.h"
@@ -113,8 +114,10 @@ void AAuraPlayerController::CursorTrace()
 		return;// 提前返回，不执行后续鼠标检测
 	}
 	
+	const ECollisionChannel TraceChannel = IsValid(MagicCircle) ? ECC_ExcludePlayers : ECC_Visibility;// 如果 MagicCircle 有效，则忽略玩家的碰撞；否则，进行视线碰撞检测
+	
 	//FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
-	GetHitResultUnderCursor(ECC_Visibility,false,CursorHit);//用于进行鼠标位置下的光线检测
+	GetHitResultUnderCursor(TraceChannel,false,CursorHit);//用于进行鼠标位置下的光线检测
 	if (!CursorHit.bBlockingHit) return;//没有命中任何阻挡物体，那么就直接退出当前函数
 
 	// 将上一命中的物体和当前命中的物体保存到变量中
