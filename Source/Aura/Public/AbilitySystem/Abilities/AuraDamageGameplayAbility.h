@@ -21,7 +21,16 @@ public:
 	void CauseDamage(AActor* TargetActor);//造成损害
 
 	UFUNCTION(BlueprintPure)
-	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(AActor* TargetActor = nullptr,FVector InRadialDamageOrigin = FVector::ZeroVector) const;//从 classdefaults 创建伤害效果参数
+	FDamageEffectParams MakeDamageEffectParamsFromClassDefaults(
+		AActor* TargetActor = nullptr,
+		FVector InRadialDamageOrigin = FVector::ZeroVector,//径向损伤起源
+		bool bOverrideKnockbackDirection = false,//b 覆盖击退方向
+		FVector KnockbackDirectionOverride = FVector::ZeroVector,//击退方向覆盖
+		bool bOverrideDeathImpulse = false,//b 克服死亡冲动
+		FVector DeathImpulseDirectionOverride = FVector::ZeroVector,//死亡冲动方向超控
+		bool bOverridePitch = false,//b 覆盖音高
+		float PitchOverride = 0.f//俯仰倍率
+		) const;//从 classdefaults 创建伤害效果参数
 
 	UFUNCTION(BlueprintPure)
 	float GetDamageAtLevel() const;//在关卡时受到伤害
