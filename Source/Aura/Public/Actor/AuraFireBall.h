@@ -16,10 +16,14 @@ class AURA_API AAuraFireBall : public AAuraProjectile
 
 public:
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartOutgoingTimeline();//开始传出时间表
 
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<AActor> ReturnToActor;//返回演员
+	
 protected:
 	virtual void BeginPlay() override;
-
 	virtual void OnSphereOverlap(
 		UPrimitiveComponent* OverlappedComponent,// [参数1] 当前触发重叠事件的组件（比如这个球体碰撞组件本身）
 		AActor* OtherActor,// [参数2] 进入碰撞区域的另一个 Actor（例如玩家角色、NPC、物品等）
