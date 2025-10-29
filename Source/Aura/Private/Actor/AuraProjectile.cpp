@@ -84,12 +84,7 @@ void AAuraProjectile::Destroyed()
 void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// ---------- 安全防御性检查 ----------
-	if (DamageEffectParams.SourceAbilitySystemComponent == nullptr) return;
-	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();// 获取施法者的 AvatarActor（通常是角色对象）
-
-	if (SourceAvatarActor == OtherActor) return;// 检查伤害效果是否有效，或者施加者是否是自己，如果是自己，直接返回（避免伤害自己）
-	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor,OtherActor)) return;// 检查施加者与目标是否是敌对关系，如果不是敌人（即友方），则不处理伤害
+	if (!IsValidOverlap(OtherActor)) return;
 	if (!bHit) OnHit();// 如果投射物未命中过，调用 OnHit 处理碰撞音效和特效等
 	
 	if (HasAuthority())	// 确保只有在服务器端才会处理伤害与销毁逻辑（避免客户端与服务器不同步）
@@ -118,6 +113,18 @@ void AAuraProjectile::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, 
 		Destroy();// 销毁当前Actor（投射物）
 	}
 	else bHit = true;// 如果是客户端，直接标记为已命中，防止重复触发
+}
+
+bool AAuraProjectile::IsValidOverlap(AActor* OtherActor)
+{
+	// ---------- 安全防御性检查 ----------
+	if (DamageEffectParams.SourceAbilitySystemComponent == nullptr) return false;// 检查施法者的 AbilitySystemComponent 是否为 nullptr，若为空，则返回 false，表示无效重叠
+	AActor* SourceAvatarActor = DamageEffectParams.SourceAbilitySystemComponent->GetAvatarActor();// 获取施法者的 AvatarActor（通常是角色对象）
+
+	if (SourceAvatarActor == OtherActor) return false;// 检查伤害效果是否有效，或者施加者是否是自己，如果是自己，直接返回（避免伤害自己）
+	if (!UAuraAbilitySystemLibrary::IsNotFriend(SourceAvatarActor,OtherActor)) return false;// 检查施加者与目标是否是敌对关系，如果不是敌人（即友方），则不处理伤害
+
+	return true;
 }
 
 

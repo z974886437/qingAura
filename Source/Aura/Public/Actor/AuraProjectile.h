@@ -49,14 +49,14 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<USphereComponent> Sphere;//球体
-	
+
+	bool IsValidOverlap(AActor* OtherActor);//是有效的重叠
+	bool bHit = false;
 private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float LifeSpan = 15.f;//寿命
-
-	bool bHit = false;
-
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UNiagaraSystem> ImpactEffect;//冲击效果
 
