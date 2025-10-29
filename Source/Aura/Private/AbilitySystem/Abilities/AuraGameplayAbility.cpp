@@ -24,9 +24,10 @@ FString UAuraGameplayAbility::GetNextLevelDescription(int32 Level)
 		Level); // 要显示的技能等级
 }
 
+//获取锁定描述
 FString UAuraGameplayAbility::GetLockedDescription(int32 Level)
 {
-	return FString::Printf(TEXT("<Default>Spell Locked Until Level: %d</>"),Level);
+	return FString::Printf(TEXT("<Default>法术锁定直至等级: %d</>"),Level);
 }
 
 // 获取技能的魔力消耗（根据技能等级计算）
