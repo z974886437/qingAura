@@ -36,5 +36,5 @@ protected:
 		const FHitResult& SweepResult// [参数6] 如果是 Sweep 触发，这里有命中信息（位置、法线等）
 		) override;//球体覆盖
 
-	
+	virtual void OnHit() override; 
 };

@@ -102,9 +102,10 @@ TArray<AAuraFireBall*> UAuraFireBlast::SpawnFireBalls()
 
 		FireBall->DamageEffectParams = MakeDamageEffectParamsFromClassDefaults();// 设置火球的伤害效果参数
 		FireBall->ReturnToActor = GetAvatarActorFromActorInfo();// 设置返回的目标角色（施法者）
+		FireBall->SetOwner(GetAvatarActorFromActorInfo());// 设置火球的拥有者为施法者
 
-		FireBall->ExplosionDamageParams = MakeDamageEffectParamsFromClassDefaults();
-		FireBall->SetOwner(GetAvatarActorFromActorInfo());
+		FireBall->ExplosionDamageParams = MakeDamageEffectParamsFromClassDefaults();// 设置火球的爆炸伤害参数
+		FireBall->SetOwner(GetAvatarActorFromActorInfo());// 设置火球的拥有者为施法者
 
 		FireBalls.Add(FireBall);// 将生成的火球添加到火球数组中
 

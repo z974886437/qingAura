@@ -113,6 +113,9 @@ public:
 	FGameplayTag Player_Block_InputHeld;//玩家_阻止_输入保持
 	FGameplayTag Player_Block_InputReleased;//玩家_阻止_输入释放
 	FGameplayTag Player_Block_CursorTrace;//玩家_阻止_光标跟踪
+
+	FGameplayTag GameplayCue_FireBlast;//游戏提示_火焰爆炸
+	
 	
 private:
 	static FAuraGameplayTags GameplayTags;//游戏标签

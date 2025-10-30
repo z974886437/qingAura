@@ -5,7 +5,10 @@
 
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AuraGameplayTags.h"
+#include "Components/AudioComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
+#include "GameplayCueManager.h"
 
 void AAuraFireBall::BeginPlay()
 {
@@ -30,4 +33,24 @@ void AAuraFireBall::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AA
 			UAuraAbilitySystemLibrary::ApplyDamageEffect(DamageEffectParams);// 应用伤害效果，传入 DamageEffectParams
 		}
 	}
+}
+
+void AAuraFireBall::OnHit()
+{
+	if (GetOwner())// 判断投射物的拥有者是否存在
+	{
+		FGameplayCueParameters CueParams;// 创建一个游戏效果参数对象
+		CueParams.Location = GetActorLocation(); // 设置触发效果的位置为火球当前的位置
+
+		// 执行游戏效果，触发火爆的视觉效果或其他关联效果
+		UGameplayCueManager::ExecuteGameplayCue_NonReplicated(GetOwner(),FAuraGameplayTags::Get().GameplayCue_FireBlast,CueParams);
+	}
+	
+	if (LoopingSoundComponent)// 如果投射物有循环播放的飞行音效（例如火球呼啸声）
+	{
+		LoopingSoundComponent->Stop();// 如果存在循环音效组件，则停止该循环音效
+		LoopingSoundComponent->DestroyComponent();// 销毁该音效组件，释放资源
+	}
+
+	bHit = true;// 标记投射物已经命中
 }
