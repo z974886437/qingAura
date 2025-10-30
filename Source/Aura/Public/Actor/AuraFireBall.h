@@ -21,6 +21,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<AActor> ReturnToActor;//返回演员
+
+	UPROPERTY(BlueprintReadWrite)
+	FDamageEffectParams ExplosionDamageParams;//爆炸伤害参数
 	
 protected:
 	virtual void BeginPlay() override;
@@ -32,4 +35,6 @@ protected:
 		bool bFromSweep, // [参数5] 是否是通过 Sweep（移动检测）触发的重叠
 		const FHitResult& SweepResult// [参数6] 如果是 Sweep 触发，这里有命中信息（位置、法线等）
 		) override;//球体覆盖
+
+	
 };

@@ -166,4 +166,19 @@ public:
 	static TArray<FVector> EvenlyRotatedVectors(const FVector& Forward,const FVector& Axis,float Spread,int32 NumVectors);//均匀旋转的矢量
 	
 	static int32 GetXPRewardForClassAndLevel(const UObject* WorldContextObject,ECharacterClass CharacterClass,int32 CharacterLevel);//获得职业和等级的 XP 奖励
+
+	/*
+	 * Damage Effect Params
+	 */
+	UFUNCTION(BlueprintCallable,Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetIsRadialDamageEffectParams(UPARAM(ref) FDamageEffectParams& DamageEffectParams,bool bIsRadial,float InnerRadius,float OuterRadius,FVector Origin);//设置为径向损伤效果参数
+
+	UFUNCTION(BlueprintCallable,Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetKnockbackDirection(UPARAM(ref) FDamageEffectParams& DamageEffectParams,FVector KnockbackDirection,float Magnitude = 0.f);//设置击退方向
+
+	UFUNCTION(BlueprintCallable,Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetDeathImpulseDirection(UPARAM(ref) FDamageEffectParams& DamageEffectParams,FVector ImpulseDirection,float Magnitude = 0.f);//设定死亡冲动方向
+
+	UFUNCTION(BlueprintCallable,Category = "AuraAbilitySystemLibrary|DamageEffect")
+	static void SetTargetEffectParamsASC(UPARAM(ref) FDamageEffectParams& DamageEffectParams,UAbilitySystemComponent* InASC);//设置效果参数 ASC
 };

@@ -138,6 +138,48 @@ int32 UAuraAbilitySystemLibrary::GetXPRewardForClassAndLevel(const UObject* Worl
 	
 }
 
+// 设置是否为辐射伤害的参数
+void UAuraAbilitySystemLibrary::SetIsRadialDamageEffectParams(FDamageEffectParams& DamageEffectParams, bool bIsRadial,float InnerRadius,float OuterRadius,FVector Origin)
+{
+	DamageEffectParams.bIsRadialDamage = bIsRadial;// 设置是否为辐射伤害
+	DamageEffectParams.RadialDamageInnerRadius = InnerRadius;// 设置辐射伤害的内半径
+	DamageEffectParams.RadialDamageOuterRadius = OuterRadius;// 设置辐射伤害的外半径
+	DamageEffectParams.RadialDamageOrigin = Origin;// 设置辐射伤害的起始位置
+}
+
+// 设置击退方向
+void UAuraAbilitySystemLibrary::SetKnockbackDirection(FDamageEffectParams& DamageEffectParams,FVector KnockbackDirection,float Magnitude)
+{
+	KnockbackDirection.Normalize();// 将击退方向向量归一化，以确保它的大小为 1
+	if (Magnitude == 0.f)
+	{
+		DamageEffectParams.KnockbackForce = KnockbackDirection * DamageEffectParams.KnockbackForceMagnitude;// 根据击退方向和力度设置最终的击退力
+	}
+	else
+	{
+		DamageEffectParams.KnockbackForce = KnockbackDirection * Magnitude;// 根据击退方向和力度设置最终的击退力
+	}
+}
+
+// 设置死亡冲击方向
+void UAuraAbilitySystemLibrary::SetDeathImpulseDirection(FDamageEffectParams& DamageEffectParams,FVector ImpulseDirection,float Magnitude)
+{
+	ImpulseDirection.Normalize();// 将冲击方向向量归一化，以确保它的大小为 1
+	if (Magnitude == 0.f)
+	{
+		DamageEffectParams.DeathImpulse = ImpulseDirection * DamageEffectParams.DeathImpulseMagnitude;// 根据冲击方向和力度设置死亡冲击的力
+	}
+	else
+	{
+		DamageEffectParams.DeathImpulse = ImpulseDirection * Magnitude;// 根据冲击方向和力度设置死亡冲击的力
+	}
+}
+
+void UAuraAbilitySystemLibrary::SetTargetEffectParamsASC(FDamageEffectParams& DamageEffectParams,UAbilitySystemComponent* InASC)
+{
+	DamageEffectParams.TargetAbilitySystemComponent = InASC;
+}
+
 UCharacterClassInfo* UAuraAbilitySystemLibrary::GetCharacterClassInfo(const UObject* WorldContextObject)
 {
 	// 从世界上下文对象获取当前游戏模式，并尝试转换成我们自定义的 AAuraGameModeBase
