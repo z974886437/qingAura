@@ -54,6 +54,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/HUD/AuraHUD.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/HUD/LoadScreenHUD.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/ViewModel/MVVM_LoadScreen.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/ViewModel/MVVM_LoadSlot.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/Widget/AuraUserWidget.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/Widget/DamageTextComponent.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/UI/Widget/LoadScreenWidget.cpp" charset="UTF-8" />
@@ -111,6 +112,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/HUD/AuraHUD.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/HUD/LoadScreenHUD.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/ViewModel/MVVM_LoadScreen.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/ViewModel/MVVM_LoadSlot.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/Widget/AuraUserWidget.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/Widget/DamageTextComponent.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/UI/Widget/LoadScreenWidget.h" charset="UTF-8" />
