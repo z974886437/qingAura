@@ -23,19 +23,19 @@ public:
 	void InitializeSlot();
 
 	UPROPERTY()
-	FString PlayerName;
-
-	UPROPERTY()
-	FString SlotIndex;
+	FString SlotIndex;//插槽索引
 
 
 	/*
 	 * Field Notifies
 	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter,Getter);
+	FString PlayerName;//玩家名字
 
+	void SetPlayerName(FString InPlayerName);
 	void SetLoadSlotName(FString InLoadSlotName);//设置加载槽名称
 
-
+	FString GetPlayerName() const { return PlayerName; }
 	FString GetLoadSlotName() const { return LoadSlotName; }//获取加载槽名称
 private:
 	
