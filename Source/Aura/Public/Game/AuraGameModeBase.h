@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "AuraGameModeBase.generated.h"
 
+class USaveGame;
+class UMVVM_LoadSlot;
 class UAbilityInfo;
 class UCharacterClassInfo;//角色类别信息
 /**
@@ -22,4 +24,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly,Category = "Ability Info")
 	TObjectPtr<UAbilityInfo> AbilityInfo;//技能信息
+	
+	void SaveSlotData(UMVVM_LoadSlot* LoadSlot,int32 SlotIndex);//保存插槽数据
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USaveGame> LoadScreenSaveGameClass;//加载屏幕保存游戏类
 };

@@ -21,5 +21,24 @@ public:
 	FSetWidgetSwitcherIndex SetWidgetSwitcherIndex;//设置小部件切换器索引
 
 	void InitializeSlot();
+
+	UPROPERTY()
+	FString PlayerName;
+
+	UPROPERTY()
+	FString SlotIndex;
+
+
+	/*
+	 * Field Notifies
+	 */
+
+	void SetLoadSlotName(FString InLoadSlotName);//设置加载槽名称
+
+
+	FString GetLoadSlotName() const { return LoadSlotName; }//获取加载槽名称
+private:
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess="true"));
+	FString LoadSlotName;//加载槽名称
 };
