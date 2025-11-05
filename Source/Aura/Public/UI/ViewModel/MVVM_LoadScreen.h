@@ -24,7 +24,15 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	UMVVM_LoadSlot* GetLoadSlotViewModelByIndex(int32 Index) const;//通过索引获取加载槽视图模型
-	
+
+	UFUNCTION(BlueprintCallable)
+	void NewSlotButtonPressed(int32 Slot,const FString& EnteredName);//按下新插槽按钮
+
+	UFUNCTION(BlueprintCallable)
+	void NewGameButtonPressed(int32 Slot);//按下新游戏按钮
+
+	UFUNCTION(BlueprintCallable)
+	void SelectSlotButtonPressed(int32 Slot);//按下选择插槽按钮
 	
 private:
 

@@ -19,3 +19,18 @@ UMVVM_LoadSlot* UMVVM_LoadScreen::GetLoadSlotViewModelByIndex(int32 Index) const
 {
 	return LoadSlots.FindChecked(Index);// 根据传入的索引查找并返回对应的加载槽视图模型
 }
+
+void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredName)
+{
+	
+}
+
+void UMVVM_LoadScreen::NewGameButtonPressed(int32 Slot)
+{
+	LoadSlots[Slot]->SetWidgetSwitcherIndex.Broadcast(1);
+}
+
+void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
+{
+	
+}
