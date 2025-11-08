@@ -34,6 +34,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SelectSlotButtonPressed(int32 Slot);//按下选择插槽按钮
 
+	void LoadData();//加载数据
 
 	void SetNumLoadSlots(int32 InNumLoadSlots);//设置加载槽数
 

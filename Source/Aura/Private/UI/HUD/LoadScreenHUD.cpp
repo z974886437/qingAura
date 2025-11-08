@@ -17,5 +17,6 @@ void ALoadScreenHUD::BeginPlay()
 	LoadScreenWidget = CreateWidget<ULoadScreenWidget>(GetWorld(),LoadScreenWidgetClass);// 创建一个 LoadScreenWidget 小部件，并指定该小部件的类类型
 	LoadScreenWidget->AddToViewport();// 将小部件添加到视口中显示
 	LoadScreenWidget->BlueprintInitializeWidget();// 调用小部件的初始化函数进行蓝图层面的初始化
-	
+
+	LoadScreenViewModel->LoadData();// 调用视图模型加载数据，通常是从保存文件中读取数据并展示在界面上
 }

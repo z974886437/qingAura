@@ -40,6 +40,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
 	
 	LoadSlots[Slot]->SetPlayerName(EnteredName);// 将玩家输入的名字赋值给对应存档槽
+	LoadSlots[Slot]->SlotStatus = Taken;// 将指定存档槽的状态设置为 "已占用"（Taken）
 
 	AuraGameMode->SaveSlotData(LoadSlots[Slot],Slot);// 调用 GameMode 保存存档数据（传入该槽对象和槽索引）
 	LoadSlots[Slot]->InitializeSlot();// 初始化该槽（例如更新 UI 状态、显示新存档信息等）
@@ -55,6 +56,26 @@ void UMVVM_LoadScreen::NewGameButtonPressed(int32 Slot)
 void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 {
 	
+}
+
+
+void UMVVM_LoadScreen::LoadData()
+{
+	// 获取当前游戏模式的引用，并转换为 AAuraGameModeBase 类型
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	
+	for (const TTuple<int32,UMVVM_LoadSlot*> LoadSlot : LoadSlots)// 遍历加载槽（LoadSlots）中的每一项，Key 是槽的索引，Value 是加载槽对象
+	{
+		// 获取当前加载槽的保存数据，通过游戏模式中的 GetSaveSlotData 函数获取
+		ULoadScreenSaveGame* SaveObject = AuraGameMode->GetSaveSlotData(LoadSlot.Value->GetLoadSlotName(),LoadSlot.Key);
+
+		const FString PlayerName = SaveObject->PlayerName;// 从保存对象中提取玩家名字
+		TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = SaveObject->SaveSlotStatus;// 获取保存槽的状态（例如：空闲、已加载、已完成等）
+		
+		LoadSlot.Value->SlotStatus = SaveSlotStatus;// 设置当前加载槽的状态
+		LoadSlot.Value->SetPlayerName(PlayerName);// 设置加载槽显示的玩家名字
+		LoadSlot.Value->InitializeSlot();// 初始化加载槽（根据保存的数据来配置）
+	}
 }
 
 // 设置加载槽数量（NumLoadSlots 是 MVVM 可绑定属性）
