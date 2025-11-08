@@ -6,6 +6,8 @@
 #include "MVVMViewModelBase.h"
 #include "MVVM_LoadScreen.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSlotSelected);//F 已选择插槽
+
 class UMVVM_LoadSlot;
 /**
  * 
@@ -18,6 +20,9 @@ class AURA_API UMVVM_LoadScreen : public UMVVMViewModelBase
 public:
 
 	void InitializeLoadSlots();//初始化加载槽
+
+	UPROPERTY(BlueprintAssignable)
+	FSlotSelected SlotSelected;//已选择插槽
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMVVM_LoadSlot> LoadSlotViewModelClass;//加载槽视图模型类

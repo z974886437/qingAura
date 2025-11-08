@@ -55,6 +55,7 @@ void UMVVM_LoadScreen::NewGameButtonPressed(int32 Slot)
 // 当选择某个已有存档槽时调用（当前为空，预留给后续逻辑）
 void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 {
+	SlotSelected.Broadcast();
 	for (const TTuple<int32,UMVVM_LoadSlot*> LoadSlot : LoadSlots)// 遍历加载槽（LoadSlots）中的每一项，Key 是槽的索引，Value 是加载槽对象
 	{
 		if (LoadSlot.Key == Slot)// 如果当前槽的索引与玩家选择的槽索引相同，则禁用该槽的选择按钮
