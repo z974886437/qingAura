@@ -28,6 +28,7 @@ public:
 	
 	void SaveSlotData(UMVVM_LoadSlot* LoadSlot,int32 SlotIndex);//保存插槽数据
 	ULoadScreenSaveGame* GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const;//获取保存槽数据
+	static void DeleteSlot(const FString& SlotName, int32 SlotIndex);//删除槽
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<USaveGame> LoadScreenSaveGameClass;//加载屏幕保存游戏类

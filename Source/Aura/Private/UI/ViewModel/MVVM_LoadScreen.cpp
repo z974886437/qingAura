@@ -11,16 +11,19 @@ void UMVVM_LoadScreen::InitializeLoadSlots()
 {
 	LoadSlot_0 = NewObject<UMVVM_LoadSlot>(this,LoadSlotViewModelClass);// 创建第一个加载槽对象，并通过 LoadSlotViewModelClass 指定其类类型
 	LoadSlot_0->SetLoadSlotName(FString("LoadSlot_0"));// 设置该槽的名称为 "LoadSlot_0"，便于识别与保存
+	LoadSlot_0->SlotIndex = 0;
 	LoadSlots.Add(0,LoadSlot_0);// 将加载槽添加到 LoadSlots 字典中，索引 0 作为键
 
 	// 创建第二个加载槽对象（索引 1）
 	LoadSlot_1 = NewObject<UMVVM_LoadSlot>(this,LoadSlotViewModelClass);
 	LoadSlot_1->SetLoadSlotName(FString("LoadSlot_1"));
+	LoadSlot_1->SlotIndex = 1;
 	LoadSlots.Add(1,LoadSlot_1);
 
 	// 创建第三个加载槽对象（索引 2）
 	LoadSlot_2 = NewObject<UMVVM_LoadSlot>(this,LoadSlotViewModelClass);
 	LoadSlot_2->SetLoadSlotName(FString("LoadSlot_2"));
+	LoadSlot_2->SlotIndex = 2;
 	LoadSlots.Add(2,LoadSlot_2);
 
 	// 将总加载槽数量设置为当前 LoadSlots 的数量（通常为 3）
@@ -67,8 +70,19 @@ void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 			LoadSlot.Value->EnableSelectSlotButton.Broadcast(true);// 否则，启用其他槽的选择按钮
 		}
 	}
+	SelectedSlot = LoadSlots[Slot];
 }
 
+void UMVVM_LoadScreen::DeleteButtonPressed()
+{
+	if (IsValid(SelectedSlot)) // 检查 SelectedSlot 是否有效，确保当前有选中的槽
+	{
+		AAuraGameModeBase::DeleteSlot(SelectedSlot->GetLoadSlotName(),SelectedSlot->SlotIndex);// 调用游戏模式的 DeleteSlot 函数，传入当前选中槽的名称和索引，执行删除操作
+		SelectedSlot->SlotStatus = Vacant;// 将当前槽的状态设置为 Vacant，表示该槽已空
+		SelectedSlot->InitializeSlot();// 重新初始化槽，恢复到初始状态
+		SelectedSlot->EnableSelectSlotButton.Broadcast(true);
+	}
+}
 
 void UMVVM_LoadScreen::LoadData()
 {

@@ -39,3 +39,12 @@ ULoadScreenSaveGame* AAuraGameModeBase::GetSaveSlotData(const FString& SlotName,
 	ULoadScreenSaveGame* LoadScreenSaveGame = Cast<ULoadScreenSaveGame>(SaveGameObject);// 将通用的 SaveGame 对象转换为具体类型 ULoadScreenSaveGame，以便访问自定义数据
 	return LoadScreenSaveGame;// 返回加载或新建的存档对象
 }
+
+void AAuraGameModeBase::DeleteSlot(const FString& SlotName, int32 SlotIndex)
+{
+	// 如果指定的存档槽已存在对应存档文件，则先删除旧文件，避免保存冲突
+	if (UGameplayStatics::DoesSaveGameExist(SlotName,SlotIndex))
+	{
+		UGameplayStatics::DeleteGameInSlot(SlotName,SlotIndex);// 删除已存在的存档文件，以避免覆盖问题
+	}
+}

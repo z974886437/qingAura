@@ -39,6 +39,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SelectSlotButtonPressed(int32 Slot);//按下选择插槽按钮
 
+	UFUNCTION(BlueprintCallable)
+	void DeleteButtonPressed();//删除按钮被按下
+
 	void LoadData();//加载数据
 
 	void SetNumLoadSlots(int32 InNumLoadSlots);//设置加载槽数
@@ -58,6 +61,9 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UMVVM_LoadSlot> LoadSlot_2;
+
+	UPROPERTY()
+	UMVVM_LoadSlot* SelectedSlot;//选定的插槽
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess="true"));
 	int32 NumLoadSlots;//装载槽数

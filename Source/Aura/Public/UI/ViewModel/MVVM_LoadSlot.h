@@ -28,7 +28,7 @@ public:
 	void InitializeSlot();
 
 	UPROPERTY()
-	FString SlotIndex;//插槽索引
+	int32 SlotIndex;//插槽索引
 
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;//槽位状态
