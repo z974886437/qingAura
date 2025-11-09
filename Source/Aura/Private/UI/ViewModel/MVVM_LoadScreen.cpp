@@ -41,7 +41,8 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 {
 	// 获取当前正在运行的游戏模式对象（AAuraGameModeBase）
 	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
-	
+
+	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);
 	LoadSlots[Slot]->SetPlayerName(EnteredName);// 将玩家输入的名字赋值给对应存档槽
 	LoadSlots[Slot]->SlotStatus = Taken;// 将指定存档槽的状态设置为 "已占用"（Taken）
 

@@ -32,4 +32,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<USaveGame> LoadScreenSaveGameClass;//加载屏幕保存游戏类
+
+	UPROPERTY(EditDefaultsOnly)
+	FString DefaultMapName;//默认地图名称
+
+	UPROPERTY(EditDefaultsOnly)
+	TSoftObjectPtr<UWorld> DefaultMap;//默认地图
+
+	UPROPERTY(EditDefaultsOnly)
+	TMap<FString, TSoftObjectPtr<UWorld>> Maps;//地图
+
+protected:
+	virtual void BeginPlay() override;
 };
