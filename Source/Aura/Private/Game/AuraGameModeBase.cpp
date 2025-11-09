@@ -20,7 +20,7 @@ void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	ULoadScreenSaveGame* LoadScreenSaveGame = Cast<ULoadScreenSaveGame>(SaveGameObject);// 将通用 USaveGame 对象转换为我们自定义的 ULoadScreenSaveGame 类
 	LoadScreenSaveGame->PlayerName = LoadSlot->GetPlayerName();// 将玩家名字从 UI 加载槽对象中复制到 SaveGame 对象中
 	LoadScreenSaveGame->SaveSlotStatus = Taken;// 将存档槽的状态设置为 "已占用"（Taken）
-	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();
+	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();// 将加载槽的地图名称保存到存档对象
 
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame,LoadSlot->GetLoadSlotName(),SlotIndex);// 调用 UE 内置函数，将 SaveGame 对象写入磁盘存档文件中
 }
@@ -50,8 +50,16 @@ void AAuraGameModeBase::DeleteSlot(const FString& SlotName, int32 SlotIndex)
 	}
 }
 
+void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
+{
+	const FString SlotName = Slot->GetLoadSlotName();// 获取当前存档槽的名称
+	const int32 SlotIndex = Slot->SlotIndex;// 获取当前存档槽的索引
+	
+	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot,Maps.FindChecked(Slot->GetMapName())); // 根据存档槽的地图名称，从 Maps 字典中查找对应的地图对象，并加载该地图
+}
+
 void AAuraGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	Maps.Add(DefaultMapName,DefaultMap);
+	Maps.Add(DefaultMapName,DefaultMap);// 将默认地图名称和对应的地图对象添加到 Maps 字典中
 }

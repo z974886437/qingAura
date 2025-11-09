@@ -71,7 +71,7 @@ void UMVVM_LoadScreen::SelectSlotButtonPressed(int32 Slot)
 			LoadSlot.Value->EnableSelectSlotButton.Broadcast(true);// 否则，启用其他槽的选择按钮
 		}
 	}
-	SelectedSlot = LoadSlots[Slot];
+	SelectedSlot = LoadSlots[Slot]; // 设置当前选中的槽
 }
 
 void UMVVM_LoadScreen::DeleteButtonPressed()
@@ -81,7 +81,17 @@ void UMVVM_LoadScreen::DeleteButtonPressed()
 		AAuraGameModeBase::DeleteSlot(SelectedSlot->GetLoadSlotName(),SelectedSlot->SlotIndex);// 调用游戏模式的 DeleteSlot 函数，传入当前选中槽的名称和索引，执行删除操作
 		SelectedSlot->SlotStatus = Vacant;// 将当前槽的状态设置为 Vacant，表示该槽已空
 		SelectedSlot->InitializeSlot();// 重新初始化槽，恢复到初始状态
-		SelectedSlot->EnableSelectSlotButton.Broadcast(true);
+		SelectedSlot->EnableSelectSlotButton.Broadcast(true); // 启用该槽的选择按钮
+	}
+}
+
+void UMVVM_LoadScreen::PlayButtonPressed()
+{
+	// 获取当前游戏模式的引用，并转换为 AAuraGameModeBase 类型
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (IsValid(SelectedSlot))// 如果当前有选中的存档槽，且该槽有效
+	{
+		AuraGameMode->TravelToMap(SelectedSlot); // 调用游戏模式中的 TravelToMap 函数，传入选中的存档槽，执行场景切换或加载操作
 	}
 }
 
@@ -101,7 +111,7 @@ void UMVVM_LoadScreen::LoadData()
 		LoadSlot.Value->SlotStatus = SaveSlotStatus;// 设置当前加载槽的状态
 		LoadSlot.Value->SetPlayerName(PlayerName);// 设置加载槽显示的玩家名字
 		LoadSlot.Value->InitializeSlot();// 初始化加载槽（根据保存的数据来配置）
-		LoadSlot.Value->SetMapName(SaveObject->MapName);
+		LoadSlot.Value->SetMapName(SaveObject->MapName);// 设置加载槽的地图名称
 	}
 }
 
