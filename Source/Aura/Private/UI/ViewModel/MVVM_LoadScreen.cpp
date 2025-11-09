@@ -101,6 +101,7 @@ void UMVVM_LoadScreen::LoadData()
 		LoadSlot.Value->SlotStatus = SaveSlotStatus;// 设置当前加载槽的状态
 		LoadSlot.Value->SetPlayerName(PlayerName);// 设置加载槽显示的玩家名字
 		LoadSlot.Value->InitializeSlot();// 初始化加载槽（根据保存的数据来配置）
+		LoadSlot.Value->SetMapName(SaveObject->MapName);
 	}
 }
 

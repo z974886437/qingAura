@@ -34,5 +34,8 @@ public:
 	FString PlayerName = FString("Default Name");//玩家姓名
 
 	UPROPERTY()
+	FString MapName = FString("Default Map Name");//地图名
+
+	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = Vacant;//保存插槽状态
 };
