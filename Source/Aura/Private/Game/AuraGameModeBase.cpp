@@ -3,6 +3,7 @@
 
 #include "Game/AuraGameModeBase.h"
 
+#include "Game/AuraGameInstance.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
@@ -62,6 +63,8 @@ void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 // 选择玩家出生点的实现函数（当玩家进入游戏时调用）
 AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 {
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());// 获取当前游戏实例（GameInstance），用于在关卡切换之间保存全局数据
+	
 	TArray<AActor*> Actors;// 定义一个 Actor 数组，用于存放所有 APlayerStart 类的对象
 
 	// 获取当前关卡中所有 APlayerStart 类型的 Actor，并放入数组 Actors 中
@@ -75,7 +78,7 @@ AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
 		{
 			if (APlayerStart* PlayerStart = Cast<APlayerStart>(Actor))// 尝试将 Actor 转换为 APlayerStart 类型
 			{
-				if (PlayerStart->PlayerStartTag == FName("TheTag"))// 判断这个出生点的标签是否等于 "TheTag"
+				if (PlayerStart->PlayerStartTag == AuraGameInstance->PlayerStartTag)// 判断这个出生点的标签是否等于 "TheTag"
 				{
 					SelectedActor = PlayerStart;// 如果匹配，则选择这个出生点
 					break;// 找到目标出生点后直接跳出循环

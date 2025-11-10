@@ -3,6 +3,7 @@
 
 #include "UI/ViewModel/MVVM_LoadScreen.h"
 
+#include "Game/AuraGameInstance.h"
 #include "Game/AuraGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
@@ -42,12 +43,17 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	// 获取当前正在运行的游戏模式对象（AAuraGameModeBase）
 	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
 
-	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);
+	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);// 将新存档的地图名设为 GameMode 中定义的默认地图名
 	LoadSlots[Slot]->SetPlayerName(EnteredName);// 将玩家输入的名字赋值给对应存档槽
 	LoadSlots[Slot]->SlotStatus = Taken;// 将指定存档槽的状态设置为 "已占用"（Taken）
 
 	AuraGameMode->SaveSlotData(LoadSlots[Slot],Slot);// 调用 GameMode 保存存档数据（传入该槽对象和槽索引）
 	LoadSlots[Slot]->InitializeSlot();// 初始化该槽（例如更新 UI 状态、显示新存档信息等）
+
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(AuraGameMode->GetGameInstance());// 获取当前游戏实例（GameInstance），用于在关卡切换之间保存全局数据
+	AuraGameInstance->LoadSlotName = LoadSlots[Slot]->GetLoadSlotName();// 将当前选定的存档槽名记录到 GameInstance 中，方便后续加载
+	AuraGameInstance->LoadSlotIndex = LoadSlots[Slot]->SlotIndex;// 同时保存槽的索引编号，用于识别是哪一个存档槽
+	AuraGameInstance->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;// 记录玩家出生点标签（例如用于选择出生位置）
 }
 
 // 当点击“开始新游戏”按钮时调用

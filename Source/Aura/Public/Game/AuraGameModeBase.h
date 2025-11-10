@@ -42,6 +42,9 @@ public:
 	TSoftObjectPtr<UWorld> DefaultMap;//默认地图
 
 	UPROPERTY(EditDefaultsOnly)
+	FName DefaultPlayerStartTag;//默认播放器开始标签
+
+	UPROPERTY(EditDefaultsOnly)
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;//地图
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;//选择玩家开始
