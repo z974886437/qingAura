@@ -4,6 +4,7 @@
 #include "Game/AuraGameModeBase.h"
 
 #include "Game/LoadScreenSaveGame.h"
+#include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
@@ -56,6 +57,34 @@ void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 	const int32 SlotIndex = Slot->SlotIndex;// 获取当前存档槽的索引
 	
 	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot,Maps.FindChecked(Slot->GetMapName())); // 根据存档槽的地图名称，从 Maps 字典中查找对应的地图对象，并加载该地图
+}
+
+// 选择玩家出生点的实现函数（当玩家进入游戏时调用）
+AActor* AAuraGameModeBase::ChoosePlayerStart_Implementation(AController* Player)
+{
+	TArray<AActor*> Actors;// 定义一个 Actor 数组，用于存放所有 APlayerStart 类的对象
+
+	// 获取当前关卡中所有 APlayerStart 类型的 Actor，并放入数组 Actors 中
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(),APlayerStart::StaticClass(),Actors);
+	
+	if (Actors.Num() > 0)// 检查是否存在至少一个玩家出生点
+	{
+		AActor* SelectedActor = Actors[0];// 默认选中第一个出生点，防止没有匹配标签时返回空指针
+		
+		for (AActor* Actor : Actors)// 遍历所有找到的出生点
+		{
+			if (APlayerStart* PlayerStart = Cast<APlayerStart>(Actor))// 尝试将 Actor 转换为 APlayerStart 类型
+			{
+				if (PlayerStart->PlayerStartTag == FName("TheTag"))// 判断这个出生点的标签是否等于 "TheTag"
+				{
+					SelectedActor = PlayerStart;// 如果匹配，则选择这个出生点
+					break;// 找到目标出生点后直接跳出循环
+				}
+			}
+		}
+		return SelectedActor;// 返回选定的出生点
+	}
+	return nullptr;// 若没有任何出生点，返回空指针（不建议出现）
 }
 
 void AAuraGameModeBase::BeginPlay()

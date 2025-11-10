@@ -44,6 +44,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;//地图
 
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;//选择玩家开始
+
 protected:
 	virtual void BeginPlay() override;
 };
