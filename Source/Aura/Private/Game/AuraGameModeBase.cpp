@@ -23,6 +23,7 @@ void AAuraGameModeBase::SaveSlotData(UMVVM_LoadSlot* LoadSlot, int32 SlotIndex)
 	LoadScreenSaveGame->PlayerName = LoadSlot->GetPlayerName();// 将玩家名字从 UI 加载槽对象中复制到 SaveGame 对象中
 	LoadScreenSaveGame->SaveSlotStatus = Taken;// 将存档槽的状态设置为 "已占用"（Taken）
 	LoadScreenSaveGame->MapName = LoadSlot->GetMapName();// 将加载槽的地图名称保存到存档对象
+	LoadScreenSaveGame->PlayerStartTag = LoadSlot->PlayerStartTag;// 保存玩家出生点标签，用于下次加载时确定玩家生成位置
 
 	UGameplayStatics::SaveGameToSlot(LoadScreenSaveGame,LoadSlot->GetLoadSlotName(),SlotIndex);// 调用 UE 内置函数，将 SaveGame 对象写入磁盘存档文件中
 }

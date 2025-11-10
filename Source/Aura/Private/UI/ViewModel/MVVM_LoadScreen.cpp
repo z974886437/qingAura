@@ -46,6 +46,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);// 将新存档的地图名设为 GameMode 中定义的默认地图名
 	LoadSlots[Slot]->SetPlayerName(EnteredName);// 将玩家输入的名字赋值给对应存档槽
 	LoadSlots[Slot]->SlotStatus = Taken;// 将指定存档槽的状态设置为 "已占用"（Taken）
+	LoadSlots[Slot]->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;// 将 GameMode 中的默认出生点标签赋值给该存档槽（用于后续加载定位玩家出生点）
 
 	AuraGameMode->SaveSlotData(LoadSlots[Slot],Slot);// 调用 GameMode 保存存档数据（传入该槽对象和槽索引）
 	LoadSlots[Slot]->InitializeSlot();// 初始化该槽（例如更新 UI 状态、显示新存档信息等）
@@ -93,8 +94,14 @@ void UMVVM_LoadScreen::DeleteButtonPressed()
 
 void UMVVM_LoadScreen::PlayButtonPressed()
 {
-	// 获取当前游戏模式的引用，并转换为 AAuraGameModeBase 类型
+	// 获取当前正在运行的 GameMode，并转换为自定义的 AAuraGameModeBase 类型
 	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(AuraGameMode->GetGameInstance());// 获取当前游戏实例，用于跨关卡保存玩家的全局数据（例如出生点、存档名等）
+	
+	// 将选中的存档槽的出生点标签同步到 GameInstance 中
+	// 这样在切换关卡后，GameMode 可以读取这个标签并让玩家在正确的出生点生成
+	AuraGameInstance->PlayerStartTag = SelectedSlot->PlayerStartTag;
+	
 	if (IsValid(SelectedSlot))// 如果当前有选中的存档槽，且该槽有效
 	{
 		AuraGameMode->TravelToMap(SelectedSlot); // 调用游戏模式中的 TravelToMap 函数，传入选中的存档槽，执行场景切换或加载操作
@@ -117,7 +124,9 @@ void UMVVM_LoadScreen::LoadData()
 		LoadSlot.Value->SlotStatus = SaveSlotStatus;// 设置当前加载槽的状态
 		LoadSlot.Value->SetPlayerName(PlayerName);// 设置加载槽显示的玩家名字
 		LoadSlot.Value->InitializeSlot();// 初始化加载槽（根据保存的数据来配置）
+		
 		LoadSlot.Value->SetMapName(SaveObject->MapName);// 设置加载槽的地图名称
+		LoadSlot.Value->PlayerStartTag = SaveObject->PlayerStartTag;// 同步出生点标签，用于后续进入游戏时确定玩家生成位置
 	}
 }
 

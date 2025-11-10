@@ -37,5 +37,8 @@ public:
 	FString MapName = FString("Default Map Name");//地图名
 
 	UPROPERTY()
+	FName PlayerStartTag;//播放器开始标签
+
+	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = Vacant;//保存插槽状态
 };

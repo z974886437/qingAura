@@ -32,11 +32,13 @@ public:
 
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SlotStatus;//槽位状态
+
+	UPROPERTY()
+	FName PlayerStartTag;//播放器开始标签
 	/*
 	 * Field Notifies
 	 */
 	
-
 	void SetPlayerName(FString InPlayerName);//设置玩家名称
 	void SetMapName(FString InMapName);//设置地图名称
 	void SetLoadSlotName(FString InLoadSlotName);//设置加载槽名称
