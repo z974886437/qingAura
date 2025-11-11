@@ -41,4 +41,37 @@ public:
 
 	UPROPERTY()
 	TEnumAsByte<ESaveSlotStatus> SaveSlotStatus = Vacant;//保存插槽状态
+
+	/*
+	 * Player
+	 */
+
+	UPROPERTY()
+	int32 PlayerLevel = 0;
+
+	UPROPERTY()
+	int32 XP = 0;
+
+	UPROPERTY()
+	int32 SpellPoints = 0;
+
+	UPROPERTY()
+	int32 AttributePoints = 0;
+
+	/*
+	 * Attributes
+	 */
+
+	UPROPERTY()
+	float Strength = 0;//力量
+
+	UPROPERTY()
+	float Intelligence = 0;//智力
+
+	UPROPERTY()
+	float Resilience = 0;//韧性
+
+	UPROPERTY()
+	float Vigor = 0;//活力
+	
 };

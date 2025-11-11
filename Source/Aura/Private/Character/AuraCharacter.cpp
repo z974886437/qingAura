@@ -11,6 +11,7 @@
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "NiagaraComponent.h"
+#include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Game/AuraGameInstance.h"
@@ -199,6 +200,20 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		if (SaveData == nullptr) return;// 如果存档对象无效（读取失败或不存在），则直接返回，不继续执行
 
 		SaveData->PlayerStartTag = CheckpointTag;// 将当前检查点（CheckpointTag）记录到存档中
+
+		if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))// 获取玩家状态（PlayerState），转换为自定义类型 AAuraPlayerState
+		{
+			// 将玩家状态中的基础数据保存到存档中
+			SaveData->PlayerLevel = AuraPlayerState->GetPlayerLevel();// 当前等级
+			SaveData->XP = AuraPlayerState->GetXP();// 当前经验值
+			SaveData->AttributePoints = AuraPlayerState->GetAttributePoints();// 可用属性点
+			SaveData->SpellPoints = AuraPlayerState->GetSpellPoints();// 可用技能点
+		}
+		// 从角色的 AttributeSet 中提取四维属性数值
+		SaveData->Strength = UAuraAttributeSet::GetStrengthAttribute().GetNumericValue(GetAttributeSet()); // 力量
+		SaveData->Intelligence = UAuraAttributeSet::GetIntelligenceAttribute().GetNumericValue(GetAttributeSet());// 智力
+		SaveData->Resilience = UAuraAttributeSet::GetResilienceAttribute().GetNumericValue(GetAttributeSet());// 韧性
+		SaveData->Vigor = UAuraAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet()); // 活力
 
 		AuraGameMode->SaveInGameProgressData(SaveData);// 调用 GameMode 的保存函数，将更新后的存档数据写回硬盘或内存
 	}
