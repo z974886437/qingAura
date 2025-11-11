@@ -18,18 +18,18 @@ AAuraProjectile::AAuraProjectile()
 	PrimaryActorTick.bCanEverTick = false;// 禁用该 Actor 的 Tick 函数调用。
 	bReplicates = true;//如果为 true，则此 actor 将复制到远程计算机
 
-	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
-	SetRootComponent(Sphere);
-	Sphere->SetCollisionObjectType(ECC_Projectile);
+	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");// 创建一个球体碰撞体作为根组件，用于检测命中或重叠事件。
+	SetRootComponent(Sphere);// 将这个球体设置为根组件（Actor 的物理和逻辑中心）。
+	Sphere->SetCollisionObjectType(ECC_Projectile);// 将该组件的碰撞类型设置为“投射物通道”，方便区分与其他对象（如玩家、地形、道具）的交互。
 	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);//只进行“查询类”碰撞检测，不进行物理模拟
 	Sphere->SetCollisionResponseToAllChannels(ECR_Ignore);//把 Sphere 对所有碰撞通道的响应全部设为 忽略（Ignore）
 	Sphere->SetCollisionResponseToChannel(ECC_WorldDynamic,ECR_Overlap);//单独对 WorldDynamic 通道设置为 重叠（Overlap）
-	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Overlap);
-	Sphere->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
+	Sphere->SetCollisionResponseToChannel(ECC_WorldStatic,ECR_Overlap);// 对静态物体（如墙壁、地面）也启用“重叠”检测，用于触发命中判定或销毁逻辑。
+	Sphere->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);// 对角色（Pawn）启用“重叠”检测，这样投射物可以检测到玩家或敌人。
 
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");
-	ProjectileMovement->InitialSpeed = 550.f;
-	ProjectileMovement->MaxSpeed = 550.f;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("ProjectileMovement");// 创建投射物运动组件，负责投射物的物理移动（速度、方向、重力）
+	ProjectileMovement->InitialSpeed = 550.f;// 设置初始发射速度为 550（单位：cm/s），用于控制飞行快慢。
+	ProjectileMovement->MaxSpeed = 550.f;// 设置最大速度与初始速度相同，保持恒定飞行速度。
 	ProjectileMovement->ProjectileGravityScale = 0.f;//重力设置 = 0
 }
 
