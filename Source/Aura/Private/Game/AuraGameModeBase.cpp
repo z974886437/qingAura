@@ -53,6 +53,28 @@ void AAuraGameModeBase::DeleteSlot(const FString& SlotName, int32 SlotIndex)
 	}
 }
 
+// 从当前正在使用的游戏实例中检索游戏内存档数据
+ULoadScreenSaveGame* AAuraGameModeBase::RetrieveInGameSaveData()
+{
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());// 获取当前游戏实例（GameInstance），用于在关卡切换之间保存全局数据
+
+	const FString InGameLoadSlotName = AuraGameInstance->LoadSlotName;// 从 GameInstance 中取出当前使用的存档槽名称（通常在加载界面选择时设置）
+	const int32 InGameLoadSlotIndex = AuraGameInstance->LoadSlotIndex; // 从 GameInstance 中取出当前使用的存档槽索引（用于区分不同槽，例如 0、1、2）
+
+	return GetSaveSlotData(InGameLoadSlotName,InGameLoadSlotIndex); // 调用内部函数 GetSaveSlotData，从对应的存档槽读取存档数据并返回
+}
+
+void AAuraGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
+{
+	UAuraGameInstance* AuraGameInstance = Cast<UAuraGameInstance>(GetGameInstance());// 获取当前游戏实例（GameInstance），用于在关卡切换之间保存全局数据
+
+	const FString InGameLoadSlotName = AuraGameInstance->LoadSlotName;// 从 GameInstance 中取出当前使用的存档槽名称（通常在加载界面选择时设置）
+	const int32 InGameLoadSlotIndex = AuraGameInstance->LoadSlotIndex; // 从 GameInstance 中取出当前使用的存档槽索引（用于区分不同槽，例如 0、1、2）
+	AuraGameInstance->PlayerStartTag = SaveObject->PlayerStartTag;// 将玩家当前的出生点（PlayerStartTag）写回 GameInstance
+
+	UGameplayStatics::SaveGameToSlot(SaveObject,InGameLoadSlotName,InGameLoadSlotIndex);// 使用引擎提供的静态函数将存档对象（SaveObject）保存到对应的槽中
+}
+
 void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 {
 	const FString SlotName = Slot->GetLoadSlotName();// 获取当前存档槽的名称

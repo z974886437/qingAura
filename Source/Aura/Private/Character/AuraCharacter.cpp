@@ -13,7 +13,11 @@
 #include "NiagaraComponent.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Game/AuraGameInstance.h"
+#include "Game/AuraGameModeBase.h"
+#include "Game/LoadScreenSaveGame.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "UI/HUD/AuraHUD.h"
 
 AAuraCharacter::AAuraCharacter()
@@ -183,12 +187,31 @@ void AAuraCharacter::HideMagicCircle_Implementation()
 	}
 }
 
+// 保存角色当前的进度（例如到达的检查点、出生位置等）
+void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
+{
+	// 获取当前正在运行的 GameMode，并转换为自定义类型 AAuraGameModeBase
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	
+	if (AuraGameMode)// 如果成功获取到 GameMode（非空）
+	{
+		ULoadScreenSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();// 从 GameMode 中取出当前正在进行中的存档数据（ULoadScreenSaveGame 类型）
+		if (SaveData == nullptr) return;// 如果存档对象无效（读取失败或不存在），则直接返回，不继续执行
+
+		SaveData->PlayerStartTag = CheckpointTag;// 将当前检查点（CheckpointTag）记录到存档中
+
+		AuraGameMode->SaveInGameProgressData(SaveData);// 调用 GameMode 的保存函数，将更新后的存档数据写回硬盘或内存
+	}
+}
+
+// 获取玩家当前等级（由 PlayerState 维护）
 int32 AAuraCharacter::GetPlayerLevel_Implementation()
 {
 	// Init ability actor info for the Server(记住服务器的初始化能力参与者信息）
+	// 从角色中获取绑定的 PlayerState，并转换为自定义的 AAuraPlayerState 类型
 	const AAuraPlayerState* AuraPlayerState = GetPlayerState<AAuraPlayerState>();
-	check(AuraPlayerState);
-	return AuraPlayerState->GetPlayerLevel();
+	check(AuraPlayerState);// 使用 check 宏确保 AuraPlayerState 不为 nullptr
+	return AuraPlayerState->GetPlayerLevel();// 调用 PlayerState 的 GetPlayerLevel 函数，返回玩家当前等级
 }
 
 void AAuraCharacter::OnRep_Stunned()

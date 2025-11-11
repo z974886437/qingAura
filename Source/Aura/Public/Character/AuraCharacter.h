@@ -27,7 +27,7 @@ public:
 	virtual void AddToXP_Implementation(int32 InXP) override;
 	virtual void LevelUp_Implementation() override;
 	virtual int32 GetXP_Implementation() const override;
-	virtual int32 FindLevelForXP_Implementation(int32 InXP) const override;
+	virtual int32 FindLevelForXP_Implementation(int32 InXP) const override;//查找 XP 级别
 	virtual int32 GetAttributePointsReward_Implementation(int32 Level) const override;//获得属性点奖励
 	virtual int32 GetSpellPointsReward_Implementation(int32 Level) const override;//获得法术点奖励
 	virtual void AddToPlayerLevel_Implementation(int32 InPlayerLevel) override;
@@ -37,6 +37,7 @@ public:
 	virtual int32 GetSpellPoints_Implementation() const override;//获得法术点
 	virtual void ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial = nullptr) override;//展示魔法阵
 	virtual void HideMagicCircle_Implementation() override;//隐藏魔法阵
+	virtual void SaveProgress_Implementation(const FName& CheckpointTag) override;//保存进度
 	
 	
 	/* end Player Interface */

@@ -101,6 +101,8 @@ void UMVVM_LoadScreen::PlayButtonPressed()
 	// 将选中的存档槽的出生点标签同步到 GameInstance 中
 	// 这样在切换关卡后，GameMode 可以读取这个标签并让玩家在正确的出生点生成
 	AuraGameInstance->PlayerStartTag = SelectedSlot->PlayerStartTag;
+	AuraGameInstance->LoadSlotName = SelectedSlot->GetLoadSlotName();// 将当前选中的存档名称保存到 GameInstance 中
+	AuraGameInstance->LoadSlotIndex = SelectedSlot->SlotIndex;// 保存当前选中的存档槽索引（一般用于区分不同的存档位）
 	
 	if (IsValid(SelectedSlot))// 如果当前有选中的存档槽，且该槽有效
 	{

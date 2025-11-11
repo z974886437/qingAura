@@ -4,6 +4,7 @@
 #include "Checkpoint/Checkpoint.h"
 
 #include "Components/SphereComponent.h"
+#include "Interaction/PlayerInterface.h"
 
 // 构造函数，使用 FObjectInitializer 初始化对象，用于在对象创建时配置子组件
 ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
@@ -26,8 +27,9 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
 // 当球形碰撞体检测到有物体进入（重叠）时调用的回调函数
 void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->ActorHasTag(FName("Player"))) // 判断进入范围的 Actor 是否带有 “Player” 标签，确保只有玩家触发检查点
+	if (OtherActor->Implements<UPlayerInterface>()) // 判断进入范围的 Actor 是否带有 “Player” 标签，确保只有玩家触发检查点
 	{
+		IPlayerInterface::Execute_SaveProgress(OtherActor,PlayerStartTag);// 调用接口函数 SaveProgress，将当前检查点的标签（PlayerStartTag）传入
 		HandleGlowEffects();   // 触发发光效果（表示检查点被激活）
 	}
 }

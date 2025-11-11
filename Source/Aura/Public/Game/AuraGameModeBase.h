@@ -29,6 +29,8 @@ public:
 	void SaveSlotData(UMVVM_LoadSlot* LoadSlot,int32 SlotIndex);//保存插槽数据
 	ULoadScreenSaveGame* GetSaveSlotData(const FString& SlotName, int32 SlotIndex) const;//获取保存槽数据
 	static void DeleteSlot(const FString& SlotName, int32 SlotIndex);//删除槽
+	ULoadScreenSaveGame* RetrieveInGameSaveData();//检索游戏保存数据
+	void SaveInGameProgressData(ULoadScreenSaveGame* SaveObject);//保存游戏进度数据
 
 	void TravelToMap(UMVVM_LoadSlot* Slot);//前往地图
 
