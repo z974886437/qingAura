@@ -54,8 +54,42 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 
 	// Init ability actor info for the Server(服务器的初始化能力参与者信息）
-	InitAbilityActorInfo();
+	InitAbilityActorInfo();//初始化能力Actor信息
+	LoadProgress();//加载进度
+
+	//TODO: Load in Abilities from disk
 	AddCharacterAbilities();//添加角色能力
+}
+
+void AAuraCharacter::LoadProgress()
+{
+	// 获取当前正在运行的 GameMode，并转换为自定义类型 AAuraGameModeBase
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	
+	if (AuraGameMode)// 如果成功获取到 GameMode（非空）
+	{
+		ULoadScreenSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();// 从 GameMode 中取出当前正在进行中的存档数据（ULoadScreenSaveGame 类型）
+		if (SaveData == nullptr) return;// 如果存档对象无效（读取失败或不存在），则直接返回，不继续执行
+
+		// 获取角色对应的 PlayerState 并转换为自定义类型 AAuraPlayerState
+		if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
+		{
+			AuraPlayerState->SetLevel(SaveData->PlayerLevel); // 设置玩家等级
+			AuraPlayerState->SetXP(SaveData->XP);// 设置玩家经验值
+			AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);// 设置可分配属性点
+			AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);// 设置技能点数
+		}
+
+		if (SaveData->bFirstTimeLoadIn)// 如果是首次加载角色
+		{
+			InitializeDefaultAttributes();// 初始化角色默认属性（生命、魔法等）
+			AddCharacterAbilities();// 添加初始技能到 AbilitySystemComponent
+		}
+		else
+		{
+			
+		}
+	}
 }
 
 void AAuraCharacter::OnRep_PlayerState()
@@ -215,6 +249,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		SaveData->Resilience = UAuraAttributeSet::GetResilienceAttribute().GetNumericValue(GetAttributeSet());// 韧性
 		SaveData->Vigor = UAuraAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet()); // 活力
 
+		SaveData->bFirstTimeLoadIn = false;
 		AuraGameMode->SaveInGameProgressData(SaveData);// 调用 GameMode 的保存函数，将更新后的存档数据写回硬盘或内存
 	}
 }
@@ -297,7 +332,7 @@ void AAuraCharacter::InitAbilityActorInfo()
 			AuraHUD->InitOverlay(AuraPlayerController,AuraPlayerState,AbilitySystemComponent,AttributeSet);
 		}
 	}
-	InitializeDefaultAttributes();//初始化默认属性
+	
 }
 
 

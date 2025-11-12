@@ -14,7 +14,7 @@ AAuraPlayerState::AAuraPlayerState()
 	//用来**开启网络同步（Replicate）**功能的，告诉 Unreal Engine 这个组件（AbilitySystemComponent）需要在服务器与客户端之间同步数据。
 	AbilitySystemComponent->SetIsReplicated(true);
 	//Gameplay Ability System（GAS） 设置 AbilitySystemComponent 的复制模式（Replication Mode） Minimal（最小复制）
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	AttributeSet = CreateDefaultSubobject<UAuraAttributeSet>("AttributeSet");//属性集
 	
@@ -60,6 +60,18 @@ void AAuraPlayerState::SetLevel(int32 InLevel)
 {
 	Level = InLevel;
 	OnLevelChangedDelegate.Broadcast(Level);
+}
+
+void AAuraPlayerState::SetAttributePoints(int32 InPoints)
+{
+	AttributePoints = InPoints;
+	OnAttributePointsChangedDelegate.Broadcast(AttributePoints);
+}
+
+void AAuraPlayerState::SetSpellPoints(int32 InPoints)
+{
+	SpellPoints = InPoints;
+	OnSpellPointsChangedDelegate.Broadcast(SpellPoints);
 }
 
 void AAuraPlayerState::OnRep_Level(int32 OldLevel)

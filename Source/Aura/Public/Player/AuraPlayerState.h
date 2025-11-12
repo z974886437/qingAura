@@ -47,6 +47,8 @@ public:
 	
 	void SetXP(int32 InXP);
 	void SetLevel(int32 InLevel);
+	void SetAttributePoints(int32 InPoints);
+	void SetSpellPoints(int32 InPoints);
 	
 protected:
 	//UAbilitySystemComponent 是来自 Gameplay Ability System（GAS） 的一个核心类，用于处理能力（Ability）、属性（Attribute）、效果（Effect）等。

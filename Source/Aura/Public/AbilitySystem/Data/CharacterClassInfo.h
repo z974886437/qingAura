@@ -49,6 +49,9 @@ public:
 	TMap<ECharacterClass,FCharacterClassDefaultInfo> CharacterClassInformation;//字符类信息
 
 	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
+	TSubclassOf<UGameplayEffect> SecondaryAttributes_SetByCaller;//次要属性
+
+	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
 	TSubclassOf<UGameplayEffect> SecondaryAttributes;//次要属性
 
 	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
