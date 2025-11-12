@@ -21,6 +21,11 @@ void UMVVM_LoadSlot::SetMapName(FString InMapName)
 	UE_MVVM_SET_PROPERTY_VALUE(MapName,InMapName);// 使用 MVVM 模式的宏，设置 MapName 属性的值
 }
 
+void UMVVM_LoadSlot::SetPlayerLevel(int32 InLevel)
+{
+	UE_MVVM_SET_PROPERTY_VALUE(PlayerLevel,InLevel);// 使用 MVVM 模式的宏，设置
+}
+
 // 设置存档槽名字
 void UMVVM_LoadSlot::SetLoadSlotName(FString InLoadSlotName)
 {

@@ -23,7 +23,7 @@ public:
 	FSetWidgetSwitcherIndex SetWidgetSwitcherIndex;//设置小部件切换器索引
 
 	UPROPERTY(BlueprintAssignable)
-	FEnableSelectSlotButton EnableSelectSlotButton;
+	FEnableSelectSlotButton EnableSelectSlotButton;//启用选择插槽按钮
 
 	void InitializeSlot();
 
@@ -41,10 +41,12 @@ public:
 	
 	void SetPlayerName(FString InPlayerName);//设置玩家名称
 	void SetMapName(FString InMapName);//设置地图名称
+	void SetPlayerLevel(int32 InLevel);//设置玩家等级
 	void SetLoadSlotName(FString InLoadSlotName);//设置加载槽名称
 
 	FString GetPlayerName() const { return PlayerName; }//获取玩家名称
 	FString GetMapName() const { return MapName; }//获取地图名称
+	int32 GetPlayerLevel() const { return PlayerLevel; }//获取玩家等级
 	FString GetLoadSlotName() const { return LoadSlotName; }//获取加载槽名称
 	
 private:
@@ -54,6 +56,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter,Getter, meta = (AllowPrivateAccess = "true"));
 	FString MapName;//地图名字
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter,Getter, meta = (AllowPrivateAccess = "true"));
+	int32 PlayerLevel;//玩家等级
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, FieldNotify, Setter, Getter, meta = (AllowPrivateAccess="true"));
 	FString LoadSlotName;//加载槽名称

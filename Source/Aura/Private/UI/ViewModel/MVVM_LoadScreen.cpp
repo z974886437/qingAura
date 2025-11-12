@@ -45,6 +45,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 
 	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);// 将新存档的地图名设为 GameMode 中定义的默认地图名
 	LoadSlots[Slot]->SetPlayerName(EnteredName);// 将玩家输入的名字赋值给对应存档槽
+	LoadSlots[Slot]->SetPlayerLevel(1);
 	LoadSlots[Slot]->SlotStatus = Taken;// 将指定存档槽的状态设置为 "已占用"（Taken）
 	LoadSlots[Slot]->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;// 将 GameMode 中的默认出生点标签赋值给该存档槽（用于后续加载定位玩家出生点）
 
@@ -129,6 +130,7 @@ void UMVVM_LoadScreen::LoadData()
 		
 		LoadSlot.Value->SetMapName(SaveObject->MapName);// 设置加载槽的地图名称
 		LoadSlot.Value->PlayerStartTag = SaveObject->PlayerStartTag;// 同步出生点标签，用于后续进入游戏时确定玩家生成位置
+		LoadSlot.Value->SetPlayerLevel(SaveObject->PlayerLevel);
 	}
 }
 
