@@ -49,11 +49,14 @@ public:
 	TMap<ECharacterClass,FCharacterClassDefaultInfo> CharacterClassInformation;//字符类信息
 
 	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
-	TSubclassOf<UGameplayEffect> SecondaryAttributes_SetByCaller;//次要属性
+	TSubclassOf<UGameplayEffect> PrimaryAttributes_SetByCaller;//主要属性_由呼叫者设置
 
 	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
 	TSubclassOf<UGameplayEffect> SecondaryAttributes;//次要属性
 
+	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
+	TSubclassOf<UGameplayEffect> SecondaryAttributes_Infinite;//次要属性_无限
+	
 	UPROPERTY(EditDefaultsOnly,Category = "Common Class Defaults")
 	TSubclassOf<UGameplayEffect> VitalAttributes;//重要属性
 

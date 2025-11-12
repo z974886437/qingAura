@@ -11,6 +11,7 @@
 #include "Player/AuraPlayerController.h"
 #include "Player/AuraPlayerState.h"
 #include "NiagaraComponent.h"
+#include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
@@ -57,8 +58,11 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	InitAbilityActorInfo();//初始化能力Actor信息
 	LoadProgress();//加载进度
 
-	//TODO: Load in Abilities from disk
-	AddCharacterAbilities();//添加角色能力
+	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (AuraGameMode)
+	{
+		
+	}
 }
 
 void AAuraCharacter::LoadProgress()
@@ -71,15 +75,6 @@ void AAuraCharacter::LoadProgress()
 		ULoadScreenSaveGame* SaveData = AuraGameMode->RetrieveInGameSaveData();// 从 GameMode 中取出当前正在进行中的存档数据（ULoadScreenSaveGame 类型）
 		if (SaveData == nullptr) return;// 如果存档对象无效（读取失败或不存在），则直接返回，不继续执行
 
-		// 获取角色对应的 PlayerState 并转换为自定义类型 AAuraPlayerState
-		if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
-		{
-			AuraPlayerState->SetLevel(SaveData->PlayerLevel); // 设置玩家等级
-			AuraPlayerState->SetXP(SaveData->XP);// 设置玩家经验值
-			AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);// 设置可分配属性点
-			AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);// 设置技能点数
-		}
-
 		if (SaveData->bFirstTimeLoadIn)// 如果是首次加载角色
 		{
 			InitializeDefaultAttributes();// 初始化角色默认属性（生命、魔法等）
@@ -87,7 +82,17 @@ void AAuraCharacter::LoadProgress()
 		}
 		else
 		{
+			//TODO: Load in Abilities from disk
+			// 获取角色对应的 PlayerState 并转换为自定义类型 AAuraPlayerState
+			if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
+			{
+				AuraPlayerState->SetLevel(SaveData->PlayerLevel); // 设置玩家等级
+				AuraPlayerState->SetXP(SaveData->XP);// 设置玩家经验值
+				AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);// 设置可分配属性点
+				AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);// 设置技能点数
+			}
 			
+			UAuraAbilitySystemLibrary::InitializeDefaultAttributesFromSaveData(this,AbilitySystemComponent,SaveData);
 		}
 	}
 }

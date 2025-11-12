@@ -32,6 +32,7 @@ class UAuraAbilitySystemComponent;
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);//属性更改签名的多播委托
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLevelChangedSignature, int32, NewLevel,bool , bLevelUp);//级别已更改签名
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMessageWidgetRowSignature,FUIWidgetRow,Row);//消息小部件行签名
 
 
@@ -67,7 +68,7 @@ public:
 	FOnAttributeChangedSignature OnXPPercentChangeDelegate;//在 XP 百分比变化委托上
 
 	UPROPERTY(BlueprintAssignable,Category = "GAS|Level")
-	FOnPlayerStatChangedSignature OnPlayerLevelChangedDelegate;//在玩家级别变化委托
+	FOnLevelChangedSignature OnPlayerLevelChangedDelegate;//在玩家级别变化委托
 
 protected:
 

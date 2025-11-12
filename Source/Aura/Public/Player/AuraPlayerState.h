@@ -13,6 +13,7 @@ class UAttributeSet;
 class ULevelUpInfo;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerStatChanged,int32/*StatValue 统计数据*/)//玩家统计数据更改
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLevelChanged,int32/*StatValue 统计数据*/,bool /*bLevelUp*/)//等级改变
 
 /**
  * 
@@ -31,7 +32,7 @@ public:
 	TObjectPtr<ULevelUpInfo> LevelUpInfo;//等级升级信息
 
 	FOnPlayerStatChanged OnXPChangedDelegate;//在 XP 更改委托时
-	FOnPlayerStatChanged OnLevelChangedDelegate;//在等级更改委托时
+	FOnLevelChanged OnLevelChangedDelegate;//在等级更改委托时
 	FOnPlayerStatChanged OnAttributePointsChangedDelegate;//属性点已更改委托
 	FOnPlayerStatChanged OnSpellPointsChangedDelegate;//在法术点更改的委托上
 
@@ -65,7 +66,7 @@ private:
 	int32 Level = 1;
 
 	UPROPERTY(VisibleAnywhere,ReplicatedUsing=OnRep_XP)//网络同步变量（Replicated），但使用的是 “OnRep 回调函数”机制
-	int32 XP = 1;
+	int32 XP = 0;
 
 	UPROPERTY(VisibleAnywhere,ReplicatedUsing=OnRep_AttributePoints)//网络同步变量（Replicated），但使用的是 “OnRep 回调函数”机制
 	int32 AttributePoints = 0;
