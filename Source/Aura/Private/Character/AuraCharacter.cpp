@@ -13,6 +13,7 @@
 #include "NiagaraComponent.h"
 #include "AbilitySystem/AuraAbilitySystemLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/Data/AbilityInfo.h"
 #include "AbilitySystem/Debuff/DebuffNiagaraComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Game/AuraGameInstance.h"
@@ -254,7 +255,31 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 		SaveData->Resilience = UAuraAttributeSet::GetResilienceAttribute().GetNumericValue(GetAttributeSet());// 韧性
 		SaveData->Vigor = UAuraAttributeSet::GetVigorAttribute().GetNumericValue(GetAttributeSet()); // 活力
 
-		SaveData->bFirstTimeLoadIn = false;
+		SaveData->bFirstTimeLoadIn = false;// 标记非首次加载（后续再加载此存档时不再初始化默认属性）
+
+		if (!HasAuthority()) return;// 如果不是服务器端（没有权限）则停止执行，防止客户端重复保存
+
+		UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent);// 获取角色的能力系统组件（GAS 管理核心）
+		FForEachAbility SaveAbilityDelegate;// 创建一个用于遍历每个已授予技能的委托
+		SaveAbilityDelegate.BindLambda([this,AuraASC,SaveData](const FGameplayAbilitySpec& AbilitySpec)	// 绑定 Lambda，用于逐个保存技能信息到 SaveData
+		{
+			const FGameplayTag AbilityTag = AuraASC->GetAbilityTagFromSpec(AbilitySpec);// 从当前技能规格中提取技能标签（用于标识技能类型）
+			UAbilityInfo* AbilityInfo = UAuraAbilitySystemLibrary::GetAbilityInfo(this);// 获取全局技能信息表（UAbilityInfo 用于查询技能详情）
+			FAuraAbilityInfo Info = AbilityInfo->FindAbilityInfoForTag(AbilityTag);// 根据技能标签查找该技能对应的详细信息结构（FAuraAbilityInfo）
+			
+			FSavedAbility SavedAbility;// 构造一个临时结构体，用于保存单个技能的完整状态
+			SavedAbility.GameplayAbility = Info.Ability;  // 技能类引用
+			SavedAbility.AbilityLevel = AbilitySpec.Level; // 当前技能等级
+			SavedAbility.AbilitySlot = AuraASC->GetSlotFromAbilityTag(AbilityTag);// 技能在 UI 中的槽位
+			SavedAbility.AbilityStatus = AuraASC->GetStatusFromAbilityTag(AbilityTag);// 技能状态（已解锁/锁定）
+			SavedAbility.AbilityTag = AbilityTag;// 技能标识标签
+			SavedAbility.AbilityType = Info.AbilityType;// 技能类型（主动/被动）
+
+			SaveData->SavedAbilities.Add(SavedAbility);// 将该技能保存进存档的技能数组中
+			
+		});
+		AuraASC->ForEachAbility(SaveAbilityDelegate);// 遍历所有角色技能，执行上面绑定的保存逻辑
+		
 		AuraGameMode->SaveInGameProgressData(SaveData);// 调用 GameMode 的保存函数，将更新后的存档数据写回硬盘或内存
 	}
 }
