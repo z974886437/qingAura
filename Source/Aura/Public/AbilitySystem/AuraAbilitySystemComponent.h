@@ -6,7 +6,8 @@
 #include "AbilitySystemComponent.h"
 #include "AuraAbilitySystemComponent.generated.h"
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags,const FGameplayTagContainer& /* Asset Tags */);//效果资产标签
+class ULoadScreenSaveGame;
+DECLARE_MULTICAST_DELEGATE_OneParam(FEffectAssetTags, const FGameplayTagContainer& /* Asset Tags */);//效果资产标签
 DECLARE_MULTICAST_DELEGATE(FAbilitiesGiven);//赋予的能力
 DECLARE_DELEGATE_OneParam(FForEachAbility,const FGameplayAbilitySpec&);//代表每种能力
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FAbilityStatusChanged,const FGameplayTag& /*AbilityTag*/,const FGameplayTag& /*StatusTag*/,int32 /*AbilityLevel*/);
@@ -33,6 +34,7 @@ public:
 	FDeactivatePassiveAbility DeactivatePassiveAbility;//停用被动能力
 	FActivatePassiveEffect ActivatePassiveEffect;//激活被动效果
 
+	void AddCharacterAbilitiesFromSaveData(ULoadScreenSaveGame* SaveData);//从保存数据中添加角色能力
 	void AddCharacterAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupAbilities);//添加角色能力。
 	void AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities);//添加角色被动能力
 	bool bStartupAbilitiesGiven = false;//给定的启动能力

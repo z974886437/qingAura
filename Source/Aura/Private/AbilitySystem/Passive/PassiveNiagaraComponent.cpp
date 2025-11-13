@@ -4,6 +4,7 @@
 #include "AbilitySystem/Passive/PassiveNiagaraComponent.h"
 
 #include "AbilitySystemBlueprintLibrary.h"
+#include "AuraGameplayTags.h"
 #include "AbilitySystem/AuraAbilitySystemComponent.h"
 #include "Interaction/CombatInterface.h"
 
@@ -22,6 +23,7 @@ void UPassiveNiagaraComponent::BeginPlay()
 	{
 		// 如果成功获取到 AuraASC，则把本组件的 OnPassiveActivate 函数绑定到它的 ActivatePassiveEffect 事件上
 		AuraASC->ActivatePassiveEffect.AddUObject(this,&UPassiveNiagaraComponent::OnPassiveActivate);
+		ActivateIfEquipped(AuraASC);// 再次调用 ActivateIfEquipped()，检查此时是否有已装备的被动技能，并在必要时启动对应特效
 	}
 	else if (ICombatInterface* CombatInterface = Cast<ICombatInterface>(GetOwner()))	// 如果当前拥有者还没有 ASC（通常在敌人或角色初始化早期会出现）
 	{
@@ -32,8 +34,22 @@ void UPassiveNiagaraComponent::BeginPlay()
 			if (UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(GetOwner())))
 			{
 				AuraASC->ActivatePassiveEffect.AddUObject(this,&UPassiveNiagaraComponent::OnPassiveActivate);// 然后同样把 OnPassiveActivate 函数绑定到被动效果激活事件上
+				ActivateIfEquipped(AuraASC);// 再次调用 ActivateIfEquipped()，检查此时是否有已装备的被动技能，并在必要时启动对应特效
 			}
 		});
+	}
+}
+
+//如果装备则激活
+void UPassiveNiagaraComponent::ActivateIfEquipped(UAuraAbilitySystemComponent* AuraASC)
+{
+	const bool bStartupAbilitiesGiven = AuraASC->bStartupAbilitiesGiven;// 检查该角色的被动技能是否已被初始化（即 StartupAbilities 是否已分配给角色）
+	if (bStartupAbilitiesGiven)// 只有当角色的初始技能已经分配时，才继续执行（防止在角色刚创建时错误激活）
+	{
+		if (AuraASC->GetStatusFromAbilityTag(PassiveSpellTag) == FAuraGameplayTags::Get().Abilities_Status_Equipped)// 判断该被动技能的标签（PassiveSpellTag）对应的状态是否为“已装备”
+		{
+			Activate();// 如果技能确实已装备，则激活 Niagara 粒子效果（表现层）
+		}
 	}
 }
 
@@ -52,3 +68,5 @@ void UPassiveNiagaraComponent::OnPassiveActivate(const FGameplayTag& AbilityTag,
 		}
 	}
 }
+
+

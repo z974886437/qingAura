@@ -9,12 +9,45 @@
 #include "AbilitySystem/Abilities/AuraGameplayAbility.h"
 #include "AbilitySystem/Data/AbilityInfo.h"
 #include "Aura/AuraLogChannels.h"
+#include "Game/LoadScreenSaveGame.h"
 #include "Interaction/PlayerInterface.h"
 
 
 void UAuraAbilitySystemComponent::AbilityActorInfoSet()
 {
 	OnGameplayEffectAppliedDelegateToSelf.AddUObject(this,&UAuraAbilitySystemComponent::ClientEffectApplied);//监听某个 GameplayEffect 被应用到自己（Self） 时触发的回调
+}
+
+void UAuraAbilitySystemComponent::AddCharacterAbilitiesFromSaveData(ULoadScreenSaveGame* SaveData)
+{
+	for (const FSavedAbility& Data : SaveData->SavedAbilities)// 遍历存档中保存的每一个技能信息（FSavedAbility）
+	{
+		const TSubclassOf<UGameplayAbility> LoadedAbilityClass = Data.GameplayAbility;// 从存档数据中获取技能类（GameplayAbility 的子类）
+
+		FGameplayAbilitySpec LoadedAbilitySpec = FGameplayAbilitySpec(LoadedAbilityClass,Data.AbilityLevel);// 创建一个技能规格（Spec），指定技能类和等级（从存档中读取）
+
+		LoadedAbilitySpec.DynamicAbilityTags.AddTag(Data.AbilitySlot);// 将技能的插槽信息（如 Q、E、R 等）写入动态标签
+		LoadedAbilitySpec.DynamicAbilityTags.AddTag(Data.AbilityStatus);// 将技能的状态标签（如“已装备”“未装备”等）写入动态标签
+		
+		if (Data.AbilityType == FAuraGameplayTags::Get().Abilities_Type_Offensive)// 如果技能类型是“进攻型”技能（Offensive）
+		{
+			GiveAbility(LoadedAbilitySpec);// 仅授予该技能，但不立即激活（主动技能需要玩家手动触发）
+		}
+		else if (Data.AbilityType == FAuraGameplayTags::Get().Abilities_Type_Passive)// 如果技能类型是“被动型”技能（Passive）
+		{
+			if (Data.AbilityStatus.MatchesTagExact(FAuraGameplayTags::Get().Abilities_Status_Equipped))// 检查该被动技能的状态是否为“已装备”
+			{
+				GiveAbilityAndActivateOnce(LoadedAbilitySpec);// 若已装备，则授予并立即激活一次（让被动效果立刻生效）
+			}
+			else
+			{
+				GiveAbility(LoadedAbilitySpec);// 若未装备，则只授予技能（保存在技能列表中，等待后续装备）
+			}
+		}
+	}
+	bStartupAbilitiesGiven = true;// 标记角色的初始技能已全部授予
+	AbilitiesGivenDelegate.Broadcast();// 广播一个委托，通知其他系统（如 UI、特效组件）技能加载完成
+	
 }
 
 // 作用：为角色批量添加预设技能，并给这些技能打上初始标签
@@ -44,11 +77,12 @@ void UAuraAbilitySystemComponent::AddCharacterAbilities(const TArray<TSubclassOf
 
 void UAuraAbilitySystemComponent::AddCharacterPassiveAbilities(const TArray<TSubclassOf<UGameplayAbility>>& StartupPassiveAbilities)
 {
+	// 遍历传入的被动技能类数组 StartupPassiveAbilities（例如角色初始自带的被动技能）
 	for (const TSubclassOf<UGameplayAbility> AbilityClass : StartupPassiveAbilities)
 	{
-		// 遍历所有预设的技能类（StartupAbilities 是一个 TArray<TSubclassOf<UGameplayAbility>>）
-		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);
-		GiveAbilityAndActivateOnce(AbilitySpec);
+		FGameplayAbilitySpec AbilitySpec = FGameplayAbilitySpec(AbilityClass,1);// 创建一个技能规格（Spec），用于定义技能类及其等级，这里等级固定为1
+		AbilitySpec.DynamicAbilityTags.AddTag(FAuraGameplayTags::Get().Abilities_Status_Equipped);// 为该技能添加动态标签，用于标识该技能已装备（Equipped）
+		GiveAbilityAndActivateOnce(AbilitySpec);// 调用自定义函数 GiveAbilityAndActivateOnce，将该技能授予角色并立即激活一次
 	}
 }
 
@@ -393,6 +427,8 @@ void UAuraAbilitySystemComponent::ServerEquipAbility_Implementation(const FGamep
 					TryActivateAbility(AbilitySpec->Handle);//尝试立即激活
 					MulticastActivatePassiveEffect(AbilityTag,true);//组播激活被动效应
 				}
+				AbilitySpec->DynamicAbilityTags.RemoveTag(GetStatusFromSpec(*AbilitySpec));// 从技能的动态标签中移除当前状态标签（如“未装备”“冷却中”等）
+				AbilitySpec->DynamicAbilityTags.AddTag(GameplayTags.Abilities_Status_Equipped);// 为该技能添加“已装备”状态标签，用于标识技能处于激活或准备就绪状态
 			}
 			AssignSlotToAbility(*AbilitySpec,Slot);// 正式将该技能分配到新的插槽上（添加动态标签）
 

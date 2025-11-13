@@ -41,6 +41,14 @@ struct FSavedAbility
 	int32 AbilityLevel;
 };
 
+// 声明一个内联函数，重载 “==” 运算符，用于比较两个 FSavedAbility 对象是否相等
+inline bool operator==(const FSavedAbility& Left,const FSavedAbility& Right)
+{
+	// 比较两个 FSavedAbility 对象是否相等：如果它们的 AbilityTag 完全一致，则认为相同
+	// 如果两个技能的标签（AbilityTag）完全匹配（MatchesTagExact），则返回 true，否则返回 false
+	return Left.AbilityTag.MatchesTagExact(Right.AbilityTag);
+}
+
 /**
  * 
  */

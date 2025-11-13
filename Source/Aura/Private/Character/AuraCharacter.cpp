@@ -48,7 +48,7 @@ AAuraCharacter::AAuraCharacter()
 	bUseControllerRotationRoll = false;//控制角色是否跟随控制器的 Roll（翻滚）旋转
 	bUseControllerRotationYaw = false;//控制角色是否跟随控制器的 Yaw（左右转头）旋转
 
-	CharacterClass = ECharacterClass::Elementalist;
+	CharacterClass = ECharacterClass::Elementalist;// 设置角色默认职业类型为元素使（Elementalist）
 }
 
 void AAuraCharacter::PossessedBy(AController* NewController)
@@ -83,7 +83,11 @@ void AAuraCharacter::LoadProgress()
 		}
 		else
 		{
-			//TODO: Load in Abilities from disk
+			if (UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent))// 尝试获取角色的能力系统组件（ASC），用于加载技能数据
+			{
+				AuraASC->AddCharacterAbilitiesFromSaveData(SaveData);// 从存档中恢复角色的技能状态（包括技能等级、装备槽位、是否被动激活等）
+			}
+			
 			// 获取角色对应的 PlayerState 并转换为自定义类型 AAuraPlayerState
 			if (AAuraPlayerState* AuraPlayerState = Cast<AAuraPlayerState>(GetPlayerState()))
 			{
@@ -92,7 +96,8 @@ void AAuraCharacter::LoadProgress()
 				AuraPlayerState->SetAttributePoints(SaveData->AttributePoints);// 设置可分配属性点
 				AuraPlayerState->SetSpellPoints(SaveData->SpellPoints);// 设置技能点数
 			}
-			
+
+			// 根据存档中的属性值（力量、智力、韧性、活力）初始化角色的 AttributeSet
 			UAuraAbilitySystemLibrary::InitializeDefaultAttributesFromSaveData(this,AbilitySystemComponent,SaveData);
 		}
 	}
@@ -208,23 +213,25 @@ int32 AAuraCharacter::GetSpellPoints_Implementation() const
 	return AuraPlayerState->GetSpellPoints();
 }
 
+// 在角色脚下显示一个“魔法施法圈”，用于指示技能范围或施法位置
 void AAuraCharacter::ShowMagicCircle_Implementation(UMaterialInterface* DecalMaterial)
 {
 	// 如果角色有控制器，并且控制器有 HUD，则初始化 UI Overlay，把必要数据传给 HUD
-	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
+	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))// 获取当前角色的控制器，并转换为自定义类型 AAuraPlayerController
 	{
-		AuraPlayerController->ShowMagicCircle(DecalMaterial);
-		AuraPlayerController->bShowMouseCursor = false;
+		AuraPlayerController->ShowMagicCircle(DecalMaterial);// 调用控制器中的函数，在地面生成一个魔法圆形投影（Decal）
+		AuraPlayerController->bShowMouseCursor = false;// 隐藏鼠标光标（通常用于锁定视角模式或瞄准状态）
 	}
 }
 
+// 隐藏角色脚下的“魔法施法圈”，通常在技能释放结束或取消时调用
 void AAuraCharacter::HideMagicCircle_Implementation()
 {
 	// 如果角色有控制器，并且控制器有 HUD，则初始化 UI Overlay，把必要数据传给 HUD
-	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))
+	if (AAuraPlayerController* AuraPlayerController = Cast<AAuraPlayerController>(GetController()))// 获取当前角色的控制器，并转换为自定义类型 AAuraPlayerController
 	{
-		AuraPlayerController->HideMagicCircle();
-		AuraPlayerController->bShowMouseCursor = true;
+		AuraPlayerController->HideMagicCircle();// 调用控制器中的函数，隐藏或销毁地面的魔法圆形投影
+		AuraPlayerController->bShowMouseCursor = true;// 恢复显示鼠标光标（回到普通操作状态）
 	}
 }
 
@@ -261,6 +268,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 
 		UAuraAbilitySystemComponent* AuraASC = Cast<UAuraAbilitySystemComponent>(AbilitySystemComponent);// 获取角色的能力系统组件（GAS 管理核心）
 		FForEachAbility SaveAbilityDelegate;// 创建一个用于遍历每个已授予技能的委托
+		SaveData->SavedAbilities.Empty();// 清空存档中旧的技能数组，准备重新写入
 		SaveAbilityDelegate.BindLambda([this,AuraASC,SaveData](const FGameplayAbilitySpec& AbilitySpec)	// 绑定 Lambda，用于逐个保存技能信息到 SaveData
 		{
 			const FGameplayTag AbilityTag = AuraASC->GetAbilityTagFromSpec(AbilitySpec);// 从当前技能规格中提取技能标签（用于标识技能类型）
@@ -275,7 +283,7 @@ void AAuraCharacter::SaveProgress_Implementation(const FName& CheckpointTag)
 			SavedAbility.AbilityTag = AbilityTag;// 技能标识标签
 			SavedAbility.AbilityType = Info.AbilityType;// 技能类型（主动/被动）
 
-			SaveData->SavedAbilities.Add(SavedAbility);// 将该技能保存进存档的技能数组中
+			SaveData->SavedAbilities.AddUnique(SavedAbility);// 将该技能保存进存档的技能数组中
 			
 		});
 		AuraASC->ForEachAbility(SaveAbilityDelegate);// 遍历所有角色技能，执行上面绑定的保存逻辑
