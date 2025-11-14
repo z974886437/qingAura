@@ -17,6 +17,40 @@ enum ESaveSlotStatus//E 保存槽位状态
 	Taken//采取
 };
 
+USTRUCT()
+struct FSavedActor
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FName ActorName = FName();//演员姓名
+
+	UPROPERTY()
+	FTransform Transform = FTransform();//转换
+
+	// Serialized variables from the Actor - only those marked with  SaveGame specifier 来自 Actor 的序列化变量 - 仅那些标有 SaveGame 说明符的变量
+	UPROPERTY()
+	TArray<uint8> Bytes;//字节
+};
+
+// 比较两个 FSavedActor 是否相等（只根据 ActorName 判断）
+inline bool operator==(const FSavedActor& Left,const FSavedActor& Right)
+{
+	return Left.ActorName == Right.ActorName;// 判断左右对象的 ActorName 是否完全一致
+}
+
+USTRUCT()
+struct FSavedMap
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString MapAssetName = FString();
+
+	UPROPERTY()
+	TArray<FSavedActor> SavedActors;
+};
+
 USTRUCT(BlueprintType)
 struct FSavedAbility
 {
@@ -26,19 +60,19 @@ struct FSavedAbility
 	TSubclassOf<UGameplayAbility> GameplayAbility;//游戏能力
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	FGameplayTag AbilityTag = FGameplayTag();
+	FGameplayTag AbilityTag = FGameplayTag();//能力标签
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	FGameplayTag AbilityStatus = FGameplayTag();
+	FGameplayTag AbilityStatus = FGameplayTag();//能力状况
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	FGameplayTag AbilitySlot = FGameplayTag();
+	FGameplayTag AbilitySlot = FGameplayTag();//能力槽
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	FGameplayTag AbilityType = FGameplayTag();
+	FGameplayTag AbilityType = FGameplayTag();//能力类型
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	int32 AbilityLevel;
+	int32 AbilityLevel;//能力水平
 };
 
 // 声明一个内联函数，重载 “==” 运算符，用于比较两个 FSavedAbility 对象是否相等
@@ -118,4 +152,10 @@ public:
 
 	UPROPERTY()
 	TArray<FSavedAbility> SavedAbilities;
+
+	UPROPERTY()
+	TArray<FSavedMap> SavedMaps;
+
+	FSavedMap GetSavedMapWithMapName(const FString& InMapName);//获取带有地图名称的已保存地图
+	bool HasMap(const FString& InMapName);
 };
