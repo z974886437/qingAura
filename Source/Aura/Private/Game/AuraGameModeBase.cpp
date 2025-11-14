@@ -3,10 +3,13 @@
 
 #include "Game/AuraGameModeBase.h"
 
+#include "EngineUtils.h"
 #include "Game/AuraGameInstance.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "GameFramework/PlayerStart.h"
+#include "Interaction/SaveInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "UI/ViewModel/MVVM_LoadSlot.h"
 
 // 保存指定加载槽（LoadSlot）的存档数据
@@ -73,6 +76,59 @@ void AAuraGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
 	AuraGameInstance->PlayerStartTag = SaveObject->PlayerStartTag;// 将玩家当前的出生点（PlayerStartTag）写回 GameInstance
 
 	UGameplayStatics::SaveGameToSlot(SaveObject,InGameLoadSlotName,InGameLoadSlotIndex);// 使用引擎提供的静态函数将存档对象（SaveObject）保存到对应的槽中
+}
+
+// 保存当前世界（World）的所有可保存 Actor 状态
+void AAuraGameModeBase::SaveWorldState(UWorld* World)
+{
+	FString WorldName = World->GetMapName();// 获取当前世界的地图名称（包含前缀）
+	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);// 移除 StreamingLevelsPrefix 前缀，得到实际地图名
+
+	UAuraGameInstance* AuraGI = Cast<UAuraGameInstance>(GetGameInstance());// 获取游戏实例并转换为自定义的 AuraGI，用于访问当前存档槽
+	check(AuraGI); // 确保 AuraGI 不为空，否则直接崩溃，避免空指针继续执行
+
+	if (ULoadScreenSaveGame* SaveGame = GetSaveSlotData(AuraGI->LoadSlotName,AuraGI->LoadSlotIndex))// 获取当前存档槽中的 SaveGame 数据（如果不存在会创建）
+	{
+		if (!SaveGame->HasMap(WorldName))  // 检查当前地图是否已经有保存记录，如果没有则创建一个新的 FSavedMap
+		{
+			FSavedMap NewSavedMap;// 创建空的地图保存结构
+			NewSavedMap.MapAssetName = WorldName; // 记录地图资源名（作为唯一 ID）
+			SaveGame->SavedMaps.Add(NewSavedMap); // 将该新地图加入存档的 SavedMaps 数组
+		}
+
+		FSavedMap SavedMap = SaveGame->GetSavedMapWithMapName(WorldName); // 获取该地图对应的保存数据（如果之前没有，则刚刚已添加）
+		SavedMap.SavedActors.Empty(); // 清空该地图之前保存的 Actor 数据，准备重新写入
+
+		for (FActorIterator It(World);It;++It) // 遍历世界中的所有 Actor（使用引擎提供的迭代器）
+		{
+			AActor* Actor = *It;// 当前遍历到的 Actor
+
+			if (!IsValid(Actor) || !Actor->Implements<USaveInterface>()) continue; // 跳过无效 Actor 或未实现 SaveInterface 的 Actor
+
+			FSavedActor SavedActor; // 创建一个 FSavedActor 用于存储该 Actor 的保存数据
+			SavedActor.ActorName = Actor->GetFName();// 保存 Actor 名字作为唯一标识
+			SavedActor.Transform = Actor->GetTransform(); // 保存 Actor 当前 transform（位置、旋转、缩放）
+
+			FMemoryWriter MemoryWriter(SavedActor.Bytes); // 用 MemoryWriter 写入到 SavedActor.Bytes（字节数组）
+
+			FObjectAndNameAsStringProxyArchive Archive(MemoryWriter,true); // 将对象序列化为字符串/名称形式，以便存档系统使用
+			Archive.ArIsSaveGame = true; // 标记为存档操作，让对象只序列化带 SaveGame 标记的变量
+
+			Actor->Serialize(Archive);// 调用 Actor 的 Serialize，把变量写入字节流
+
+			SavedMap.SavedActors.AddUnique(SavedActor); // 将这个 Actor 的保存结果加入 SavedActors，避免重复项
+		}
+
+		for (FSavedMap& MapToReplace : SaveGame->SavedMaps)  // 遍历所有已保存地图，为当前地图替换为最新版本的 SavedMap
+		{
+			// 找到目标地图后，用新保存的数据覆盖旧数据
+			if (MapToReplace.MapAssetName == WorldName)
+			{
+				MapToReplace = SavedMap;
+			}
+		}
+		UGameplayStatics::SaveGameToSlot(SaveGame,AuraGI->LoadSlotName,AuraGI->LoadSlotIndex); // 将整个存档写入硬盘（最终保存操作）
+	}
 }
 
 void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)

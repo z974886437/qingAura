@@ -32,6 +32,8 @@ public:
 	ULoadScreenSaveGame* RetrieveInGameSaveData();//检索游戏保存数据
 	void SaveInGameProgressData(ULoadScreenSaveGame* SaveObject);//保存游戏进度数据
 
+	void SaveWorldState(UWorld* World);//拯救世界状态
+
 	void TravelToMap(UMVVM_LoadSlot* Slot);//前往地图
 
 	UPROPERTY(EditDefaultsOnly)
