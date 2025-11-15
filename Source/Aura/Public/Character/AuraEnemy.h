@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Character/AuraCharacterBase.h"
 #include "Interaction/EnemyInterface.h"//用于访问你项目中定义的 接口类 UEnemyInterface，一般用于角色之间的交互，比如玩家攻击敌人、敌人响应伤害等
+#include "Interaction/HighlightInterface.h"
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AuraEnemy.generated.h"
 
@@ -15,17 +16,17 @@ class AAuraAIController;
  * 
  */
 UCLASS()
-class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface
+class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface, public IHighlightInterface
 {
 	GENERATED_BODY()
 public:
 	AAuraEnemy();
 	virtual void PossessedBy(AController* NewController) override;//拥有
 
-	/*Enemy Interface(敌人界面）*/
+	/*Highlight Interface(敌人界面）*/
 	virtual void HighlightActor() override;
 	virtual void UnHighlightActor() override;
-	/*end Enemy Interface(结束敌人界面）*/
+	/*end Highlight Interface(结束敌人界面）*/
 
 	/* Combat Interface (战斗界面)*/
 	virtual int32 GetPlayerLevel_Implementation() override;

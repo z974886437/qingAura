@@ -8,13 +8,13 @@
 #include "AuraPlayerController.generated.h"
 
 
+class IHighlightInterface;
 class AMagicCircle;
 class UNiagaraSystem;
 class UDamageTextComponent;
 class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
-class IEnemyInterface;
 class UAuraInputConfig;
 class UAuraAbilitySystemComponent;
 class USplineComponent;
@@ -62,8 +62,8 @@ private:
 	void Move(const struct FInputActionValue& InputActionValue);//定义F输入动作值
 
 	void CursorTrace();//空光标轨迹
-	IEnemyInterface* LastActor;//最后Actor
-	IEnemyInterface* ThisActor;
+	IHighlightInterface* LastActor;//最后Actor
+	IHighlightInterface* ThisActor;
 	FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);//能力输入标签按下

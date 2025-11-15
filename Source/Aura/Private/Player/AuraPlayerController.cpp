@@ -18,6 +18,7 @@
 #include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"//交互/敌人接口
 #include "GameFramework/Character.h"
+#include "Interaction/HighlightInterface.h"
 #include "UI/Widget/DamageTextComponent.h"
 
 AAuraPlayerController::AAuraPlayerController()
@@ -122,7 +123,7 @@ void AAuraPlayerController::CursorTrace()
 
 	// 将上一命中的物体和当前命中的物体保存到变量中
 	LastActor = ThisActor;
-	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	ThisActor = Cast<IHighlightInterface>(CursorHit.GetActor());
 
 	if (LastActor != ThisActor) // 如果上一个命中的物体和当前命中的物体不同，则进行高亮切换
 	{
