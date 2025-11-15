@@ -19,6 +19,11 @@ class AURA_API ACheckpoint : public APlayerStart, public ISaveInterface
 public:
 	ACheckpoint(const FObjectInitializer& ObjectInitializer);//一个检查站
 
+	/* Save Interface */
+	virtual bool ShouldLoadTransform_Implementation() override { return false; }//应该加载变换
+	virtual void LoadActor_Implementation() override;//加载演员
+	/* end Save Interface*/
+
 	UPROPERTY(BlueprintReadOnly, SaveGame)
 	bool bReached = false;//达到
 protected:

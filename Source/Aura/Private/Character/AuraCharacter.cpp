@@ -59,10 +59,12 @@ void AAuraCharacter::PossessedBy(AController* NewController)
 	InitAbilityActorInfo();//初始化能力Actor信息
 	LoadProgress();//加载进度
 
-	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
-	if (AuraGameMode)
+	
+	// 加载世界相关状态（例如刷怪点、宝箱、机关、WorldState 等）
+	//（检查 GameMode 是否有效，因为只有服务器存在 GameMode）
+	if (AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 	{
-		
+		AuraGameMode->LoadWorldState(GetWorld());// 让 GameMode 根据存档恢复当前世界状态
 	}
 }
 

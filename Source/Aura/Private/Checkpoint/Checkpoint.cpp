@@ -4,7 +4,9 @@
 #include "Checkpoint/Checkpoint.h"
 
 #include "Components/SphereComponent.h"
+#include "Game/AuraGameModeBase.h"
 #include "Interaction/PlayerInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // 构造函数，使用 FObjectInitializer 初始化对象，用于在对象创建时配置子组件
 ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
@@ -24,11 +26,27 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
 	Sphere->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);// 对角色（Pawn）启用“重叠”检测，这样投射物可以检测到玩家或敌人。
 }
 
+void ACheckpoint::LoadActor_Implementation()
+{
+	if (bReached)
+	{
+		HandleGlowEffects();
+	}
+}
+
 // 当球形碰撞体检测到有物体进入（重叠）时调用的回调函数
 void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->Implements<UPlayerInterface>()) // 判断进入范围的 Actor 是否带有 “Player” 标签，确保只有玩家触发检查点
 	{
+		bReached = true;// 标记已触达检查点，用于避免重复触发或用于视觉表现
+
+		// 获取当前 GameMode，并确保转成 AAuraGameModeBase 成功
+		if (AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
+		{
+			AuraGM->SaveWorldState(GetWorld());// 调用 GameMode 保存当前世界状态（保存 Actor 数据、位置等）
+		}
+		
 		IPlayerInterface::Execute_SaveProgress(OtherActor,PlayerStartTag);// 调用接口函数 SaveProgress，将当前检查点的标签（PlayerStartTag）传入
 		HandleGlowEffects();   // 触发发光效果（表示检查点被激活）
 	}

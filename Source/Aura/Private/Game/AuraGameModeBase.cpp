@@ -4,6 +4,7 @@
 #include "Game/AuraGameModeBase.h"
 
 #include "EngineUtils.h"
+#include "Aura/AuraLogChannels.h"
 #include "Game/AuraGameInstance.h"
 #include "Game/LoadScreenSaveGame.h"
 #include "GameFramework/PlayerStart.h"
@@ -79,7 +80,7 @@ void AAuraGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
 }
 
 // 保存当前世界（World）的所有可保存 Actor 状态
-void AAuraGameModeBase::SaveWorldState(UWorld* World)
+void AAuraGameModeBase::SaveWorldState(UWorld* World) const
 {
 	FString WorldName = World->GetMapName();// 获取当前世界的地图名称（包含前缀）
 	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);// 移除 StreamingLevelsPrefix 前缀，得到实际地图名
@@ -128,6 +129,57 @@ void AAuraGameModeBase::SaveWorldState(UWorld* World)
 			}
 		}
 		UGameplayStatics::SaveGameToSlot(SaveGame,AuraGI->LoadSlotName,AuraGI->LoadSlotIndex); // 将整个存档写入硬盘（最终保存操作）
+	}
+}
+
+// 从存档中加载当前世界（World）的所有可保存 Actor 状态
+void AAuraGameModeBase::LoadWorldState(UWorld* World) const
+{
+	FString WorldName = World->GetMapName();// 获取当前世界的地图名称（包含前缀）
+	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);// 移除 StreamingLevelsPrefix 前缀，得到实际地图名
+
+	UAuraGameInstance* AuraGI = Cast<UAuraGameInstance>(GetGameInstance());// 获取游戏实例并转换为自定义的 AuraGI，用于访问当前存档槽
+	check(AuraGI); // 确保 AuraGI 不为空，否则直接崩溃，避免空指针继续执行
+
+	// 判断当前存档槽是否存在有效存档文件
+	if (UGameplayStatics::DoesSaveGameExist(AuraGI->LoadSlotName,AuraGI->LoadSlotIndex))
+	{
+		// 尝试从磁盘加载存档文件，并转换为自定义的 ULoadScreenSaveGame 类型
+		ULoadScreenSaveGame* SaveGame = Cast<ULoadScreenSaveGame>(UGameplayStatics::LoadGameFromSlot(AuraGI->LoadSlotName,AuraGI->LoadSlotIndex));
+
+		// 如果加载失败，打印日志并退出函数
+		if (SaveGame == nullptr)
+		{
+			UE_LOG(LogAura,Error,TEXT("Failed to load slot"));
+			return;
+		}
+		
+		for (FActorIterator It(World);It;++It) // 遍历世界中的所有 Actor（使用引擎提供的迭代器）
+		{
+			AActor* Actor = *It;// 当前遍历到的 Actor
+
+			if (!Actor->Implements<USaveInterface>()) continue;// 只加载实现了 SaveInterface 的 Actor（不具备保存功能的 Actor 被忽略）
+
+			for (FSavedActor SavedActor : SaveGame->GetSavedMapWithMapName(WorldName).SavedActors) // 遍历对应地图下的所有已保存的 Actor 数据
+			{
+				if (SavedActor.ActorName == Actor->GetFName())  // 判断当前 Actor 是否与存档中的某个 Actor 名称匹配（通过名字唯一识别）
+				{
+					if (ISaveInterface::Execute_ShouldLoadTransform(Actor)) // 询问 Actor 是否允许加载 Transform（位置/旋转/缩放）
+					{
+						Actor->SetActorTransform(SavedActor.Transform); // 根据存档中的 Transform 恢复 Actor 的位置与旋转
+					}
+
+					FMemoryReader MemoryReader(SavedActor.Bytes); // 创建 MemoryReader，从 SavedActor.Bytes 读取序列化数据
+
+					FObjectAndNameAsStringProxyArchive Archive(MemoryReader,true); // 创建反序列化代理，支持名称与字符串序列化
+					Archive.ArIsSaveGame = true; // 标记为 SaveGame 反序列化，确保只处理带 SaveGame 标记的变量
+					Actor->Serialize(Archive);  // 将存档中的数据写回 Actor 的成员变量
+
+					ISaveInterface::Execute_LoadActor(Actor);  // 调用蓝图或 C++ 实现的 LoadActor 钩子，用于做恢复后的额外逻辑
+					
+				}
+			}
+		}
 	}
 }
 
