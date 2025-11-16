@@ -18,12 +18,18 @@ ACheckpoint::ACheckpoint(const FObjectInitializer& ObjectInitializer)
 	CheckpointMesh->SetupAttachment(GetRootComponent());// 将静态网格组件附加到根组件上（如果没有根组件，将会附加到默认根）
 	CheckpointMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);// 启用查询与物理碰撞（既能检测重叠也能产生物理反应，例如阻挡）
 	CheckpointMesh->SetCollisionResponseToAllChannels(ECR_Block);// 设置网格对所有通道的碰撞响应为“阻挡”，即任何物体都会被它挡住
+
+	CheckpointMesh->SetCustomDepthStencilValue(CUSTOM_DEPTH_TAN);// 设置自定义深度模板值，用于后期处理效果
+	CheckpointMesh->MarkRenderStateDirty();// 标记渲染状态为脏，确保更新渲染状态
 	
 	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");// 创建一个球形碰撞体组件，用来检测角色是否触发检查点
 	Sphere->SetupAttachment(CheckpointMesh);// 将球形组件附加到网格组件上，使其跟随网格一起移动
 	Sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);//只进行“查询类”碰撞检测，不进行物理模拟
 	Sphere->SetCollisionResponseToAllChannels(ECR_Ignore);//把 Sphere 对所有碰撞通道的响应全部设为 忽略（Ignore）
 	Sphere->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);// 对角色（Pawn）启用“重叠”检测，这样投射物可以检测到玩家或敌人。
+
+	MoveToComponent = CreateDefaultSubobject<USceneComponent>("MoveToComponent");// 创建并设置移动目标组件，用于目标位置的存储与设置
+	MoveToComponent->SetupAttachment(GetRootComponent());// 将移动目标组件附加到根组件上
 }
 
 void ACheckpoint::LoadActor_Implementation()
@@ -59,6 +65,24 @@ void ACheckpoint::BeginPlay()
 	// 将球体组件的重叠事件绑定到自定义函数 OnSphereOverlap
 	// 当玩家进入球体范围时，自动调用 OnSphereOverlap 函数
 	Sphere->OnComponentBeginOverlap.AddDynamic(this,&ACheckpoint::OnSphereOverlap);//球体碰撞组件（Sphere）的 重叠开始事件 绑定到 AAuraProjectile::OnSphereOverlap 函数
+}
+
+// 设置目标位置为当前组件的位置
+void ACheckpoint::SetMoveToLocation_Implementation(FVector& OutDestination)
+{
+	OutDestination = MoveToComponent->GetComponentLocation();// 获取目标组件位置，并将其设置为目标位置
+}
+
+// 高亮显示物体
+void ACheckpoint::HighlightActor_Implementation()
+{
+	CheckpointMesh->SetRenderCustomDepth(true);// 设置物体的渲染深度为自定义深度，显示高亮效果
+}
+
+// 取消高亮显示物体
+void ACheckpoint::UnHighlightActor_Implementation()
+{
+	CheckpointMesh->SetRenderCustomDepth(false);// 关闭物体的自定义渲染深度，移除高亮效果
 }
 
 // 处理检查点发光效果的逻辑函数

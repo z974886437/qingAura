@@ -210,6 +210,16 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		const APawn* ControlledPawn = GetPawn();// 获取当前被控制的 Pawn（角色）
 		if (FollowTime <= ShortPressThreshold && ControlledPawn)// 1. 判断是否是短按（FollowTime <= ShortPressThreshold）并且角色存在
 		{
+			if (IsValid(ThisActor) && ThisActor->Implements<UHighlightInterface>())
+			{
+				IHighlightInterface::Execute_SetMoveToLocation(ThisActor,CachedDestination);// 如果当前目标物体有效且实现了 UHighlightInterface 接口，设置目标物体的移动位置
+			}
+			// 如果玩家当前没有阻止“输入按下”的状态（例如技能引导中、被眩晕等）
+			else if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
+			{
+				// 在目标位置（CachedDestination）生成一个 Niagara 特效系统
+				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ClickNiagaraSystem,CachedDestination);
+			}
 			// 2. 调用导航系统同步计算从角色当前位置到目标位置的路径（UNavigationPath 对象）	
 			if (UNavigationPath* NavPath = UNavigationSystemV1::FindPathToLocationSynchronously(this,
 				ControlledPawn->GetActorLocation(),// 起点：角色位置
@@ -227,12 +237,6 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 					bAutoRunning = true; // 7. 开启自动寻路标志位，让角色开始沿路径移动
 				}
 			}
-			// 如果玩家当前没有阻止“输入按下”的状态（例如技能引导中、被眩晕等）
-			if (GetASC() && !GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_InputPressed))
-			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(this,ClickNiagaraSystem,CachedDestination);// 在目标位置（CachedDestination）生成一个 Niagara 特效系统
-			}
-			
 		}
 		// 7. 重置跟随时间，关闭锁定目标模式
 		FollowTime = 0.f;

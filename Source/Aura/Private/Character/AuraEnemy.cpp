@@ -37,6 +37,11 @@ AAuraEnemy::AAuraEnemy()
 	HealthBar = CreateDefaultSubobject<UWidgetComponent>("HealthBar");// 创建默认的 Widget 组件（用来显示血条 UI）
 	HealthBar->SetupAttachment(GetRootComponent());// 将血条 UI 挂到角色的根组件上（跟着角色移动）
 
+	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);// 设置角色网格和武器的自定义深度模板值，通常用于后期处理效果（例如高亮显示）
+	GetMesh()->MarkRenderStateDirty();// 标记渲染状态为脏，确保更新渲染效果
+	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED); // 同样设置武器的深度模板值
+	Weapon->MarkRenderStateDirty();
+
 	BaseWalkSpeed = 250.f;
 }
 
@@ -60,16 +65,18 @@ void AAuraEnemy::HighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(true);//用于设置角色网格体是否启用 Custom Depth 渲染通道。
 	//设置网格体的 Custom Depth Stencil 值，用于配合后处理材质进行效果区分（比如不同颜色的描边）。
-	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
-
 	Weapon->SetRenderCustomDepth(true);//设置武器
-	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
 }
 
 void AAuraEnemy::UnHighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(false);//用于设置角色网格体是否启用 Custom Depth 渲染通道。
 	Weapon->SetRenderCustomDepth(false);
+}
+
+void AAuraEnemy::SetMoveToLocation_Implementation(FVector& OutDestination)
+{
+	// Do not change OutDestination
 }
 
 int32 AAuraEnemy::GetPlayerLevel_Implementation()

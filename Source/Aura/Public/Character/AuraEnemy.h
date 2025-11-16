@@ -26,6 +26,7 @@ public:
 	/*Highlight Interface(敌人界面）*/
 	virtual void HighlightActor_Implementation() override;
 	virtual void UnHighlightActor_Implementation() override;
+	virtual void SetMoveToLocation_Implementation(FVector& OutDestination) override;
 	/*end Highlight Interface(结束敌人界面）*/
 
 	/* Combat Interface (战斗界面)*/
