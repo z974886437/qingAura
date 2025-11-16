@@ -51,9 +51,9 @@ void AAuraPlayerController::ShowMagicCircle(UMaterialInterface* DecalMaterial)
 
 void AAuraPlayerController::HideMagicCircle()
 {
-	if (IsValid(MagicCircle))
+	if (IsValid(MagicCircle))// 如果 MagicCircle 有效（非空），就销毁它
 	{
-		MagicCircle->Destroy();
+		MagicCircle->Destroy(); // 销毁 MagicCircle，移除它
 	}
 }
 
@@ -93,9 +93,25 @@ void AAuraPlayerController::AutoRun()
 
 void AAuraPlayerController::UpdateMagicCircleLocation()
 {
-	if (IsValid(MagicCircle))
+	if (IsValid(MagicCircle))// 如果 MagicCircle 有效（非空），就更新它的位置
 	{
-		MagicCircle->SetActorLocation(CursorHit.ImpactPoint);
+		MagicCircle->SetActorLocation(CursorHit.ImpactPoint);// 将 MagicCircle 的位置设置为当前光标击中的位置
+	}
+}
+
+void AAuraPlayerController::HighlightActor(AActor* InActor)
+{
+	if (IsValid(InActor) && InActor->Implements<UHighlightInterface>())// 如果 InActor 有效且实现了 UHighlightInterface 接口，则高亮显示该 Actor
+	{
+		IHighlightInterface::Execute_HighlightActor(InActor);  // 高亮该 Actor
+	}
+}
+
+void AAuraPlayerController::UnHighlightActor(AActor* InActor)
+{
+	if (IsValid(InActor) && InActor->Implements<UHighlightInterface>())// 如果 InActor 有效且实现了 UHighlightInterface 接口，则取消高亮显示该 Actor
+	{
+		IHighlightInterface::Execute_UnHighlightActor(InActor);   // 取消高亮该 Actor
 	}
 }
 
@@ -105,8 +121,8 @@ void AAuraPlayerController::CursorTrace()
 	// 如果玩家当前拥有“阻止鼠标检测”的 GameplayTag（例如正在施法或特殊状态中）
 	if (GetASC() && GetASC()->HasMatchingGameplayTag(FAuraGameplayTags::Get().Player_Block_CursorTrace))
 	{
-		if (LastActor) LastActor->UnHighlightActor(); // 如果上一个物体存在，取消高亮
-		if (ThisActor) ThisActor->UnHighlightActor();// 如果当前高亮的物体存在 → 取消高亮
+		UnHighlightActor(LastActor);
+		UnHighlightActor(ThisActor);
 
 		// 清空引用，防止逻辑残留
 		LastActor = nullptr;
@@ -122,15 +138,26 @@ void AAuraPlayerController::CursorTrace()
 	if (!CursorHit.bBlockingHit) return;//没有命中任何阻挡物体，那么就直接退出当前函数
 
 	// 将上一命中的物体和当前命中的物体保存到变量中
-	LastActor = ThisActor;
-	ThisActor = Cast<IHighlightInterface>(CursorHit.GetActor());
+	LastActor = ThisActor; // 更新 LastActor 为当前的 ThisActor
+	if (IsValid(CursorHit.GetActor()) && CursorHit.GetActor()->Implements<UHighlightInterface>())
+	{
+		ThisActor = CursorHit.GetActor();// 如果当前命中的物体实现了 UHighlightInterface 接口，更新 ThisActor
+	}
+	else
+	{
+		ThisActor = nullptr;// 如果当前命中的物体不符合条件，则将 ThisActor 设为 nullptr
+	}
+	
 
 	if (LastActor != ThisActor) // 如果上一个命中的物体和当前命中的物体不同，则进行高亮切换
 	{
-		if (LastActor) LastActor->UnHighlightActor(); // 如果上一个物体存在，取消高亮
-		if (ThisActor) ThisActor->HighlightActor();// 如果当前物体存在，进行高亮
+		// 取消上一物体的高亮并高亮当前物体
+		UnHighlightActor(LastActor);
+		HighlightActor(ThisActor);
 	}
 }
+
+
 
 //能力输入标签按下
 void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
@@ -144,8 +171,16 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 	//GEngine->AddOnScreenDebugMessage(1,3.f,FColor::Red,*InputTag.ToString());
 	if (InputTag.MatchesTagExact(FAuraGameplayTags::Get().InputTag_LMB))//检查当前输入是否是鼠标左键（LMB），只精确匹配，不会匹配父级 Tag。
 	{
-		bTargeting = ThisActor  ? true : false;// 如果鼠标下有目标 Actor，就进入锁定目标模式；否则关闭锁定
-		bAutoRunning = false;// 关闭自动奔跑
+		if (IsValid(ThisActor))// 判断 ThisActor 是否有效（存在）
+		{
+			// 根据目标是否实现了 UEnemyInterface 来判断目标类型，更新目标状态
+			TargetingStatus = ThisActor->Implements<UEnemyInterface>() ? ETargetingStatus::TargetingEnemy : ETargetingStatus::TargetingNonEntrance;
+			bAutoRunning = false;// 关闭自动奔跑
+		}
+		else
+		{
+			TargetingStatus = ETargetingStatus::NotTargeting;  // 如果没有有效目标，设置为不锁定目标
+		}
 	}
 	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);// 如果角色有能力系统组件（ASC） 就把这个输入事件转发给 ASC，让 GAS 处理技能激活逻辑
 }
@@ -170,7 +205,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 
 	if (GetASC()) GetASC()->AbilityInputTagReleased(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
 	
-	if (!bTargeting && !bShiftKeyDown)// 如果当前没有锁定目标（bTargeting=false）并且 Shift 键没有按下
+	if (TargetingStatus != ETargetingStatus::TargetingEnemy && !bShiftKeyDown)// 如果当前没有锁定目标（bTargeting=false）并且 Shift 键没有按下
 	{
 		const APawn* ControlledPawn = GetPawn();// 获取当前被控制的 Pawn（角色）
 		if (FollowTime <= ShortPressThreshold && ControlledPawn)// 1. 判断是否是短按（FollowTime <= ShortPressThreshold）并且角色存在
@@ -201,7 +236,7 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 		}
 		// 7. 重置跟随时间，关闭锁定目标模式
 		FollowTime = 0.f;
-		bTargeting = false;
+		TargetingStatus = ETargetingStatus::NotTargeting;
 	}
 }
 
@@ -223,12 +258,11 @@ void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
 		return;// 不是左键输入，直接返回，不再处理后面的移动逻辑
 	}
 
-	if (bTargeting || bShiftKeyDown)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
+	if (TargetingStatus == ETargetingStatus::TargetingEnemy || bShiftKeyDown)// 如果是鼠标左键（LMB），判断当前是否在锁定目标模式（bTargeting）
 	{
-		if (GetASC())
-		{
-			GetASC()->AbilityInputTagHeld(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
-		}
+		
+		if (GetASC()) GetASC()->AbilityInputTagHeld(InputTag); // 锁定目标模式下，左键会持续触发技能（而不是走点击地面移动）
+		
 	}
 	else// 没有锁定目标
 	{

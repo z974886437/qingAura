@@ -24,8 +24,8 @@ public:
 	virtual void PossessedBy(AController* NewController) override;//拥有
 
 	/*Highlight Interface(敌人界面）*/
-	virtual void HighlightActor() override;
-	virtual void UnHighlightActor() override;
+	virtual void HighlightActor_Implementation() override;
+	virtual void UnHighlightActor_Implementation() override;
 	/*end Highlight Interface(结束敌人界面）*/
 
 	/* Combat Interface (战斗界面)*/

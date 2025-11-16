@@ -56,7 +56,7 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	
 }
 
-void AAuraEnemy::HighlightActor()
+void AAuraEnemy::HighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(true);//用于设置角色网格体是否启用 Custom Depth 渲染通道。
 	//设置网格体的 Custom Depth Stencil 值，用于配合后处理材质进行效果区分（比如不同颜色的描边）。
@@ -66,7 +66,7 @@ void AAuraEnemy::HighlightActor()
 	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
 }
 
-void AAuraEnemy::UnHighlightActor()
+void AAuraEnemy::UnHighlightActor_Implementation()
 {
 	GetMesh()->SetRenderCustomDepth(false);//用于设置角色网格体是否启用 Custom Depth 渲染通道。
 	Weapon->SetRenderCustomDepth(false);

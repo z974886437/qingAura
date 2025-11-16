@@ -19,6 +19,13 @@ class UAuraInputConfig;
 class UAuraAbilitySystemComponent;
 class USplineComponent;
 
+enum class ETargetingStatus : uint8
+{
+	TargetingEnemy,//瞄准敌人
+	TargetingNonEntrance,//瞄准地图入口
+	NotTargeting//没有瞄准
+};
+
 /**
  * 
  */
@@ -62,9 +69,13 @@ private:
 	void Move(const struct FInputActionValue& InputActionValue);//定义F输入动作值
 
 	void CursorTrace();//空光标轨迹
-	IHighlightInterface* LastActor;//最后Actor
-	IHighlightInterface* ThisActor;
+	UPROPERTY()
+	TObjectPtr<AActor> LastActor;//最后Actor
+	UPROPERTY()
+	TObjectPtr<AActor> ThisActor;
 	FHitResult CursorHit;//FHitResult 类型的变量，用于存储一次碰撞检测 光标命中
+	static void HighlightActor(AActor* InActor);
+	static void UnHighlightActor(AActor* InActor);
 
 	void AbilityInputTagPressed(FGameplayTag InputTag);//能力输入标签按下
 	void AbilityInputTagReleased(FGameplayTag InputTag);//能力输入标签释放
@@ -83,7 +94,7 @@ private:
 	float FollowTime = 0.f;//跟随时间
 	float ShortPressThreshold = 0.5f;//短按阀值
 	bool bAutoRunning = false;//自动奔跑
-	bool bTargeting = false;//目标
+	ETargetingStatus TargetingStatus = ETargetingStatus::NotTargeting;//瞄准状态
 
 	UPROPERTY(EditDefaultsOnly)
 	float AutoRunAcceptanceRadius = 50.f;//自动运行接受半径
