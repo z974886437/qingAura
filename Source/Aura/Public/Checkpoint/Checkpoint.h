@@ -26,8 +26,11 @@ public:
 	virtual void LoadActor_Implementation() override;//加载演员
 	/* end Save Interface*/
 
-	UPROPERTY(BlueprintReadOnly, SaveGame)
+	UPROPERTY(BlueprintReadWrite, SaveGame)
 	bool bReached = false;//达到
+
+	UPROPERTY(EditAnywhere)
+	bool bBindOverlapCallback = true;//b 绑定重叠回调
 protected:
 
 	UFUNCTION()
@@ -58,6 +61,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void CheckpointReached(UMaterialInstanceDynamic* DynamicMaterialInstance);//已到达检查点
 
+	UFUNCTION(BlueprintCallable)
 	void HandleGlowEffects();//处理发光效果
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)

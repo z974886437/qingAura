@@ -62,9 +62,12 @@ void ACheckpoint::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 将球体组件的重叠事件绑定到自定义函数 OnSphereOverlap
-	// 当玩家进入球体范围时，自动调用 OnSphereOverlap 函数
-	Sphere->OnComponentBeginOverlap.AddDynamic(this,&ACheckpoint::OnSphereOverlap);//球体碰撞组件（Sphere）的 重叠开始事件 绑定到 AAuraProjectile::OnSphereOverlap 函数
+	if (bBindOverlapCallback)
+	{
+		// 将球体组件的重叠事件绑定到自定义函数 OnSphereOverlap
+		// 当玩家进入球体范围时，自动调用 OnSphereOverlap 函数
+		Sphere->OnComponentBeginOverlap.AddDynamic(this,&ACheckpoint::OnSphereOverlap);//球体碰撞组件（Sphere）的 重叠开始事件 绑定到 AAuraProjectile::OnSphereOverlap 函数
+	}
 }
 
 // 设置目标位置为当前组件的位置
@@ -76,7 +79,11 @@ void ACheckpoint::SetMoveToLocation_Implementation(FVector& OutDestination)
 // 高亮显示物体
 void ACheckpoint::HighlightActor_Implementation()
 {
-	CheckpointMesh->SetRenderCustomDepth(true);// 设置物体的渲染深度为自定义深度，显示高亮效果
+	if (!bReached)
+	{
+		CheckpointMesh->SetRenderCustomDepth(true);// 设置物体的渲染深度为自定义深度，显示高亮效果
+	}
+	
 }
 
 // 取消高亮显示物体
