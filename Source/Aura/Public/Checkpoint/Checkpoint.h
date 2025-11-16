@@ -45,11 +45,11 @@ protected:
 
 	void HandleGlowEffects();//处理发光效果
 
-private:
-
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> CheckpointMesh;//检查点网格
-
+	
+private:
+	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
 	
