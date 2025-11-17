@@ -42,6 +42,11 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 {
 	// 获取当前正在运行的游戏模式对象（AAuraGameModeBase）
 	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (!IsValid(AuraGameMode))
+	{
+		GEngine->AddOnScreenDebugMessage(1,15.f,FColor::Magenta,FString("Please switch to Single Player"));
+		return;
+	}
 
 	LoadSlots[Slot]->SetMapName(AuraGameMode->DefaultMapName);// 将新存档的地图名设为 GameMode 中定义的默认地图名
 	LoadSlots[Slot]->SetPlayerName(EnteredName);// 将玩家输入的名字赋值给对应存档槽
@@ -115,6 +120,7 @@ void UMVVM_LoadScreen::LoadData()
 {
 	// 获取当前游戏模式的引用，并转换为 AAuraGameModeBase 类型
 	AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+	if (!IsValid(AuraGameMode)) return;
 	
 	for (const TTuple<int32,UMVVM_LoadSlot*> LoadSlot : LoadSlots)// 遍历加载槽（LoadSlots）中的每一项，Key 是槽的索引，Value 是加载槽对象
 	{
