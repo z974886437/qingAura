@@ -80,7 +80,7 @@ void AAuraGameModeBase::SaveInGameProgressData(ULoadScreenSaveGame* SaveObject)
 }
 
 // 保存当前世界（World）的所有可保存 Actor 状态
-void AAuraGameModeBase::SaveWorldState(UWorld* World) const
+void AAuraGameModeBase::SaveWorldState(UWorld* World,const FString& DestinationMapAssetName) const
 {
 	FString WorldName = World->GetMapName();// 获取当前世界的地图名称（包含前缀）
 	WorldName.RemoveFromStart(World->StreamingLevelsPrefix);// 移除 StreamingLevelsPrefix 前缀，得到实际地图名
@@ -90,6 +90,12 @@ void AAuraGameModeBase::SaveWorldState(UWorld* World) const
 
 	if (ULoadScreenSaveGame* SaveGame = GetSaveSlotData(AuraGI->LoadSlotName,AuraGI->LoadSlotIndex))// 获取当前存档槽中的 SaveGame 数据（如果不存在会创建）
 	{
+		if (DestinationMapAssetName != FString(""))// 判断目标地图的资产名称是否为空字符串
+		{
+			SaveGame->MapAssetName = DestinationMapAssetName;  // 如果不为空，将目标地图的资产名称保存到 SaveGame 对象中
+			SaveGame->MapName = GetMapNameFromMapAssetName(DestinationMapAssetName);// 获取目标地图的名称，并保存到 SaveGame 对象中
+		}
+		
 		if (!SaveGame->HasMap(WorldName))  // 检查当前地图是否已经有保存记录，如果没有则创建一个新的 FSavedMap
 		{
 			FSavedMap NewSavedMap;// 创建空的地图保存结构
@@ -189,6 +195,19 @@ void AAuraGameModeBase::TravelToMap(UMVVM_LoadSlot* Slot)
 	const int32 SlotIndex = Slot->SlotIndex;// 获取当前存档槽的索引
 	
 	UGameplayStatics::OpenLevelBySoftObjectPtr(Slot,Maps.FindChecked(Slot->GetMapName())); // 根据存档槽的地图名称，从 Maps 字典中查找对应的地图对象，并加载该地图
+}
+
+// 根据给定的地图资产名称（MapAssetName）获取对应的地图名称
+FString AAuraGameModeBase::GetMapNameFromMapAssetName(const FString& MapAssetName) const
+{
+	for (auto& Map : Maps)  // 遍历 Maps 字典，Map.Key 是地图名称，Map.Value 是地图资产对象
+	{
+		if (Map.Value.ToSoftObjectPath().GetAssetName() == MapAssetName) // 如果地图的资产名称与给定的 MapAssetName 相同
+		{
+			return Map.Key;  // 返回找到的地图名称（Key）
+		}
+	}
+	return FString(); // 如果没有找到对应的地图名称，返回空字符串
 }
 
 // 选择玩家出生点的实现函数（当玩家进入游戏时调用）

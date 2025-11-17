@@ -32,7 +32,7 @@ public:
 	ULoadScreenSaveGame* RetrieveInGameSaveData();//检索游戏保存数据
 	void SaveInGameProgressData(ULoadScreenSaveGame* SaveObject);//保存游戏进度数据
 
-	void SaveWorldState(UWorld* World) const;//保存世界状态
+	void SaveWorldState(UWorld* World,const FString& DestinationMapAssetName = FString("")) const;//保存世界状态
 	void LoadWorldState(UWorld* World) const;//加载世界状态
 
 	void TravelToMap(UMVVM_LoadSlot* Slot);//前往地图
@@ -51,6 +51,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FString, TSoftObjectPtr<UWorld>> Maps;//地图
+
+	FString GetMapNameFromMapAssetName(const FString& MapAssetName) const;//从地图资源名称获取地图名称
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;//选择玩家开始
 

@@ -44,6 +44,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Character/AuraCharacterBase.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Character/AuraEnemy.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Checkpoint/Checkpoint.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Private/Checkpoint/MapEntrance.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Game/AuraGameInstance.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Game/AuraGameModeBase.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Game/LoadScreenSaveGame.cpp" charset="UTF-8" />
@@ -107,6 +108,7 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Character/AuraCharacterBase.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Character/AuraEnemy.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Checkpoint/Checkpoint.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Public/Checkpoint/MapEntrance.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Game/AuraGameInstance.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Game/AuraGameModeBase.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Game/LoadScreenSaveGame.h" charset="UTF-8" />

@@ -67,8 +67,6 @@ protected:
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	TObjectPtr<UStaticMeshComponent> CheckpointMesh;//检查点网格
 	
-private:
-	
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USphereComponent> Sphere;
 	
