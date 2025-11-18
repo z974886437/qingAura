@@ -235,6 +235,14 @@ UAbilityInfo* UAuraAbilitySystemLibrary::GetAbilityInfo(const UObject* WorldCont
 	return AuraGameMode->AbilityInfo;// 返回自定义 GameMode 中存储的 CharacterClassInfo（角色职业信息类）
 }
 
+ULootTiers* UAuraAbilitySystemLibrary::GetLootTiers(const UObject* WorldContextObject)
+{
+	// 从世界上下文对象获取当前游戏模式，并尝试转换成我们自定义的 AAuraGameModeBase
+	const AAuraGameModeBase* AuraGameMode = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(WorldContextObject));
+	if (AuraGameMode == nullptr) return nullptr;// 如果转换失败（非我们自定义 GameMode），直接返回 nullptr
+	return AuraGameMode->LootTiers;// 返回自定义 GameMode 中存储的 CharacterClassInfo（角色职业信息类）
+}
+
 bool UAuraAbilitySystemLibrary::IsBlockedHit(const FGameplayEffectContextHandle& EffectContextHandle)
 {
 	// 通过句柄获取指针，并强制转换为自定义的 FAuraGameplayEffectContext

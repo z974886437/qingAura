@@ -72,7 +72,7 @@ struct FSavedAbility
 	FGameplayTag AbilityType = FGameplayTag();//能力类型
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite)
-	int32 AbilityLevel = 0;//能力水平
+	int32 AbilityLevel = 1;//能力水平
 };
 
 // 声明一个内联函数，重载 “==” 运算符，用于比较两个 FSavedAbility 对象是否相等
