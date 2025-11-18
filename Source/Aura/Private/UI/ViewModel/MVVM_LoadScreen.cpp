@@ -53,6 +53,7 @@ void UMVVM_LoadScreen::NewSlotButtonPressed(int32 Slot, const FString& EnteredNa
 	LoadSlots[Slot]->SetPlayerLevel(1);
 	LoadSlots[Slot]->SlotStatus = Taken;// 将指定存档槽的状态设置为 "已占用"（Taken）
 	LoadSlots[Slot]->PlayerStartTag = AuraGameMode->DefaultPlayerStartTag;// 将 GameMode 中的默认出生点标签赋值给该存档槽（用于后续加载定位玩家出生点）
+	LoadSlots[Slot]->MapAssetName = AuraGameMode->DefaultMap.ToSoftObjectPath().GetAssetName();// 获取地图资产名称并设置到存档槽中
 
 	AuraGameMode->SaveSlotData(LoadSlots[Slot],Slot);// 调用 GameMode 保存存档数据（传入该槽对象和槽索引）
 	LoadSlots[Slot]->InitializeSlot();// 初始化该槽（例如更新 UI 状态、显示新存档信息等）

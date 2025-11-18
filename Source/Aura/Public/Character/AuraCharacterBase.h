@@ -98,6 +98,7 @@ protected:
 	UPROPERTY(EditAnywhere,Category = "Combat")
 	FName TailSocketName;//尾部插座名称
 
+	UPROPERTY(BlueprintReadOnly)
 	bool bDead = false;//b死亡
 
 	virtual void StunTagChanged(const FGameplayTag CallbackTag,int32 NewCount);//眩晕标签已更改

@@ -50,7 +50,11 @@ void ACheckpoint::OnSphereOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 		// 获取当前 GameMode，并确保转成 AAuraGameModeBase 成功
 		if (AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this)))
 		{
-			AuraGM->SaveWorldState(GetWorld());// 调用 GameMode 保存当前世界状态（保存 Actor 数据、位置等）
+			const UWorld* World = GetWorld();// 获取当前世界对象
+			FString MapName = World->GetMapName();// 获取当前关卡的名字（包含前缀）
+			MapName.RemoveFromStart(World->StreamingLevelsPrefix);// 移除前缀以获得实际的地图名
+			
+			AuraGM->SaveWorldState(GetWorld(),MapName);// 调用 GameMode 保存当前世界状态（保存 Actor 数据、位置等）
 		}
 		
 		IPlayerInterface::Execute_SaveProgress(OtherActor,PlayerStartTag);// 调用接口函数 SaveProgress，将当前检查点的标签（PlayerStartTag）传入

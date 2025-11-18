@@ -35,6 +35,10 @@ public:
 
 	UPROPERTY()
 	FName PlayerStartTag;//播放器开始标签
+
+	UPROPERTY()
+	FString MapAssetName;//地图资产名称
+	
 	/*
 	 * Field Notifies
 	 */

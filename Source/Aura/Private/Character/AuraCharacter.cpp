@@ -304,6 +304,29 @@ int32 AAuraCharacter::GetPlayerLevel_Implementation()
 	return AuraPlayerState->GetPlayerLevel();// 调用 PlayerState 的 GetPlayerLevel 函数，返回玩家当前等级
 }
 
+void AAuraCharacter::Die(const FVector& DeathImpulse)
+{
+	Super::Die(DeathImpulse);
+
+	FTimerDelegate DeathTimerDelegate;// 创建一个计时器委托，用于延迟执行死亡后的操作
+	DeathTimerDelegate.BindLambda([this]()
+	{
+		// 获取当前的 GameMode，并调用 PlayerDied 处理死亡逻辑
+		AAuraGameModeBase* AuraGM = Cast<AAuraGameModeBase>(UGameplayStatics::GetGameMode(this));
+		if (AuraGM)
+		{
+			AuraGM->PlayerDied(this); // 通知 GameMode 玩家死亡
+		}
+	});
+
+	// 设置计时器，DeathTime 表示死亡后多久执行死亡逻辑，设置为 false 表示只触发一次
+	GetWorldTimerManager().SetTimer(DeathTimer,DeathTimerDelegate,DeathTime,false);
+
+	// 解除角色与相机组件的绑定，保留相机的位置和方向
+	TopDownCameraComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	
+}
+
 void AAuraCharacter::OnRep_Stunned()
 {
 	// 将角色的 AbilitySystemComponent 强制转换为自定义的 UAuraAbilitySystemComponent

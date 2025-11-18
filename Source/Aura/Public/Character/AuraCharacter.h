@@ -44,11 +44,17 @@ public:
 	
 	/* Combat Interface */
 	virtual int32 GetPlayerLevel_Implementation() override;
+	virtual void Die(const FVector& DeathImpulse) override;
 	
 	/* end Combat Interface */
 
+	UPROPERTY(EditDefaultsOnly)
+	float DeathTime = 5.f;//死亡时间
+
+	FTimerHandle DeathTimer;//死亡计时器
+
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
-	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;
+	TObjectPtr<UNiagaraComponent> LevelUpNiagaraComponent;//升级尼亚加拉组件
 
 	virtual void OnRep_Stunned() override;//代表震惊
 	virtual void OnRep_Burned() override;//代表燃烧
