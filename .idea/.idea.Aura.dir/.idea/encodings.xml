@@ -34,6 +34,8 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/ModMagCalc/MMC_MaxMana.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/AbilitySystem/Passive/PassiveNiagaraComponent.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Actor/AuraEffectActor.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Private/Actor/AuraEnemySpawnPoint.cpp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Private/Actor/AuraEnemySpawnVolume.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Actor/AuraFireBall.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Actor/AuraProjectile.cpp" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Private/Actor/MagicCircle.cpp" charset="UTF-8" />
@@ -98,6 +100,8 @@
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/ModMagCalc/MMC_MaxMana.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/AbilitySystem/Passive/PassiveNiagaraComponent.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Actor/AuraEffectActor.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Public/Actor/AuraEnemySpawnPoint.h" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Source/Aura/Public/Actor/AuraEnemySpawnVolume.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Actor/AuraFireBall.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Actor/AuraProjectile.h" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Source/Aura/Public/Actor/MagicCircle.h" charset="UTF-8" />

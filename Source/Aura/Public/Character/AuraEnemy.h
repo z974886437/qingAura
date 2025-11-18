@@ -50,6 +50,8 @@ public:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Combat")
 	float LifeSpan = 5.f;//寿命
 
+	void SetLevel(int32 InLevel) { Level = InLevel;}
+
 	UPROPERTY(BlueprintReadWrite,Category = "Combat")
 	TObjectPtr<AActor> CombatTarget;//战斗标签
 protected:

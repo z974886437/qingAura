@@ -77,6 +77,8 @@ public:
 	UFUNCTION()
 	virtual void OnRep_Burned();//代表烧毁
 
+	void SetCharacterClass(ECharacterClass InClass) { CharacterClass = InClass; }//设置字符类
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
