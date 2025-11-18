@@ -175,12 +175,12 @@ void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
 		{
 			// 根据目标是否实现了 UEnemyInterface 来判断目标类型，更新目标状态
 			TargetingStatus = ThisActor->Implements<UEnemyInterface>() ? ETargetingStatus::TargetingEnemy : ETargetingStatus::TargetingNonEntrance;
-			bAutoRunning = false;// 关闭自动奔跑
 		}
 		else
 		{
 			TargetingStatus = ETargetingStatus::NotTargeting;  // 如果没有有效目标，设置为不锁定目标
 		}
+		bAutoRunning = false;// 关闭自动奔跑
 	}
 	if (GetASC()) GetASC()->AbilityInputTagPressed(InputTag);// 如果角色有能力系统组件（ASC） 就把这个输入事件转发给 ASC，让 GAS 处理技能激活逻辑
 }

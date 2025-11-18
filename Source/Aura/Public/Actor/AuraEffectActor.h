@@ -32,32 +32,45 @@ class AURA_API AAuraEffectActor : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AAuraEffectActor();
 
-	//重叠功能 声明一个碰撞重叠（Overlap）事件的函数，通常用来响应某个碰撞体与其他物体发生重叠时的回调。
-	//UFUNCTION()
-	// virtual void OnOverlap(
-	// 	UPrimitiveComponent* OverlappedComponent,//发生重叠事件的组件（通常是你的碰撞体）
-	// 	AActor* OtherActor,//与之重叠的另一个 Actor。
-	// 	UPrimitiveComponent* OtherComp,//与之重叠的另一个组件。
-	// 	int32 OtherBodyIndex,//另一个组件的物理体索引（一般用于复杂物理体）。
-	// 	bool bFromSweep,//是否是通过 Sweep（移动时检测）触发的重叠。
-	// 	const FHitResult& SweepResult);//如果是 Sweep 触发，包含详细的碰撞信息。
-	
-	//结束重叠 一个虚函数，通常用于处理碰撞体之间的 “结束重叠”（End Overlap） 事件
-	//UFUNCTION()
-	//virtual void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	virtual void Tick(float DeltaTime) override;
+
 	
 protected:
 
 	virtual void BeginPlay() override;
-	// UPROPERTY(VisibleAnywhere)
-	// TObjectPtr<USphereComponent> Sphere;
-	//
-	// UPROPERTY(VisibleAnywhere)
-	// TObjectPtr<UStaticMeshComponent> Mesh;
 
+	UPROPERTY(BlueprintReadOnly)
+	FVector CalculatedLocation;//计算位置
+
+	UPROPERTY(BlueprintReadOnly)
+	FRotator CalculatedRotation;//计算旋转
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
+	bool bRotates = false;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
+	float RotationRate = 45.f;//旋转速度
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
+	bool bSinusoidalMovement = false;//b 正弦运动
+
+	UFUNCTION(BlueprintCallable)
+	void StartSinusoidalMovement();//开始正弦运动
+
+	UFUNCTION(BlueprintCallable)
+	void StartRotation();//开始旋转
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
+	float SineAmplitude = 1.f;//正弦幅度
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
+	float SinePeriodConstant = 1.f;//正弦周期 
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
+	FVector InitialLocation;//初始位置
+	
 	UFUNCTION(BlueprintCallable)//蓝图可调用
 	void ApplyEffectToTarget(AActor* TargetActor,TSubclassOf<UGameplayEffect> GameplayEffectClass);//对目标应用效果
 
@@ -94,8 +107,15 @@ protected:
 	UPROPERTY(EditAnywhere,BlueprintReadOnly,Category = "Applied Effects")
 	EEffectRemovalPolicy InfiniteEffectRemovalPolicy = EEffectRemovalPolicy::RemoveOnEndOverlap;//无限效果删除策略
 
+	UPROPERTY()
 	TMap<FActiveGameplayEffectHandle,UAbilitySystemComponent*> ActiveEffectHandles;//活动效果手柄
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Applied Effects")
 	float ActorLevel = 1.f;
+
+private:
+
+	float RunningTime = 0.f;
+
+	void ItemMovement(float DeltaTime);//物品移动
 };

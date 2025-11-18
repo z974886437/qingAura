@@ -8,6 +8,7 @@
 #include "AbilitySystemInterface.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -15,47 +16,58 @@ AAuraEffectActor::AAuraEffectActor()
 {
 	//将此参与者设置为每帧调用Tick（）。如果你不需要它，你可以关闭它来提高性能。
 	PrimaryActorTick.bCanEverTick = false;
-
-	// Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	// SetRootComponent(Mesh);//设置根组件为Mesh
-	// Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
-	// Sphere->SetupAttachment(GetRootComponent());//球体设置附件在根组件上
+	
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot")));//构造函数中设置默认根组件（RootComponent） 的标准做法，尤其在自定义 Actor 类中非常常见
 	
 }
 
-// void AAuraEffectActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-// {
-// 	
-// }
+void AAuraEffectActor::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	RunningTime += DeltaTime; // 累加经过的时间
+	const float SinePeriod = 2 * PI / SinePeriodConstant;// 计算一个周期（以常数 SinePeriodConstant 为基础）
+	if (RunningTime > SinePeriod) // 如果经过的时间超过一个周期
+	{
+		RunningTime = 0.f; // 重置时间
+	}
+	ItemMovement(DeltaTime);// 执行物体的运动
+}
 
-// void AAuraEffectActor::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-// 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-// {
-// 	//TODO: Change this to apply a Gameplay Effect. For now,using const_cast as a hack!（将其更改为应用游戏效果。目前，暂时使用const_cast作为权宜之计！)
-// 	if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(OtherActor))
-// 	{
-// 		//从 GAS 系统中获取并强转出你自己的属性集类 UAuraAttributeSet，用于读取属性（比如生命值、蓝量等）
-// 		const UAuraAttributeSet* AuraAttributeSet = Cast<UAuraAttributeSet>(
-// 			ASCInterface->GetAbilitySystemComponent()->GetAttributeSet(UAuraAttributeSet::StaticClass()));
-//
-// 		UAuraAttributeSet* MutableAuraAttributeSet = const_cast<UAuraAttributeSet*>(AuraAttributeSet);
-// 		MutableAuraAttributeSet->SetHealth(AuraAttributeSet->GetHealth() + 25.f);//设置呼叫设置健康
-// 		MutableAuraAttributeSet->SetMana(AuraAttributeSet->GetMana() - 25.f);//设置呼叫设置法力
-// 		Destroy();//销毁一个 Actor
-//
-// 		
-// 	}
-// }
+void AAuraEffectActor::ItemMovement(float DeltaTime)
+{
+	if (bRotates) // 如果启用旋转
+	{
+		const FRotator DeltaRotation(0.f,DeltaTime * RotationRate , 0.f);  // 根据旋转速率，计算当前帧的旋转增量
+		CalculatedRotation = UKismetMathLibrary::ComposeRotators(CalculatedRotation,DeltaRotation);  // 使用 ComposeRotators 组合旋转（避免逐帧修改旋转值，直接叠加旋转）
+	}
+	if (bSinusoidalMovement) // 如果启用正弦波运动
+	{
+		const float Sine = SineAmplitude * FMath::Sin(RunningTime * SinePeriodConstant); // 根据正弦函数计算垂直方向的偏移量
+		CalculatedLocation = InitialLocation + FVector(0.f,0.f,Sine); // 根据正弦波偏移量更新位置
+	}
+}
 
 // Called when the game starts or when spawned
 void AAuraEffectActor::BeginPlay()
 {
 	Super::BeginPlay();
+	InitialLocation = GetActorLocation(); // 获取初始位置
+	CalculatedLocation = InitialLocation; // 初始化位置
+	CalculatedRotation = GetActorRotation(); // 获取初始旋转
+	
+}
 
-	//Sphere->OnComponentBeginOverlap.AddDynamic(this,&AAuraEffectActor::OnOverlap);//触发回调函数以响应重叠内容
-	//Sphere->OnComponentEndOverlap.AddDynamic(this,&AAuraEffectActor::EndOverlap);//触发回调函数以响应结束重叠内容
+void AAuraEffectActor::StartSinusoidalMovement()
+{
+	bSinusoidalMovement = true; // 启用正弦波运动
+	InitialLocation = GetActorLocation(); // 重新获取物体的初始位置
+	CalculatedLocation = InitialLocation; // 重置位置
+}
+
+void AAuraEffectActor::StartRotation()
+{
+	bRotates = true; // 启用旋转
+	CalculatedRotation = GetActorRotation(); // 重新获取物体的旋转
 }
 
 void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass)
@@ -143,6 +155,8 @@ void AAuraEffectActor::OnEndOverlap(AActor* TargetActor)
 		}
 	}
 }
+
+
 
 
 
