@@ -41,10 +41,10 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	FVector CalculatedLocation;//计算位置
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	FRotator CalculatedRotation;//计算旋转
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "Pickup Movement")
