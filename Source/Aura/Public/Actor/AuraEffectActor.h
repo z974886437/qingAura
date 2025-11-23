@@ -36,6 +36,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+
+	int32 ;
 	
 protected:
 
